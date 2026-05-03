@@ -1,0 +1,13 @@
+{
+  "identified": 96,
+  "removed_metadata": 5,
+  "screened": 91,
+  "missing_abstract": 0,
+  "reject_topic": 7,
+  "edge_case": 84,
+  "accept": 0,
+  "pdf_got": 0,
+  "pdf_blocked": 84,
+  "pdf_no_oa": 0,
+  "included": 84
+}
