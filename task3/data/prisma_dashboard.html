@@ -2,70 +2,72 @@
 <html lang="en"><head><meta charset="utf-8">
 <title>PRISMA Funnel — Task 3</title>
 <style>
-  body { font-family: -apple-system, sans-serif; max-width: 760px; margin: 2em auto;
-          background: #fafafa; color: #222; }
+  body { font-family: -apple-system, sans-serif; max-width: 760px;
+          margin: 2em auto; background: #fafafa; color: #222; }
   h1 { font-size: 1.6em; margin-bottom: 0.2em; }
-  .stage { background: white; border-left: 6px solid #B45F14; padding: 1em 1.2em;
-            margin: 0.6em 0; box-shadow: 0 1px 2px rgba(0,0,0,0.04); border-radius: 6px; }
-  .stage h3 { margin: 0 0 0.3em 0; font-size: 1em; color: #555; }
-  .count { font-size: 1.6em; font-weight: 600; color: #222; }
-  .sub { color: #888; font-size: 0.85em; margin-left: 1em; }
+  .row { background: white; border-left: 6px solid #B45F14; padding: 1em 1.2em;
+          margin: 0.6em 0; box-shadow: 0 1px 2px rgba(0,0,0,0.04); border-radius: 6px; }
+  .row h3 { margin: 0 0 0.3em 0; font-size: 0.95em; color: #555;
+             text-transform: uppercase; letter-spacing: 0.04em; }
+  .count { font-size: 1.6em; font-weight: 600; }
+  .sub { color: #888; font-size: 0.85em; margin-left: 0.5em; }
   .out { border-left-color: #999; }
   .accept { border-left-color: #2e7d32; }
   .edge { border-left-color: #ed8936; }
   .reject { border-left-color: #c53030; }
   footer { font-size: 0.8em; color: #888; margin-top: 2em; }
+  table { font-size: 0.9em; border-collapse: collapse; margin-top: 0.4em; }
+  td { padding: 0.15em 0.6em 0.15em 0; }
 </style></head>
 <body>
 <h1>PRISMA Funnel — Article Finder Task 3</h1>
-<p>Reconstructed from a single <code>GROUP BY</code> over <code>article_references</code>.</p>
+<p>Reconstructed from a single <code>GROUP BY</code> over
+<code>article_references</code>. No parallel state.</p>
 
-<div class="stage">
+<div class="row">
   <h3>Identification</h3>
-  <div class="count">96</div>
-  records harvested across all queries.
+  <table>
+    <tr><td><strong>Gaps targeted</strong></td><td class="count">5</td></tr>
+    <tr><td><strong>Queries executed</strong></td><td class="count">5</td></tr>
+    <tr><td><strong>Records returned</strong></td><td class="count">50</td></tr>
+    <tr><td>Dedup-skipped (provenance merge)</td><td>0</td></tr>
+    <tr><td>Dedup transitions logged</td><td>0</td></tr>
+  </table>
 </div>
 
-<div class="stage out">
+<div class="row out">
   <h3>Removed at metadata screen (Stage 1)</h3>
   <div class="count">5</div>
-  off-topic ML jargon / pre-2005 / other heuristic rejects.
 </div>
 
-<div class="stage">
-  <h3>Screened with abstract</h3>
-  <div class="count">91</div>
-  passed Stage 1.
-  <div class="sub">missing_abstract: 0</div>
+<div class="row">
+  <h3>Abstracts collected</h3>
+  <div class="count">45</div>
+  <div class="sub">missing_abstract: 1</div>
 </div>
 
-<div class="stage reject">
-  <h3>Stage 2 rejects (off-topic)</h3>
-  <div class="count">7</div>
+<div class="row">
+  <h3>Screened by classifier (Stage 2B)</h3>
+  <div class="count">44</div>
 </div>
 
-<div class="stage edge">
-  <h3>Edge cases (manual review)</h3>
-  <div class="count">84</div>
-</div>
+<div class="row reject"><h3>Reject — off-topic</h3><div class="count">0</div></div>
+<div class="row edge"><h3>Edge case</h3><div class="count">44</div></div>
+<div class="row accept"><h3>Accept</h3><div class="count">0</div></div>
 
-<div class="stage accept">
-  <h3>Accepted</h3>
+<div class="row">
+  <h3>PDFs acquired (Stage 3)</h3>
   <div class="count">0</div>
+  <div class="sub">scidownl gated: 0</div>
 </div>
 
-<div class="stage">
-  <h3>PDFs acquired</h3>
-  <div class="count">0</div>
-  via OA cascade (Unpaywall → S2 → Publisher).
-  <div class="sub">scidownl_blocked: 84 · no_oa: 0</div>
-</div>
-
-<div class="stage accept">
+<div class="row accept">
   <h3>Included in synthesis</h3>
-  <div class="count">84</div>
-  ACCEPT + EDGE_CASE.
+  <div class="count">44</div>
+  ACCEPT + EDGE_CASE
 </div>
 
-<footer>Generated from <code>task3.db</code> · single SQL: see <code>prisma_dashboard.py</code></footer>
+<footer>Generated from <code>pipeline_lifecycle_full.db</code> ·
+single SQL: <code>prisma_dashboard.py</code> ·
+view: <code>v_acquisition_queue</code></footer>
 </body></html>

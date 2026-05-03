@@ -1,39 +1,39 @@
 #!/usr/bin/env python3
 """
-abstract_triage.py — Task 3 Phase 4.
+abstract_triage.py — Task 3 Phase 4 (Stage 1 + Stage 2B).
 
-Implements the three-stage triage:
+Stage 1 (metadata-only screen) — runs against rows fresh from search_runner
+(triage_stage='metadata_only', triage_decision IS NULL, abstract IS NULL).
+Rejects ML/CS jargon and pre-2005 papers; never touches abstract collection.
 
-  Stage 1  metadata-only screen
-           - reject if title looks like an off-topic ML/CS paper
-           - reject if year < min_year (default 2005)
-           - else pass
+Stage 2B (abstract decision) — runs after abstract_collector.py; classifies
+each row as ACCEPT / EDGE_CASE / REJECT / MISSING_ABSTRACT using the
+atlas_shared question constitutions and a VOI-style threshold.
 
-  Stage 2A abstract collection
-           - if `abstract` already populated from search_runner → use it
-             (atlas_shared S2/CrossRef/PubMed/OpenAlex fallbacks would slot in here)
-           - else mark `missing_abstract`
+Decision rule:
+    relevance.verdict == 'accept' AND voi_score >= 0.50  → ACCEPT
+    relevance.verdict == 'accept' AND voi_score <  0.50  → EDGE_CASE
+    relevance.verdict == 'edge_case'                     → EDGE_CASE
+    relevance.verdict == 'reject'                        → REJECT
+    abstract is None / abstract_source='none'            → MISSING_ABSTRACT
+                                                           (already set by collector)
 
-  Stage 2B classification (delegates to atlas_shared)
-           - HeuristicArticleTypeClassifier → article_type
-           - QuestionArticleRelevanceFilter against the loaded constitutions
-             → verdict in {accept, edge_case, reject}
-
-Stage 3 (PDF acquisition) lives in pdf_acquirer.py.
+Every triaged row gets a non-empty `triage_reason`.
 
 Usage:
     python3 abstract_triage.py
-    python3 abstract_triage.py --min-year 2010 --db data/task3.db
+    python3 abstract_triage.py --voi-threshold 0.55 --min-year 2010
 """
 
 from __future__ import annotations
 import argparse
 import json
 import re
+import sqlite3
 import sys
 from pathlib import Path
 
-from db_schema import open_db, DEFAULT_DB
+from db_schema import open_db, DEFAULT_DB, log_transition
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ATLAS_SHARED_SRC = REPO_ROOT.parent / "atlas_shared" / "src"
@@ -50,130 +50,166 @@ CONSTITUTIONS_PATH = (
 ML_REJECT_PATTERNS = [
     r"\bdeep learning\b", r"\bconvolutional neural\b", r"\btransformer\b",
     r"\bimagenet\b", r"\bGAN\b", r"\bbatch normalization\b",
+    r"\bgradient descent\b",
 ]
 
 
 def stage1_screen(title: str, year: int | None, min_year: int) -> tuple[str, list[str]]:
-    reasons: list[str] = []
+    reasons = []
     t = (title or "").lower()
     for pat in ML_REJECT_PATTERNS:
         if re.search(pat, t):
             reasons.append(f"ml_jargon:{pat}")
     if year is not None and year < min_year:
         reasons.append(f"too_old:{year}<{min_year}")
-    return ("reject_metadata" if reasons else "pass", reasons)
+    return ("rejected_at_metadata" if reasons else "pass", reasons)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Stage 2 — classifier (atlas_shared)
+# Stage 2B — atlas_shared classifier + VOI threshold
 # ─────────────────────────────────────────────────────────────────────────────
-def _load_classifier_bits():
+def _load_classifier():
     from atlas_shared.article_types import HeuristicArticleTypeClassifier
-    from atlas_shared.relevance import (
-        QuestionArticleRelevanceFilter, ArticleCandidate, QuestionConstitution,
-    )
+    from atlas_shared.relevance import (QuestionArticleRelevanceFilter,
+                                        ArticleCandidate, QuestionConstitution)
     data = json.loads(CONSTITUTIONS_PATH.read_text())
-    constitutions = [QuestionConstitution.from_panel_spec(q) for q in data["questions"]]
+    consts = [QuestionConstitution.from_panel_spec(q) for q in data["questions"]]
     return (HeuristicArticleTypeClassifier(),
             QuestionArticleRelevanceFilter(),
-            ArticleCandidate, constitutions)
+            ArticleCandidate, consts)
 
 
-def stage2_classify(title: str, abstract: str, type_clf, rel_clf,
-                    Candidate, constitutions, ref_id: int) -> dict:
-    if not abstract or len(abstract.strip()) < 30:
-        return {"verdict": "missing_abstract", "confidence": 0.0,
-                "reasons": ["no_abstract"], "article_type": None}
-
-    candidate = Candidate(paper_id=f"task3-{ref_id}", title=title or "", abstract=abstract)
-    type_decision = type_clf.classify(abstract=abstract, title=title or "")
+def stage2_decide(title: str, abstract: str, voi_score: float, *,
+                  type_clf, rel_clf, Candidate, constitutions,
+                  voi_threshold: float, ref_id: str
+                  ) -> tuple[str, str, float]:
+    """Returns (decision, reason, confidence)."""
+    candidate = Candidate(paper_id=ref_id, title=title or "", abstract=abstract)
+    type_dec = type_clf.classify(abstract=abstract, title=title or "")
 
     best = None
     for c in constitutions:
         a = rel_clf.assess(c, candidate)
-        if a.verdict == "accept":
-            best = (a, c); break
+        if a.verdict == "accept": best = (a, c); break
         if a.verdict == "edge_case":
             if best is None or best[0].confidence < a.confidence:
                 best = (a, c)
     if best is None:
         all_a = [(rel_clf.assess(c, candidate), c) for c in constitutions]
         best = max(all_a, key=lambda x: x[0].confidence)
-    a, _c = best
+    a, c = best
 
-    return {
-        "verdict":     a.verdict,
-        "confidence":  round(a.confidence, 3),
-        "reasons":     list(a.reasons)[:5],
-        "article_type": type_decision.value,
-    }
+    if a.verdict == "accept":
+        if voi_score >= voi_threshold:
+            return ("ACCEPT", f"on-topic for {c.topic}; voi={voi_score:.2f}≥{voi_threshold}; "
+                              f"type={type_dec.value}", round(a.confidence, 3))
+        return ("EDGE_CASE", f"on-topic for {c.topic} but voi={voi_score:.2f}<{voi_threshold}",
+                round(a.confidence, 3))
+    if a.verdict == "edge_case":
+        hits = ",".join(list(a.environment_hits)[:2] + list(a.outcome_hits)[:2])
+        return ("EDGE_CASE", f"borderline match on {c.topic}; hits=[{hits}]",
+                round(a.confidence, 3))
+    return ("REJECT", f"off-topic vs {c.topic}; "
+                      f"reasons={'; '.join(list(a.reasons)[:2])}",
+            round(a.confidence, 3))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Driver
+# Driver — runs Stage 1 then Stage 2B
 # ─────────────────────────────────────────────────────────────────────────────
-def run(db_path: Path, min_year: int) -> None:
+def run(db_path: Path, min_year: int, voi_threshold: float) -> dict:
     conn = open_db(db_path)
-    cur = conn.execute("INSERT INTO run_log(stage, n_in) VALUES ('triage', "
-                       "(SELECT COUNT(*) FROM article_references WHERE stage1_screen IS NULL))")
-    run_id = cur.lastrowid
-    conn.commit()
+    cur = conn.execute("INSERT INTO run_log (stage) VALUES ('triage')")
+    run_id = cur.lastrowid; conn.commit()
 
-    type_clf, rel_clf, Candidate, constitutions = _load_classifier_bits()
-    print(f"Loaded {len(constitutions)} question constitution(s)")
+    type_clf, rel_clf, Candidate, consts = _load_classifier()
+    print(f"Loaded {len(consts)} question constitution(s)")
 
+    counts = {"stage1_reject": 0, "stage1_pass": 0,
+              "ACCEPT": 0, "EDGE_CASE": 0, "REJECT": 0, "MISSING_ABSTRACT": 0}
+
+    # ── Stage 1: rows that have not been screened yet ──
     rows = conn.execute(
-        "SELECT ref_id, title, year, abstract FROM article_references "
-        "WHERE stage1_screen IS NULL"
+        "SELECT reference_id, title_raw, publication_year FROM article_references "
+        "WHERE triage_stage = 'metadata_only' AND triage_decision IS NULL"
     ).fetchall()
-
-    counts = {"reject_metadata": 0, "pass": 0,
-              "accept": 0, "edge_case": 0, "reject": 0, "missing_abstract": 0}
-
     for r in rows:
-        s1, s1_reasons = stage1_screen(r["title"], r["year"], min_year)
-        counts[s1] += 1
-        if s1 == "reject_metadata":
+        s1, reasons = stage1_screen(r["title_raw"], r["publication_year"], min_year)
+        if s1 == "rejected_at_metadata":
             conn.execute(
-                "UPDATE article_references SET stage1_screen=?, stage1_reasons=?, "
-                "updated_at=CURRENT_TIMESTAMP WHERE ref_id=?",
-                (s1, json.dumps(s1_reasons), r["ref_id"]),
-            )
-            continue
+                "UPDATE article_references SET triage_stage='rejected_at_metadata', "
+                "triage_decision='REJECT', "
+                "triage_reason=?, "
+                "updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') "
+                "WHERE reference_id=?",
+                (f"stage1_metadata: {','.join(reasons)}", r["reference_id"]))
+            log_transition(conn, reference_id=r["reference_id"],
+                           from_stage="metadata_only",
+                           to_stage="rejected_at_metadata",
+                           agent="abstract_triage(stage1)",
+                           outcome="reject",
+                           notes=",".join(reasons))
+            counts["stage1_reject"] += 1
+            counts["REJECT"] += 1
+        else:
+            counts["stage1_pass"] += 1
+    conn.commit()
 
-        cls = stage2_classify(r["title"] or "", r["abstract"] or "",
-                              type_clf, rel_clf, Candidate, constitutions, r["ref_id"])
-        verdict = cls["verdict"]
-        counts[verdict] += 1
-
-        abstract_source = "search_payload" if (r["abstract"] or "").strip() else "none"
+    # ── Stage 2B: rows with collected abstracts (or MISSING_ABSTRACT already set) ──
+    rows = conn.execute(
+        "SELECT reference_id, title_raw, abstract, voi_score, triage_decision "
+        "FROM article_references "
+        "WHERE triage_stage = 'abstract_collected' AND triage_decision IS NULL"
+    ).fetchall()
+    for r in rows:
+        decision, reason, conf = stage2_decide(
+            r["title_raw"] or "", r["abstract"] or "", r["voi_score"] or 0.0,
+            type_clf=type_clf, rel_clf=rel_clf, Candidate=Candidate,
+            constitutions=consts, voi_threshold=voi_threshold,
+            ref_id=r["reference_id"])
         conn.execute(
-            "UPDATE article_references SET stage1_screen=?, stage1_reasons=?, "
-            "abstract_source=?, stage2_verdict=?, stage2_confidence=?, "
-            "stage2_reasons=?, updated_at=CURRENT_TIMESTAMP WHERE ref_id=?",
-            (s1, json.dumps(s1_reasons), abstract_source,
-             verdict, cls["confidence"], json.dumps(cls["reasons"]),
-             r["ref_id"]),
-        )
+            "UPDATE article_references SET triage_decision=?, triage_reason=?, "
+            "triage_confidence=?, "
+            "updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') "
+            "WHERE reference_id=?",
+            (decision, reason, conf, r["reference_id"]))
+        log_transition(conn, reference_id=r["reference_id"],
+                       from_stage="abstract_collected",
+                       to_stage="abstract_collected",
+                       agent="abstract_triage(stage2)",
+                       outcome=decision.lower(), notes=reason[:120])
+        counts[decision] = counts.get(decision, 0) + 1
+    conn.commit()
 
-    conn.commit()
-    conn.execute("UPDATE run_log SET finished_at=CURRENT_TIMESTAMP, n_out=?, "
-                 "notes=? WHERE run_id=?",
-                 (len(rows), json.dumps(counts), run_id))
-    conn.commit()
-    conn.close()
+    # MISSING_ABSTRACT rows (set by collector) — count them
+    missing = conn.execute(
+        "SELECT COUNT(*) c FROM article_references "
+        "WHERE triage_decision='MISSING_ABSTRACT'"
+    ).fetchone()["c"]
+    counts["MISSING_ABSTRACT"] = missing
+
+    conn.execute(
+        "UPDATE run_log SET finished_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'), "
+        "n_in=?, n_out=?, notes=? WHERE run_id=?",
+        (counts["stage1_pass"] + counts["stage1_reject"],
+         counts.get("ACCEPT", 0) + counts.get("EDGE_CASE", 0),
+         json.dumps(counts), run_id))
+    conn.commit(); conn.close()
 
     print("Triage results:")
     for k, v in counts.items():
         print(f"  {k:<20} {v}")
+    return counts
 
 
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--db", type=Path, default=DEFAULT_DB)
     p.add_argument("--min-year", type=int, default=2005)
+    p.add_argument("--voi-threshold", type=float, default=0.50,
+                   help="ACCEPT requires voi_score >= this; below → EDGE_CASE")
     args = p.parse_args()
-    run(args.db, args.min_year)
+    run(args.db, args.min_year, args.voi_threshold)
 
 
 if __name__ == "__main__":

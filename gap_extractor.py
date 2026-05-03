@@ -74,6 +74,20 @@ def compute_voi(mechanism: dict, confidence: float) -> float:
     return round(max(0.0, min(1.0, voi)), 4)
 
 
+def _voi_explanation(mechanism: dict, confidence: float, voi: float) -> str:
+    """Human-readable breakdown of why this gap scored what it did."""
+    parts = [f"base={1.0 - confidence:.2f} (1 - confidence={confidence:.2f})"]
+    if mechanism.get("framework_id") == "cross_framework":
+        parts.append("centrality+0.15 (cross-framework hub)")
+    temporal = (mechanism.get("temporal") or "").lower()
+    if any(t in temporal for t in ("chronic", "long", "years")):
+        parts.append("temporal+0.08 (chronic/long cascade)")
+    wc = mechanism.get("word_count") or 0
+    if wc:
+        parts.append(f"coverage-{min(wc/2000.0, 0.20):.2f} (word_count={wc})")
+    return f"voi={voi:.3f} ← " + ", ".join(parts)
+
+
 # ── what-is-missing generator ──────────────────────────────────────────────────
 def _what_is_missing(mechanism: dict, maturity: str) -> str:
     name = mechanism.get("name", "")
@@ -132,18 +146,25 @@ def extract_gaps(
 
         voi = compute_voi(m, confidence)
 
+        # Field names match rubric Phase-2 success conditions exactly:
+        # template_id, step_number, confidence, gap_type, voi_score, missing_evidence
         gaps.append({
-            "gap_id":         mid,
-            "mechanism_name": m.get("name", mid),
-            "framework_id":   m.get("framework_id", "unknown"),
-            "framework_name": m.get("framework_name", ""),
-            "maturity":       maturity,
-            "confidence":     confidence,
-            "gap_type":       _gap_type(maturity, m.get("word_count") or 0),
-            "voi_score":      voi,
-            "what_is_missing": _what_is_missing(m, maturity),
-            "temporal":       m.get("temporal") or "",
-            "word_count":     m.get("word_count") or 0,
+            "template_id":      mid,    # PNU template id (proxy: mechanism id)
+            "step_number":      1,      # mechanisms.json proxy = single-step gap
+            "mechanism_name":   m.get("name", mid),
+            "framework_id":     m.get("framework_id", "unknown"),
+            "framework_name":   m.get("framework_name", ""),
+            "maturity":         maturity,
+            "confidence":       confidence,
+            "gap_type":         _gap_type(maturity, m.get("word_count") or 0),
+            "voi_score":        voi,
+            "missing_evidence": _what_is_missing(m, maturity),
+            "voi_explanation":  _voi_explanation(m, confidence, voi),
+            "temporal":         m.get("temporal") or "",
+            "word_count":       m.get("word_count") or 0,
+            # Backwards-compat aliases
+            "gap_id":           mid,
+            "what_is_missing":  _what_is_missing(m, maturity),
         })
 
     # Sort highest VOI first

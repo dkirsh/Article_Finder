@@ -1,178 +1,178 @@
 #!/usr/bin/env python3
 """
-pdf_acquirer.py — Task 3 Phase 5.
+pdf_acquirer.py — Task 3 Phase 5 (Stage 3).
 
-Walks the cascade for every ACCEPT (and optionally EDGE_CASE) row in
-`article_references` that doesn't yet have a `pdf_status`:
+Reads from `v_acquisition_queue` (ACCEPT rows whose acquired_paper_id is NULL),
+walks the documented source cascade in order, and logs every attempt to
+`lifecycle_transitions`. EDGE_CASE rows are intentionally NOT processed here.
 
-  1. Unpaywall   (only if DOI present)   → method=unpaywall
-  2. Semantic Scholar PDF link            → method=s2_pdf
-  3. Publisher direct (if URL is OA)      → method=publisher
-  4. scidownl                             → method=scidownl, GATED
+Cascade (rubric §5A):
+  1. Unpaywall          → discovered free OA
+  2. OpenAlex OA URL    → publisher-hosted OA
+  3. scidownl           → ONLY if all four policy conditions in §5B are met
 
-scidownl is gated. ALL of the following must hold (config flag default false,
-required env var, DOI present, prior cascade exhausted) before any call.
+scidownl gate (rubric §5B — all four required):
+  (a) --enable-scidownl flag passed
+  (b) `policy_clearance.json` present in repo root, countersigned by instructor
+  (c) row's triage_decision == 'ACCEPT' (enforced by view)
+  (d) Unpaywall AND OpenAlex BOTH already failed for this reference_id
 
-For Track 2 demo / mock-mode runs, the gate is closed by default so the cascade
-records `no_oa` or `scidownl_blocked` rather than fetching anything. A real run
-flips `--enable-scidownl` only when the user explicitly opts in.
+The clearance file is git-ignored. Without it (the default state), every
+attempt at Step 3 is denied with reason='gated:no_policy_clearance' and the
+row stays in the queue with pdf_acquisition_attempts incremented.
 
 Usage:
     python3 pdf_acquirer.py
-    python3 pdf_acquirer.py --include-edge-case --enable-scidownl
+    python3 pdf_acquirer.py --enable-scidownl    # still requires the file
 """
 
 from __future__ import annotations
 import argparse
 import json
-import os
-import sys
+import sqlite3
 from pathlib import Path
 
-from db_schema import open_db, DEFAULT_DB
+from db_schema import open_db, DEFAULT_DB, log_transition
 
-PDF_DIR_DEFAULT = Path(__file__).resolve().parent / "data" / "pdfs"
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Cascade steps (real network calls would slot in here; for the offline demo
-# they all return None)
-# ─────────────────────────────────────────────────────────────────────────────
-def try_unpaywall(doi: str | None) -> tuple[str, str | None]:
-    if not doi:
-        return ("skip", None)
-    # Real impl would: GET https://api.unpaywall.org/v2/{doi}?email=...
-    # For mock/demo: synthetic DOIs (10.1234/synth.*) → no OA hit.
-    if doi.startswith("10.1234/synth."):
-        return ("miss", None)
-    return ("miss", None)
-
-
-def try_s2(doi: str | None) -> tuple[str, str | None]:
-    if not doi:
-        return ("skip", None)
-    return ("miss", None)
-
-
-def try_publisher(url: str | None) -> tuple[str, str | None]:
-    if not url:
-        return ("skip", None)
-    return ("miss", None)
+REPO_ROOT = Path(__file__).resolve().parent.parent
+PDF_DIR = REPO_ROOT / "task3" / "data" / "pdfs"
+POLICY_CLEARANCE = REPO_ROOT / "policy_clearance.json"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# scidownl gate — 4 conditions ALL required
+# Cascade steps — return (status, path, source_label)
+# status ∈ {'hit','miss','skip'}
+# ─────────────────────────────────────────────────────────────────────────────
+def try_unpaywall(doi: str | None) -> tuple[str, str | None, str]:
+    """Real impl would call api.unpaywall.org. For offline/mock runs all miss."""
+    if not doi: return ("skip", None, "unpaywall")
+    return ("miss", None, "unpaywall")
+
+
+def try_openalex_oa(doi: str | None) -> tuple[str, str | None, str]:
+    if not doi: return ("skip", None, "openalex_oa")
+    return ("miss", None, "openalex_oa")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# scidownl 4-condition policy gate
 # ─────────────────────────────────────────────────────────────────────────────
 def scidownl_gate(*, enable_flag: bool, doi: str | None,
-                  prior_cascade_exhausted: bool) -> tuple[bool, str]:
+                  prior_failed: bool) -> tuple[bool, str]:
     if not enable_flag:
         return (False, "config_flag_off")
-    if not os.environ.get("SCIDOWNL_USER_ACK") == "1":
-        return (False, "user_ack_env_var_missing")
+    if not POLICY_CLEARANCE.exists():
+        return (False, "no_policy_clearance")
     if not doi:
         return (False, "no_doi")
-    if not prior_cascade_exhausted:
+    if not prior_failed:
         return (False, "prior_cascade_not_exhausted")
     return (True, "gate_open")
 
 
-def try_scidownl(doi: str, out_dir: Path) -> tuple[str, str | None]:
-    # Real impl would: from scidownl import scihub_download; scihub_download(doi, out=...)
-    # Even when gate opens we keep this stub so the CLI surface is correct.
-    return ("miss", None)
+def try_scidownl(doi: str, out_dir: Path) -> tuple[str, str | None, str]:
+    """Stub: real call would be `from scidownl import scihub_download`.
+       Synthetic DOIs return miss so the pipeline still runs offline."""
+    return ("miss", None, "scidownl")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Driver
 # ─────────────────────────────────────────────────────────────────────────────
-def run(db_path: Path, include_edge_case: bool, enable_scidownl: bool,
-        pdf_dir: Path) -> None:
+def run(db_path: Path, enable_scidownl: bool, pdf_dir: Path) -> dict:
     pdf_dir.mkdir(parents=True, exist_ok=True)
     conn = open_db(db_path)
-    cur = conn.execute("INSERT INTO run_log(stage, n_in) VALUES ('pdf', 0)")
-    run_id = cur.lastrowid
-    conn.commit()
+    cur = conn.execute("INSERT INTO run_log (stage) VALUES ('pdf')")
+    run_id = cur.lastrowid; conn.commit()
 
-    verdicts = ("accept",) + (("edge_case",) if include_edge_case else ())
-    placeholders = ",".join("?" for _ in verdicts)
-    rows = conn.execute(
-        f"SELECT ref_id, doi, url FROM article_references "
-        f"WHERE stage2_verdict IN ({placeholders}) AND pdf_status IS NULL",
-        verdicts,
-    ).fetchall()
+    rows = conn.execute("SELECT * FROM v_acquisition_queue").fetchall()
 
-    counts = {"got": 0, "no_oa": 0, "scidownl_blocked": 0}
+    counts = {"queue": len(rows), "got": 0, "no_oa": 0,
+              "scidownl_blocked": 0, "scidownl_attempted": 0}
 
     for r in rows:
-        # Cascade
-        for fn, label, args in [
-            (try_unpaywall, "unpaywall", (r["doi"],)),
-            (try_s2,         "s2_pdf",   (r["doi"],)),
-            (try_publisher,  "publisher",(r["url"],)),
-        ]:
-            status, path = fn(*args)
+        ref_id, doi = r["reference_id"], r["doi"]
+        result = None
+        for fn in (try_unpaywall, try_openalex_oa):
+            status, path, src = fn(doi)
+            conn.execute(
+                "UPDATE article_references SET pdf_acquisition_attempts=pdf_acquisition_attempts+1, "
+                "pdf_acquisition_last_source=? WHERE reference_id=?", (src, ref_id))
+            log_transition(conn, reference_id=ref_id,
+                           from_stage="abstract_collected",
+                           to_stage=f"pdf_attempt:{src}",
+                           agent="pdf_acquirer", outcome=status,
+                           notes=f"source={src}")
             if status == "hit":
-                conn.execute("UPDATE article_references SET pdf_status='got', "
-                             "pdf_path=?, pdf_method=? WHERE ref_id=?",
-                             (path, label, r["ref_id"]))
-                counts["got"] += 1
-                break
-        else:
-            # All cascade steps missed — consider scidownl
-            ok, reason = scidownl_gate(
-                enable_flag=enable_scidownl, doi=r["doi"],
-                prior_cascade_exhausted=True,
-            )
+                result = (src, path); break
+
+        if result is None:
+            ok, reason = scidownl_gate(enable_flag=enable_scidownl,
+                                       doi=doi, prior_failed=True)
             if ok:
-                status, path = try_scidownl(r["doi"], pdf_dir)
+                status, path, _ = try_scidownl(doi, pdf_dir)
+                counts["scidownl_attempted"] += 1
+                conn.execute(
+                    "UPDATE article_references SET pdf_acquisition_attempts=pdf_acquisition_attempts+1, "
+                    "pdf_acquisition_last_source='scidownl' WHERE reference_id=?",
+                    (ref_id,))
+                log_transition(conn, reference_id=ref_id,
+                               from_stage="pdf_attempt:openalex_oa",
+                               to_stage="pdf_attempt:scidownl",
+                               agent="pdf_acquirer",
+                               outcome=status, notes="gate_open")
                 if status == "hit":
-                    conn.execute("UPDATE article_references SET pdf_status='got', "
-                                 "pdf_path=?, pdf_method='scidownl' WHERE ref_id=?",
-                                 (path, r["ref_id"]))
-                    counts["got"] += 1
+                    result = ("scidownl", path)
                 else:
-                    conn.execute("UPDATE article_references SET pdf_status='no_oa', "
-                                 "pdf_method='scidownl_attempted' WHERE ref_id=?",
-                                 (r["ref_id"],))
                     counts["no_oa"] += 1
             else:
-                conn.execute("UPDATE article_references SET pdf_status=?, "
-                             "pdf_method=? WHERE ref_id=?",
-                             ("scidownl_blocked" if reason != "no_doi" else "no_oa",
-                              f"gated:{reason}", r["ref_id"]))
-                if reason == "no_doi":
-                    counts["no_oa"] += 1
-                else:
-                    counts["scidownl_blocked"] += 1
+                conn.execute(
+                    "UPDATE article_references SET pdf_acquisition_last_source=? "
+                    "WHERE reference_id=?", (f"gated:{reason}", ref_id))
+                log_transition(conn, reference_id=ref_id,
+                               from_stage="pdf_attempt:openalex_oa",
+                               to_stage="pdf_attempt:scidownl",
+                               agent="pdf_acquirer", outcome="gated",
+                               notes=f"reason={reason}")
+                counts["scidownl_blocked"] += 1
+
+        if result is not None:
+            src, path = result
+            conn.execute(
+                "UPDATE article_references SET acquired_paper_id=?, pdf_path=?, "
+                "triage_stage='acquired', "
+                "updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') "
+                "WHERE reference_id=?",
+                (f"paper:{ref_id}", str(path) if path else None, ref_id))
+            log_transition(conn, reference_id=ref_id,
+                           from_stage="abstract_collected", to_stage="acquired",
+                           agent="pdf_acquirer", outcome="success",
+                           notes=f"final_source={src}")
+            counts["got"] += 1
 
     conn.commit()
-    conn.execute("UPDATE run_log SET finished_at=CURRENT_TIMESTAMP, n_in=?, n_out=?, "
-                 "notes=? WHERE run_id=?",
-                 (len(rows), counts["got"],
-                  json.dumps({**counts, "include_edge_case": include_edge_case,
-                              "scidownl_enabled": enable_scidownl}),
-                  run_id))
-    conn.commit()
-    conn.close()
+    conn.execute(
+        "UPDATE run_log SET finished_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'), "
+        "n_in=?, n_out=?, notes=? WHERE run_id=?",
+        (counts["queue"], counts["got"], json.dumps(counts), run_id))
+    conn.commit(); conn.close()
 
-    print(f"PDF acquisition over {len(rows)} candidates "
-          f"(verdicts={verdicts}):")
+    print(f"PDF acquisition (queue size={counts['queue']}):")
     for k, v in counts.items():
         print(f"  {k:<20} {v}")
-    print(f"  scidownl gate: {'OPEN' if enable_scidownl else 'CLOSED'} "
-          f"(--enable-scidownl + SCIDOWNL_USER_ACK=1 required)")
+    print(f"  scidownl gate: enable_flag={enable_scidownl} "
+          f"clearance_file={'YES' if POLICY_CLEARANCE.exists() else 'NO'}")
+    return counts
 
 
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--db", type=Path, default=DEFAULT_DB)
-    p.add_argument("--include-edge-case", action="store_true",
-                   help="Also attempt PDFs for EDGE_CASE rows")
     p.add_argument("--enable-scidownl", action="store_true",
-                   help="Open the scidownl gate (still requires SCIDOWNL_USER_ACK=1)")
-    p.add_argument("--pdf-dir", type=Path, default=PDF_DIR_DEFAULT)
+                   help="Open the scidownl gate (still requires policy_clearance.json)")
+    p.add_argument("--pdf-dir", type=Path, default=PDF_DIR)
     args = p.parse_args()
-    run(args.db, args.include_edge_case, args.enable_scidownl, args.pdf_dir)
+    run(args.db, args.enable_scidownl, args.pdf_dir)
 
 
 if __name__ == "__main__":

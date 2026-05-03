@@ -2,125 +2,134 @@
 """
 search_runner.py — Task 3 Phase 2.
 
-Reads `query_results.json`, runs the Boolean query for each gap against one or
-more search backends (SerpAPI primary, scholarly fallback, paper-scraper for
-backlog), and inserts every harvested record into `article_references` with
-full provenance.
+Reads `query_results.json`, runs the Boolean query for each gap against one of
+the four-scraper layer (rubric §2):
 
-Backends:
-  - serpapi    : requires SERPAPI_API_KEY env var (Google Scholar engine)
-  - scholarly  : python `scholarly` package, no key needed (rate-limited)
-  - mock       : built-in synthetic generator — produces realistic, deduplicable
-                 records so downstream stages can be exercised end-to-end without
-                 burning API quota or relying on network.
+    serpapi    primary       → discovered_via='serpapi_scholar'
+    scholarly  free fallback → discovered_via='scholarly_search'
+    paperscraper preprints   → discovered_via='paperscraper_search' (uses AI Citation form)
+    mock       offline demo  → discovered_via='mock_synthetic'
 
-Dedup key: doi if present, else sha1(lower(title))[:16].
+Every record lands in `article_references` (rubric §3 — cardinal rule).
+Dedupe-on-insert: existing rows have their `discovered_via` extended rather
+than being duplicated. SERPAPI_API_KEY is read from env ONLY — never logged or
+committed.
 
 Usage:
-    python3 search_runner.py --queries ../query_results.json --backend mock --top-n 10
-    python3 search_runner.py --queries ../query_results.json --backend serpapi --per-query 10
+    SERPAPI_API_KEY=xxx python3 search_runner.py --backend serpapi --top-n 10
+    python3 search_runner.py --backend mock --per-query 10 --top-n 10
 """
 
 from __future__ import annotations
 import argparse
+import datetime as dt
 import hashlib
 import json
 import os
 import random
+import re
 import sqlite3
 import sys
 import time
+import uuid
 from pathlib import Path
 from typing import Iterable
 
-from db_schema import open_db, DEFAULT_DB
+from db_schema import (open_db, DEFAULT_DB, normalize_doi, normalize_title,
+                       make_reference_id, log_transition)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_QUERIES = REPO_ROOT / "query_results.json"
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Dedup key
-# ─────────────────────────────────────────────────────────────────────────────
-def make_dedup_key(doi: str | None, title: str | None) -> str:
-    if doi:
-        return f"doi:{doi.strip().lower()}"
-    base = (title or "").strip().lower()
-    return "title:" + hashlib.sha1(base.encode("utf-8")).hexdigest()[:16]
+DOI_REGEX = re.compile(r"\b10\.\d{4,9}/[-._;()/:A-Z0-9]+\b", re.IGNORECASE)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Backends
+# DOI extraction (rubric Phase 2 — DOI extraction tested)
 # ─────────────────────────────────────────────────────────────────────────────
-def search_serpapi(query: str, n: int = 10) -> list[dict]:
-    """Google Scholar via SerpAPI. Requires SERPAPI_API_KEY env var."""
+def extract_doi(url: str | None, snippet: str | None = None) -> str | None:
+    for src in (url, snippet):
+        if not src:
+            continue
+        m = DOI_REGEX.search(src)
+        if m:
+            return normalize_doi(m.group(0))
+    return None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Backends — each returns a list[dict] of harvested records
+# ─────────────────────────────────────────────────────────────────────────────
+def search_serpapi(query: str, n: int = 10, **_kw) -> list[dict]:
     key = os.environ.get("SERPAPI_API_KEY")
     if not key:
-        raise RuntimeError("SERPAPI_API_KEY env var not set")
-    try:
-        import requests
-    except ImportError:
-        raise RuntimeError("requests package not installed; pip install requests")
-    params = {
-        "engine": "google_scholar",
-        "q": query,
-        "api_key": key,
-        "num": min(n, 20),
-        "hl": "en",
-    }
-    r = requests.get("https://serpapi.com/search.json", params=params, timeout=30)
+        raise RuntimeError("SERPAPI_API_KEY not set in env. Refusing to run.")
+    import requests
+    r = requests.get("https://serpapi.com/search.json",
+                     params={"engine": "google_scholar", "q": query,
+                             "api_key": key, "num": min(n, 20), "hl": "en"},
+                     timeout=30)
     r.raise_for_status()
-    data = r.json()
     out: list[dict] = []
-    for entry in data.get("organic_results", [])[:n]:
+    for entry in r.json().get("organic_results", [])[:n]:
         info = entry.get("publication_info", {}) or {}
         out.append({
             "title":   entry.get("title"),
-            "authors": [a.get("name") for a in info.get("authors", []) if a.get("name")],
-            "year":    _extract_year(info.get("summary", "")),
-            "venue":   info.get("summary", ""),
+            "snippet": entry.get("snippet"),
             "url":     entry.get("link"),
-            "doi":     None,  # SerpAPI doesn't return DOI directly
-            "abstract": entry.get("snippet"),
+            "doi":     extract_doi(entry.get("link"), entry.get("snippet")),
+            "authors": [a.get("name") for a in info.get("authors", []) if a.get("name")],
+            "year":    _year_from(info.get("summary", "")),
+            "venue":   info.get("summary", ""),
             "raw":     entry,
         })
     return out
 
 
-def search_scholarly(query: str, n: int = 10) -> list[dict]:
-    """Free fallback via the `scholarly` package (Google Scholar scraping)."""
-    try:
-        from scholarly import scholarly  # type: ignore
-    except ImportError:
-        raise RuntimeError("scholarly package not installed; pip install scholarly")
-    iterator = scholarly.search_pubs(query)
+def search_scholarly(query: str, n: int = 10, **_kw) -> list[dict]:
+    from scholarly import scholarly  # type: ignore
+    it = scholarly.search_pubs(query)
     out: list[dict] = []
     for _ in range(n):
-        try:
-            entry = next(iterator)
-        except StopIteration:
-            break
-        bib = entry.get("bib", {})
+        try: e = next(it)
+        except StopIteration: break
+        bib = e.get("bib", {})
         out.append({
             "title":   bib.get("title"),
+            "snippet": bib.get("abstract"),
+            "url":     e.get("pub_url"),
+            "doi":     extract_doi(e.get("pub_url"), bib.get("abstract")),
             "authors": bib.get("author", []),
-            "year":    int(bib["pub_year"]) if bib.get("pub_year", "").isdigit() else None,
+            "year":    int(bib["pub_year"]) if str(bib.get("pub_year","")).isdigit() else None,
             "venue":   bib.get("venue"),
-            "url":     entry.get("pub_url"),
-            "doi":     None,
-            "abstract": bib.get("abstract"),
-            "raw":     entry,
+            "raw":     e,
         })
-        time.sleep(1.5)  # be kind to Google
+        time.sleep(1.5)
     return out
 
 
-def search_mock(query: str, n: int = 10, *, gap_id: str = "") -> list[dict]:
-    """
-    Deterministic synthetic harvester. For each query produces:
-      - 60% on-topic empirical, 20% theoretical, 10% off-topic ML, 10% duplicates of earlier.
-    Uses gap_id as seed so output is stable across runs.
-    """
+def search_paperscraper(query_ai_citation: str, n: int = 10, **_kw) -> list[dict]:
+    """Preprint channel — uses the AI Citation natural-language form (rubric note)."""
+    try:
+        from paperscraper.pubmed import get_pubmed_papers  # type: ignore
+    except ImportError:
+        raise RuntimeError("paperscraper not installed; pip install paperscraper")
+    rows = get_pubmed_papers([query_ai_citation], "/tmp/_ps", n=n) or []
+    out: list[dict] = []
+    for r in rows[:n]:
+        out.append({
+            "title": r.get("title"), "snippet": r.get("abstract"),
+            "url": r.get("link"), "doi": normalize_doi(r.get("doi")),
+            "authors": r.get("authors", []),
+            "year": int(r["year"]) if str(r.get("year","")).isdigit() else None,
+            "venue": r.get("journal"), "raw": r,
+        })
+    return out
+
+
+def search_mock(query: str, n: int = 10, *, gap_id: str = "", **_kw) -> list[dict]:
+    """Deterministic synthetic generator. 60/20/10/10 mix.
+       Used only when --backend mock; never makes a network call."""
     rng = random.Random(hash(gap_id or query) & 0xFFFFFFFF)
     venues = ["Environment & Behavior", "Building & Environment", "J. Environ. Psychol.",
               "Frontiers in Psychology", "Sci. Rep.", "Nature Human Behaviour",
@@ -128,141 +137,221 @@ def search_mock(query: str, n: int = 10, *, gap_id: str = "") -> list[dict]:
     on_topic_terms = ["natural environment", "built environment", "indoor light",
                       "thermal comfort", "biophilic design", "circadian", "interoception",
                       "multisensory", "spatial memory", "olfactory", "social affiliation"]
+    outcome_terms = ["attention restoration", "directed attention", "stress recovery",
+                     "cognitive restoration", "attention performance", "focus"]
     out: list[dict] = []
     for i in range(n):
-        kind = rng.choices(["empirical", "theoretical", "ml", "dup"], weights=[6, 2, 1, 1])[0]
+        kind = rng.choices(["empirical", "theoretical", "ml", "dup"],
+                            weights=[6, 2, 1, 1])[0]
         year = rng.randint(2008, 2024)
         idx = rng.randint(1000, 9999)
         if kind == "ml":
-            title = f"Deep learning approach to {rng.choice(['ImageNet', 'NLP', 'GAN'])} ({idx})"
-            abstract = "Convolutional neural networks. Batch normalization. ImageNet."
-            doi = None
-            venue = rng.choice(["ICML Proceedings", "NeurIPS"])
+            title = f"Deep learning approach to {rng.choice(['ImageNet','NLP','GAN'])} ({idx})"
+            snippet = "Convolutional neural networks. Batch normalization. ImageNet."
+            doi, venue = None, rng.choice(["ICML Proceedings", "NeurIPS"])
         elif kind == "dup":
             title = f"Effects of {rng.choice(on_topic_terms)} on cognitive performance"
-            abstract = "Repeated study (synthetic duplicate)."
-            doi = None
-            venue = rng.choice(venues[:6])
+            snippet = "Repeated study (synthetic duplicate)."
+            doi, venue = None, rng.choice(venues[:6])
         else:
-            term = rng.choice(on_topic_terms)
+            term = rng.choice(on_topic_terms); outcome = rng.choice(outcome_terms)
             verb = "modulates" if kind == "empirical" else "may modulate"
-            title = (f"{term.capitalize()} {verb} attention and stress recovery "
-                     f"in adults: a {kind} study ({idx})")
-            abstract = (f"We investigated whether {term} influences attention restoration. "
-                        f"{'Randomized controlled trial with N=' + str(rng.randint(40, 220)) if kind == 'empirical' else 'Conceptual review'}. "
-                        f"Built environment, green space, biophilic design. p < 0.0{rng.randint(1,5)}.")
-            doi = f"10.1234/synth.{gap_id.lower()}.{i}.{idx}" if rng.random() > 0.3 else None
+            title = (f"{term.capitalize()} {verb} {outcome} in adults: "
+                     f"a {kind} study ({idx})")
+            snippet = (f"We investigated whether {term} influences {outcome}. "
+                       f"{'Randomized controlled trial with N=' + str(rng.randint(40,220)) if kind == 'empirical' else 'Conceptual review'}. "
+                       f"Built environment, green space, biophilic design, attention. "
+                       f"p < 0.0{rng.randint(1,5)}.")
+            doi = f"10.1234/synth.{(gap_id or 'x').lower()}.{i}.{idx}" if rng.random() > 0.3 else None
             venue = rng.choice(venues[:7])
         out.append({
-            "title":   title,
-            "authors": [f"Author {chr(65 + rng.randint(0,25))}.", f"Author {chr(65 + rng.randint(0,25))}."],
-            "year":    year,
-            "venue":   venue,
+            "title":   title, "snippet": snippet,
             "url":     f"https://example.org/paper/{idx}",
             "doi":     doi,
-            "abstract": abstract,
+            "authors": [f"Author {chr(65 + rng.randint(0,25))}.",
+                        f"Author {chr(65 + rng.randint(0,25))}."],
+            "year":    year, "venue": venue,
             "raw":     {"synthetic": True, "kind": kind},
         })
     return out
 
 
-def _extract_year(s: str) -> int | None:
-    import re
+def _year_from(s: str) -> int | None:
     m = re.search(r"\b(19|20)\d{2}\b", s or "")
     return int(m.group(0)) if m else None
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Insert with dedupe-on-insert
+# Insert with dedupe-on-insert (rubric §3B)
+#   - normalise DOI
+#   - if DOI matches existing row → UPDATE discovered_via to preserve provenance
+#   - else INSERT new row with reference_id = REF-YYYY-MM-DD-NNNNNN
 # ─────────────────────────────────────────────────────────────────────────────
-INSERT_SQL = """
-INSERT INTO article_references (
-    dedup_key, doi, title, authors, year, venue, url, abstract,
-    source, source_query, source_query_kind, gap_id, framework_id, voi_score, raw_payload
-) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-ON CONFLICT(dedup_key) DO NOTHING
-"""
+def _next_seq(conn: sqlite3.Connection) -> int:
+    today = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
+    row = conn.execute(
+        "SELECT COUNT(*) AS n FROM article_references WHERE reference_id LIKE ?",
+        (f"REF-{today}-%",)
+    ).fetchone()
+    return (row["n"] or 0) + 1
 
 
-def insert_records(conn: sqlite3.Connection, records: Iterable[dict],
-                   *, source: str, source_query: str, source_query_kind: str,
-                   gap_id: str, framework_id: str, voi_score: float) -> tuple[int, int]:
-    seen, inserted = 0, 0
-    for r in records:
-        seen += 1
-        key = make_dedup_key(r.get("doi"), r.get("title"))
-        cur = conn.execute(INSERT_SQL, (
-            key, r.get("doi"), r.get("title"),
-            json.dumps(r.get("authors") or []),
-            r.get("year"), r.get("venue"), r.get("url"), r.get("abstract"),
-            source, source_query, source_query_kind, gap_id, framework_id, voi_score,
-            json.dumps(r.get("raw") or {}),
-        ))
-        if cur.rowcount > 0:
-            inserted += 1
-    conn.commit()
-    return seen, inserted
+def insert_or_dedupe(conn: sqlite3.Connection, rec: dict, *,
+                     discovered_via: str, discovered_query: str,
+                     discovery_run_id: str, gap_template_id: str,
+                     voi_score: float) -> tuple[str, str]:
+    """Returns (reference_id, action) where action ∈ {'inserted','dedup_doi','dedup_title'}."""
+    doi = normalize_doi(rec.get("doi"))
+    title_raw = rec.get("title") or ""
+    title_norm = normalize_title(title_raw)
+
+    # Dedupe lookup
+    existing = None
+    if doi:
+        existing = conn.execute(
+            "SELECT reference_id, discovered_via FROM article_references WHERE doi = ?",
+            (doi,),
+        ).fetchone()
+        action = "dedup_doi"
+    if existing is None and title_norm:
+        existing = conn.execute(
+            "SELECT reference_id, discovered_via FROM article_references "
+            "WHERE title_normalized = ? AND (doi IS NULL OR doi = '')",
+            (title_norm,),
+        ).fetchone()
+        action = "dedup_title"
+
+    if existing is not None:
+        # Append channel to provenance only if not already present
+        prov = existing["discovered_via"]
+        if discovered_via not in prov.split(","):
+            prov = f"{prov},{discovered_via}"
+            conn.execute(
+                "UPDATE article_references SET discovered_via=?, "
+                "updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE reference_id=?",
+                (prov, existing["reference_id"]),
+            )
+        log_transition(conn, reference_id=existing["reference_id"],
+                       from_stage="metadata_only", to_stage="metadata_only",
+                       agent="search_runner", outcome="dedup",
+                       notes=f"merged provenance from {discovered_via}")
+        return existing["reference_id"], action
+
+    # New row
+    seq = _next_seq(conn)
+    ref_id = make_reference_id(seq)
+    authors = rec.get("authors") or []
+    first_author = ""
+    if authors:
+        a0 = authors[0] if isinstance(authors[0], str) else (authors[0].get("name") or "")
+        first_author = a0.split(",")[0].strip().split()[-1] if a0 else ""
+
+    conn.execute(
+        "INSERT INTO article_references (reference_id, doi, title_raw, title_normalized, "
+        "first_author_surname, publication_year, venue, discovered_via, "
+        "discovered_query, discovery_run_id, triage_stage, snippet, "
+        "gap_template_id, voi_score, raw_citation) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        (ref_id, doi, title_raw, title_norm, first_author,
+         rec.get("year"), rec.get("venue"), discovered_via,
+         discovered_query, discovery_run_id, "metadata_only",
+         rec.get("snippet"), gap_template_id, voi_score,
+         json.dumps(rec.get("raw") or {})),
+    )
+    log_transition(conn, reference_id=ref_id, from_stage=None,
+                   to_stage="metadata_only", agent="search_runner",
+                   outcome="success", notes=f"harvested via {discovered_via}")
+    return ref_id, "inserted"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Driver
 # ─────────────────────────────────────────────────────────────────────────────
+DISCOVERED_VIA = {
+    "serpapi": "serpapi_scholar", "scholarly": "scholarly_search",
+    "paperscraper": "paperscraper_search", "mock": "mock_synthetic",
+}
+
+
 def run(queries_path: Path, backend: str, per_query: int, top_n: int,
-        db_path: Path) -> None:
+        db_path: Path) -> dict:
     queries = json.loads(queries_path.read_text(encoding="utf-8"))[:top_n]
+    discovery_run_id = f"run-{uuid.uuid4().hex[:12]}"
     conn = open_db(db_path)
-    cur = conn.execute("INSERT INTO run_log(stage, n_in) VALUES ('search', ?)", (len(queries),))
-    run_id = cur.lastrowid
+    cur = conn.execute(
+        "INSERT INTO run_log (stage, n_in, notes) VALUES ('search', ?, ?)",
+        (len(queries), f"backend={backend} run_id={discovery_run_id}"))
+    run_log_id = cur.lastrowid
     conn.commit()
 
-    backend_fn = {"serpapi": search_serpapi, "scholarly": search_scholarly,
-                  "mock": search_mock}.get(backend)
-    if backend_fn is None:
-        print(f"ERROR: unknown backend {backend}", file=sys.stderr)
-        sys.exit(2)
+    fn = {"serpapi": search_serpapi, "scholarly": search_scholarly,
+          "paperscraper": search_paperscraper, "mock": search_mock}[backend]
+    via = DISCOVERED_VIA[backend]
 
-    total_seen = total_inserted = 0
+    counts = {"queries": len(queries), "harvested": 0,
+              "inserted": 0, "dedup_doi": 0, "dedup_title": 0,
+              "zero_results": 0, "errors": 0}
+
     for q in queries:
-        bool_q = q["boolean_query"]
-        gap_id = q["gap_id"]
-        kwargs = {"gap_id": gap_id} if backend == "mock" else {}
+        # paperscraper uses AI Citation form, others use Boolean
+        query_text = q["ai_citation_query"] if backend == "paperscraper" else q["boolean_query"]
         try:
-            recs = backend_fn(bool_q, per_query, **kwargs)  # type: ignore[arg-type]
+            recs = fn(query_text, per_query, gap_id=q["gap_id"])
         except Exception as e:
-            print(f"  [{gap_id}] backend error: {e}", file=sys.stderr)
+            print(f"  [{q['gap_id']:<35}] ERROR: {e}", file=sys.stderr)
+            counts["errors"] += 1
             continue
-        seen, ins = insert_records(
-            conn, recs,
-            source=backend, source_query=bool_q, source_query_kind="boolean",
-            gap_id=gap_id, framework_id=q.get("framework_id", ""),
-            voi_score=float(q.get("voi_score", 0.0)),
-        )
-        total_seen += seen
-        total_inserted += ins
-        print(f"  [{gap_id:<35}] harvested={seen:>3}  new={ins:>3}  ({backend})")
+        if not recs:
+            counts["zero_results"] += 1
+            print(f"  [{q['gap_id']:<35}] ZERO results")
+            continue
+        ins = dd_doi = dd_t = 0
+        for r in recs:
+            counts["harvested"] += 1
+            _, action = insert_or_dedupe(
+                conn, r, discovered_via=via,
+                discovered_query=query_text, discovery_run_id=discovery_run_id,
+                gap_template_id=q.get("gap_id", ""),
+                voi_score=float(q.get("voi_score", 0.0)))
+            if action == "inserted":   ins += 1; counts["inserted"] += 1
+            elif action == "dedup_doi": dd_doi += 1; counts["dedup_doi"] += 1
+            else:                       dd_t += 1; counts["dedup_title"] += 1
+        print(f"  [{q['gap_id']:<35}] harvested={len(recs):>3} new={ins:>3} "
+              f"dedup_doi={dd_doi} dedup_title={dd_t}")
+        conn.commit()
 
-    conn.execute("UPDATE run_log SET finished_at=CURRENT_TIMESTAMP, n_out=?, "
-                 "notes=? WHERE run_id=?",
-                 (total_inserted,
-                  f"backend={backend}; per_query={per_query}; total_seen={total_seen}",
-                  run_id))
+    conn.execute(
+        "UPDATE run_log SET finished_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'), "
+        "n_out=?, notes=? WHERE run_id=?",
+        (counts["inserted"], json.dumps(counts), run_log_id))
     conn.commit()
+
+    # Also dump raw search_results.json for the deliverable list
+    out_json = REPO_ROOT / "task3" / "data" / "search_results.json"
+    summary_rows = conn.execute(
+        "SELECT reference_id, doi, title_raw, discovered_via, discovered_query, "
+        "gap_template_id, voi_score, snippet FROM article_references "
+        "WHERE discovery_run_id = ?", (discovery_run_id,),
+    ).fetchall()
+    out_json.write_text(json.dumps([dict(r) for r in summary_rows], indent=2),
+                        encoding="utf-8")
+
     conn.close()
-    print(f"\nTotal: harvested={total_seen}, inserted (after dedupe)={total_inserted}")
+    print(f"\n{json.dumps(counts, indent=2)}")
+    print(f"Wrote raw harvest dump: {out_json}")
+    return counts
 
 
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--queries", type=Path, default=DEFAULT_QUERIES)
-    p.add_argument("--backend", choices=["serpapi", "scholarly", "mock"], default="mock")
+    p.add_argument("--backend", choices=list(DISCOVERED_VIA), default="mock")
     p.add_argument("--per-query", type=int, default=10)
     p.add_argument("--top-n", type=int, default=10)
     p.add_argument("--db", type=Path, default=DEFAULT_DB)
     args = p.parse_args()
-
     if not args.queries.exists():
-        print(f"ERROR: {args.queries} not found", file=sys.stderr)
-        sys.exit(1)
+        print(f"ERROR: {args.queries} not found", file=sys.stderr); sys.exit(1)
     run(args.queries, args.backend, args.per_query, args.top_n, args.db)
 
 

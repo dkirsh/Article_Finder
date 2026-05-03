@@ -1,13 +1,17 @@
 {
-  "identified": 96,
-  "removed_metadata": 5,
-  "screened": 91,
-  "missing_abstract": 0,
-  "reject_topic": 7,
-  "edge_case": 84,
+  "records_returned": 50,
+  "removed_at_metadata": 5,
+  "abstracts_collected": 45,
+  "missing_abstract": 1,
+  "screened_by_classifier": 44,
   "accept": 0,
-  "pdf_got": 0,
-  "pdf_blocked": 84,
-  "pdf_no_oa": 0,
-  "included": 84
+  "edge_case": 44,
+  "reject_topic": 0,
+  "pdf_acquired": 0,
+  "pdf_gated": 0,
+  "dedup_provenance_merges": 0,
+  "dedupe_skipped": 0,
+  "included": 44,
+  "queries_executed": 5,
+  "gaps_targeted": 5
 }

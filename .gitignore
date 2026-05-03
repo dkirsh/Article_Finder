@@ -14,3 +14,12 @@ data/
 zotero_export/
 new_claude_files_to_chase_articles/
 config/settings.local.yaml
+
+# Task 3 — never commit secrets or policy clearance
+.env
+.env.*
+serpapi.key
+*.serpapi
+policy_clearance.json
+task3/data/pdfs/
+task3/data/*.db
