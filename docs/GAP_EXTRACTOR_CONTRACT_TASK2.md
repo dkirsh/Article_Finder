@@ -67,7 +67,7 @@ Confidence mapping from `maturity` (analog to PNU `mechanism_chain.confidence`):
     "gap_type":         "mechanism_underpowered",
     "voi_score":        0.61,
     "missing_evidence": "Direct empirical measurement linking 'Interoceptive PE failure' to 'allostatic cascade' …",
-    "voi_explanation":  "voi=0.610 ← base=0.58 (1 - confidence=0.42), centrality+0.15 (cross-framework hub), temporal+0.08 (chronic/long cascade), coverage-0.46 (word_count=920)",
+    "voi_explanation":  "voi=0.610 ← base=0.58 (1 - confidence=0.42), centrality+0.15 (cross-framework hub), temporal+0.08 (chronic/long cascade), coverage-0.20 (word_count=920, clamped at 0.20)",
     "temporal":         "Chronic",
     "word_count":       920,
     "gap_id":           "INTERO-PP-ALLOSTASIS-001",

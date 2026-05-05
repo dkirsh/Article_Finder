@@ -201,8 +201,10 @@ def _clean_for_boolean(phrase: str, max_words: int = 4) -> str:
 def _evidence_type(gap: dict) -> str:
     temporal = (gap.get("temporal") or "").lower()
     fw = gap.get("framework_id", "")
+    # All return values are mass/singular noun phrases so the template
+    # "What {ev_type} shows that …" stays grammatical.
     if any(t in temporal for t in ("chronic", "years", "long")):
-        return "longitudinal studies"
+        return "longitudinal evidence"
     if fw in ("MS", "PP", "DT"):
         return "neuroimaging evidence"
     if fw in ("AL", "IC", "SC"):

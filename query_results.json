@@ -7,9 +7,9 @@
     "voi_score": 0.61,
     "confidence": 0.42,
     "gap_type": "mechanism_underpowered",
-    "ai_citation_query": "What longitudinal studies shows that architectural configuration exposure influences 'Architectural signaling of group identity' leading to 'Architectural signaling of group identity' in healthy adults, as predicted by social neuroscience and embodied cognition?",
+    "ai_citation_query": "What longitudinal evidence shows that architectural configuration exposure influences 'Architectural signaling of group identity' leading to 'Architectural signaling of group identity' in healthy adults, as predicted by social neuroscience and embodied cognition?",
     "boolean_query": "(\"Architectural signaling of group\" OR \"social cognition\") AND (\"architectural configuration\" OR \"social space\") AND (\"Architectural signaling of group\" OR \"group identity\") -review",
-    "query_rationale": "Targets longitudinal studies linking 'Architectural signaling of group identity' to 'Architectural signaling of group identity' within Cross-Framework. -review excludes narrative summaries to prioritise primary studies. VOI=0.610 (confidence=0.42).",
+    "query_rationale": "Targets longitudinal evidence linking 'Architectural signaling of group identity' to 'Architectural signaling of group identity' within Cross-Framework. -review excludes narrative summaries to prioritise primary studies. VOI=0.610 (confidence=0.42).",
     "what_is_missing": "Empirical grounding for 'Architectural signaling of group identity' (Cross-Framework, Chronic) is at the plausible stage; primary neurobiological or psychophysiological evidence is needed."
   },
   {
@@ -20,9 +20,9 @@
     "voi_score": 0.61,
     "confidence": 0.42,
     "gap_type": "mechanism_underpowered",
-    "ai_citation_query": "What longitudinal studies shows that thermal environment exposure influences 'Interoceptive PE failure' leading to 'allostatic cascade' in healthy adults, consistent with interoceptive predictive processing and Allostatic Load theory?",
+    "ai_citation_query": "What longitudinal evidence shows that thermal environment exposure influences 'Interoceptive PE failure' leading to 'allostatic cascade' in healthy adults, consistent with interoceptive predictive processing and Allostatic Load theory?",
     "boolean_query": "(\"Interoceptive PE failure\" OR \"interoception\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"allostatic cascade\" OR \"allostatic load\") -review",
-    "query_rationale": "Targets longitudinal studies linking 'Interoceptive PE failure' to 'allostatic cascade' within Cross-Framework. -review excludes narrative summaries to prioritise primary studies. VOI=0.610 (confidence=0.42).",
+    "query_rationale": "Targets longitudinal evidence linking 'Interoceptive PE failure' to 'allostatic cascade' within Cross-Framework. -review excludes narrative summaries to prioritise primary studies. VOI=0.610 (confidence=0.42).",
     "what_is_missing": "Direct empirical measurement linking 'Interoceptive PE failure' to 'allostatic cascade' in built-environment contexts (Chronic) is absent. The pathway is theorised within Cross-Framework but lacks grounding in primary human studies."
   },
   {

@@ -23,7 +23,11 @@ PRISMA_SQL = """
 SELECT
     COUNT(*)                                                                          AS records_returned,
     SUM(CASE WHEN triage_stage = 'rejected_at_metadata' THEN 1 ELSE 0 END)            AS removed_at_metadata,
-    SUM(CASE WHEN triage_stage IN ('abstract_collected','acquired') THEN 1 ELSE 0 END) AS abstracts_collected,
+    -- Only count rows with an abstract actually obtained (excludes MISSING_ABSTRACT
+    -- rows whose triage_stage is also 'abstract_collected'; otherwise this would
+    -- double-count with `missing_abstract` below).
+    SUM(CASE WHEN triage_stage IN ('abstract_collected','acquired')
+             AND abstract IS NOT NULL THEN 1 ELSE 0 END)                              AS abstracts_collected,
     SUM(CASE WHEN triage_decision = 'MISSING_ABSTRACT' THEN 1 ELSE 0 END)             AS missing_abstract,
     SUM(CASE WHEN triage_decision IN ('ACCEPT','EDGE_CASE','REJECT')
              AND triage_stage <> 'rejected_at_metadata' THEN 1 ELSE 0 END)            AS screened_by_classifier,

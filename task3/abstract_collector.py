@@ -26,6 +26,7 @@ Usage:
 
 from __future__ import annotations
 import argparse
+import os
 import sqlite3
 import sys
 import time
@@ -34,6 +35,13 @@ from pathlib import Path
 from db_schema import open_db, DEFAULT_DB, log_transition
 
 ABSTRACT_MIN_CHARS = 120
+
+# Polite-pool contact for CrossRef / OpenAlex. Override per deployment with
+# CONTACT_EMAIL env var; never commit a personal address as a default.
+CONTACT_EMAIL = os.environ.get(
+    "CONTACT_EMAIL", "cogs160-track2@knowledge-atlas.local"
+)
+USER_AGENT = f"ArticleFinderTrack2/1.0 (mailto:{CONTACT_EMAIL})"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -67,7 +75,7 @@ def fetch_crossref(doi: str | None) -> str | None:
     import requests
     try:
         r = requests.get(f"https://api.crossref.org/works/{doi}", timeout=15,
-                         headers={"User-Agent": "ArticleFinderTrack2/1.0 (mailto:dhruv@sood.me)"})
+                         headers={"User-Agent": USER_AGENT})
         if r.status_code == 200:
             msg = r.json().get("message", {})
             abstract = msg.get("abstract") or ""
@@ -103,7 +111,7 @@ def fetch_openalex(doi: str | None) -> str | None:
     import requests
     try:
         r = requests.get(f"https://api.openalex.org/works/doi:{doi}",
-                         params={"mailto": "dhruv@sood.me"}, timeout=15)
+                         params={"mailto": CONTACT_EMAIL}, timeout=15)
         if r.status_code != 200: return None
         inv = (r.json() or {}).get("abstract_inverted_index") or {}
         if not inv: return None

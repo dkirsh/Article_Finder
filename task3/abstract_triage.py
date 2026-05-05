@@ -56,9 +56,11 @@ ML_REJECT_PATTERNS = [
 
 def stage1_screen(title: str, year: int | None, min_year: int) -> tuple[str, list[str]]:
     reasons = []
+    # Match patterns case-insensitively so e.g. \bGAN\b catches the
+    # lowercase "gan" produced by .lower() above.
     t = (title or "").lower()
     for pat in ML_REJECT_PATTERNS:
-        if re.search(pat, t):
+        if re.search(pat, t, re.IGNORECASE):
             reasons.append(f"ml_jargon:{pat}")
     if year is not None and year < min_year:
         reasons.append(f"too_old:{year}<{min_year}")
