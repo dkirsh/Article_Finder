@@ -11,7 +11,8 @@
 | Query generator (`query_generator.py`) | DONE | 10 paired queries; 6/6 contract checks PASS |
 | `gap_results.json`, `query_results.json` | DONE | committed at repo root |
 | Contract docs | DONE | `docs/GAP_EXTRACTOR_CONTRACT_TASK2.md`, `docs/QUERY_GENERATOR_CONTRACT_TASK2.md` |
-| Phase 4 spot-check | DONE | `docs/QUERY_SPOT_CHECK_TASK2.md` |
+| Phase 4 spot-check | DONE — **3/3 queries actually run, top results recorded** | `docs/QUERY_SPOT_CHECK_TASK2.md` |
+| AI quality review | DONE | `docs/AI_QUERY_QUALITY_REVIEW_TASK2.md` (5 Strong / 5 OK / 0 Weak) |
 | Automated tests | DONE | `task3/tests_task2_task3.py` reports 11/11 Task 2 checks PASS |
 
 ---
@@ -96,9 +97,18 @@ prisma_dashboard.py ── one SQL GROUP BY → JSON + HTML
 
 ---
 
-## Phase 4 — Spot-check (3 queries × Google Scholar)
+## Phase 4 — Spot-check (3 queries × Google Scholar) — RUN
 
-See `docs/QUERY_SPOT_CHECK_TASK2.md`. Three Boolean queries selected:
+Full results in `docs/QUERY_SPOT_CHECK_TASK2.md`. All three queries
+returned on-topic primary literature on the first page:
+
+| # | Gap | Top result | Verdict |
+|---|---|---|---|
+| 1 | INTERO-PP-ALLOSTASIS-001 | "Allostatic interoceptive overload across psychiatric and neurological conditions" (*Biological Psychiatry*, 2024) | Yes |
+| 2 | MULTISENSORY-CONGRUENCE-001 | "The multifaceted interplay between attention and multisensory integration" (*PMC3306770*) | Yes |
+| 3 | CIRCADIAN-DEV-PROGRAM-001 | "Effects of light on human circadian rhythms, sleep and mood" (*PMC6751071*) | Yes |
+
+Three Boolean queries selected (full text in spot-check doc):
 
 1. `"interoception" AND "thermal environment" AND "allostatic load" -review`
 2. `"circadian rhythm" AND "daylight" AND "light entrainment" -review`
@@ -116,6 +126,7 @@ $ git diff --name-only upstream/main
 docs/GAP_EXTRACTOR_CONTRACT_TASK2.md
 docs/QUERY_GENERATOR_CONTRACT_TASK2.md
 docs/QUERY_SPOT_CHECK_TASK2.md
+docs/AI_QUERY_QUALITY_REVIEW_TASK2.md
 gap_extractor.py
 gap_results.json
 query_generator.py

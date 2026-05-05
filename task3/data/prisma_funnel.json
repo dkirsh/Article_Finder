@@ -1,17 +1,17 @@
 {
   "records_returned": 49,
   "removed_at_metadata": 5,
-  "abstracts_collected": 41,
-  "missing_abstract": 3,
-  "screened_by_classifier": 41,
+  "abstracts_collected": 37,
+  "missing_abstract": 7,
+  "screened_by_classifier": 37,
   "accept": 0,
-  "edge_case": 41,
+  "edge_case": 37,
   "reject_topic": 0,
   "pdf_acquired": 0,
   "pdf_gated": 0,
   "dedup_provenance_merges": 0,
   "dedupe_skipped": 1,
-  "included": 41,
+  "included": 37,
   "queries_executed": 5,
   "gaps_targeted": 5
 }
