@@ -227,20 +227,59 @@ def generate_ai_citation(gap: dict, fw_vocab: dict) -> str:
     env_terms = fw_vocab.get("env_terms", ["built environment"])
     env_cond = env_terms[0]
     theory = fw_vocab.get("theory_anchor", "in environment-behaviour research")
+    synonyms = fw_vocab.get("mechanism_synonyms", [])
 
-    # Build the sentence
-    query = (
-        f"What {ev_type} shows that {env_cond} exposure influences "
-        f"'{_clean_for_boolean(src, 6)}' leading to '{_clean_for_boolean(dst, 6)}' "
-        f"in healthy adults, {theory}?"
-    )
-    # Ensure minimum length — pad with a sub-question if short
+    src_phrase = _clean_for_boolean(src, 6)
+    dst_phrase = _clean_for_boolean(dst, 6)
+
+    # Mechanisms without a "→" separator give us src == dst, which produces
+    # the degenerate "X influences X leading to X" sentence. Fall back to:
+    #   IV = first synonym (or the env condition)
+    #   DV = the mechanism name as-is, framed as the outcome
+    if src_phrase == dst_phrase:
+        iv = synonyms[0] if synonyms else env_cond
+        # Phrase as "exposure to <env_cond> shapes <mechanism>" so the
+        # sentence stays grammatical even when the mechanism is a single
+        # noun phrase rather than a source→destination chain.
+        query = (
+            f"What {ev_type} shows that exposure to {env_cond} shapes "
+            f"'{_clean_for_boolean(gap['mechanism_name'], 6)}', and how does "
+            f"'{iv}' mediate the effect in healthy adults, {theory}?"
+        )
+    else:
+        query = (
+            f"What {ev_type} shows that {env_cond} exposure influences "
+            f"'{src_phrase}' leading to '{dst_phrase}' "
+            f"in healthy adults, {theory}?"
+        )
+
     if len(query) < 60:
         query = (
             f"What {ev_type} demonstrates that {env_cond} modulates "
             f"'{gap['mechanism_name'][:80]}' in humans, {theory}?"
         )
     return query
+
+
+def quality_flags(gap: dict, ai_q: str, bool_q: str) -> list[str]:
+    """Return the closed-set quality flags from the contract enum."""
+    flags: list[str] = []
+    src, dst = _parse_mechanism_parts(gap["mechanism_name"])
+    if src.strip().lower() == dst.strip().lower():
+        flags.append("degenerate_dv")
+    if not ai_q.endswith("?"):
+        flags.append("no_question_mark")
+    if len(ai_q) < 50:
+        flags.append("too_short")
+    if "OR " not in bool_q:
+        flags.append("no_synonyms")
+    if bool_q.count('"') < 2:
+        flags.append("single_term_only")
+    if len(bool_q) > 250:
+        flags.append("exceeds_length_limit")
+    if "-review" not in bool_q:
+        flags.append("no_review_filter")
+    return flags
 
 
 def generate_boolean(gap: dict, fw_vocab: dict) -> str:
@@ -285,12 +324,41 @@ def generate_rationale(gap: dict, fw_vocab: dict) -> str:
     )
 
 
-def generate_queries(gaps: list[dict], top_n: int) -> list[dict]:
+def _load_corpus_inventory(path: Path | None) -> set[str]:
+    """
+    Load DOIs / normalised titles from pdf_corpus_inventory/latest.csv if it
+    exists. Rubric: don't generate queries for papers already in the corpus.
+    Returns a set of identifiers (lowercase DOIs + lowercased title strings).
+    Returns an empty set + a stderr note when the file is absent — that is
+    the expected path on this checkout because the lifecycle DB is empty.
+    """
+    if path is None:
+        return set()
+    if not path.exists():
+        print(f"  (corpus-awareness) {path} not found → skipping corpus check",
+              file=sys.stderr)
+        return set()
+    import csv
+    out: set[str] = set()
+    with path.open(encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            doi = (row.get("doi") or "").strip().lower()
+            title = (row.get("title") or "").strip().lower()
+            if doi: out.add(doi)
+            if title: out.add(title)
+    print(f"  (corpus-awareness) loaded {len(out)} corpus entries from {path}",
+          file=sys.stderr)
+    return out
+
+
+def generate_queries(gaps: list[dict], top_n: int,
+                     corpus_inventory: set[str] | None = None) -> list[dict]:
+    corpus_inventory = corpus_inventory or set()
     results = []
     for gap in gaps[:top_n]:
         fw_id = gap.get("framework_id", "cross_framework")
         fw_vocab = dict(FRAMEWORK_VOCAB.get(fw_id, FRAMEWORK_VOCAB["cross_framework"]))
-        # Apply per-gap overrides for cross-framework mechanisms
         if fw_id == "cross_framework" and gap["gap_id"] in CROSS_FRAMEWORK_VOCAB_MAP:
             fw_vocab.update(CROSS_FRAMEWORK_VOCAB_MAP[gap["gap_id"]])
 
@@ -298,16 +366,36 @@ def generate_queries(gaps: list[dict], top_n: int) -> list[dict]:
         bool_q = generate_boolean(gap, fw_vocab)
         rationale = generate_rationale(gap, fw_vocab)
 
+        # Corpus-awareness flag: if the mechanism name happens to match a
+        # title already in CURRENT_GOLD, mark this query as
+        # `targets_owned_paper` so the search runner can skip it.
+        owned = gap["mechanism_name"].strip().lower() in corpus_inventory
+
+        flags = quality_flags(gap, ai_q, bool_q)
+        if owned:
+            flags.append("targets_owned_paper")
+
+        env_terms = fw_vocab.get("env_terms", [])
+        syns      = fw_vocab.get("mechanism_synonyms", [])
         results.append({
             "gap_id":           gap["gap_id"],
+            "template_id":      gap.get("template_id", gap["gap_id"]),
             "mechanism_name":   gap["mechanism_name"],
             "framework_id":     fw_id,
             "framework_name":   gap.get("framework_name", fw_vocab.get("name", "")),
             "voi_score":        gap["voi_score"],
             "confidence":       gap["confidence"],
             "gap_type":         gap.get("gap_type", ""),
+            "gap_summary":      f"{gap['mechanism_name']} ({fw_vocab.get('name','')}, {gap.get('maturity','')})",
             "ai_citation_query": ai_q,
             "boolean_query":    bool_q,
+            "query_terms": {
+                "environment_terms": list(env_terms[:3]),
+                "mechanism_terms":   [gap["mechanism_name"]] + list(syns[:1]),
+                "outcome_terms":     list(syns[1:3]),
+                "method_terms":      [_evidence_type(gap)],
+            },
+            "query_quality_flags": flags,
             "query_rationale":  rationale,
             "what_is_missing":  gap.get("what_is_missing", ""),
         })
@@ -340,6 +428,11 @@ def main() -> None:
     parser.add_argument("--gaps",   type=Path, default=DEFAULT_GAPS,   help="gap_results.json")
     parser.add_argument("--top-n",  type=int,  default=DEFAULT_TOP_N,  help="Top N gaps to query (default: 10)")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT, help="Output JSON path")
+    parser.add_argument("--corpus-inventory", type=Path,
+                        default=Path("pdf_corpus_inventory/latest.csv"),
+                        help="Optional CSV of papers already in the corpus; "
+                             "queries that target an owned paper are flagged "
+                             "with `targets_owned_paper`. Skipped if absent.")
     args = parser.parse_args()
 
     if not args.gaps.exists():
@@ -347,10 +440,11 @@ def main() -> None:
         sys.exit(1)
 
     gaps = json.loads(args.gaps.read_text(encoding="utf-8"))
+    corpus = _load_corpus_inventory(args.corpus_inventory)
     print(f"Loaded {len(gaps)} gaps from {args.gaps}")
     print(f"Generating queries for top {args.top_n} gaps by VOI score …\n")
 
-    results = generate_queries(gaps, args.top_n)
+    results = generate_queries(gaps, args.top_n, corpus_inventory=corpus)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
