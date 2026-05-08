@@ -1,0 +1,912 @@
+[
+  {
+    "reference_id": "REF-2026-05-08-000001",
+    "doi": null,
+    "title_raw": "Effects of indoor light on cognitive performance",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Architectural signaling of group\" OR \"social cognition\") AND (\"architectural configuration\" OR \"social space\") AND (\"Architectural signaling of group\" OR \"group identity\") -review",
+    "gap_template_id": "SOCIAL-AFFILIATION-002",
+    "voi_score": 0.61,
+    "snippet": "Repeated study (synthetic duplicate)."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000002",
+    "doi": "10.1234/synth.social-affiliation-002.1.7001",
+    "title_raw": "Biophilic design modulates attention restoration in adults: a empirical study (7001)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Architectural signaling of group\" OR \"social cognition\") AND (\"architectural configuration\" OR \"social space\") AND (\"Architectural signaling of group\" OR \"group identity\") -review",
+    "gap_template_id": "SOCIAL-AFFILIATION-002",
+    "voi_score": 0.61,
+    "snippet": "We investigated whether biophilic design influences attention restoration. Randomized controlled trial with N=41. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000003",
+    "doi": "10.1234/synth.social-affiliation-002.2.6689",
+    "title_raw": "Indoor light modulates directed attention in adults: a empirical study (6689)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Architectural signaling of group\" OR \"social cognition\") AND (\"architectural configuration\" OR \"social space\") AND (\"Architectural signaling of group\" OR \"group identity\") -review",
+    "gap_template_id": "SOCIAL-AFFILIATION-002",
+    "voi_score": 0.61,
+    "snippet": "We investigated whether indoor light influences directed attention. Randomized controlled trial with N=167. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000004",
+    "doi": "10.1234/synth.social-affiliation-002.3.1971",
+    "title_raw": "Indoor light modulates attention performance in adults: a empirical study (1971)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Architectural signaling of group\" OR \"social cognition\") AND (\"architectural configuration\" OR \"social space\") AND (\"Architectural signaling of group\" OR \"group identity\") -review",
+    "gap_template_id": "SOCIAL-AFFILIATION-002",
+    "voi_score": 0.61,
+    "snippet": "We investigated whether indoor light influences attention performance. Randomized controlled trial with N=139. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000005",
+    "doi": null,
+    "title_raw": "Effects of multisensory on cognitive performance",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Architectural signaling of group\" OR \"social cognition\") AND (\"architectural configuration\" OR \"social space\") AND (\"Architectural signaling of group\" OR \"group identity\") -review",
+    "gap_template_id": "SOCIAL-AFFILIATION-002",
+    "voi_score": 0.61,
+    "snippet": "Repeated study (synthetic duplicate)."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000006",
+    "doi": null,
+    "title_raw": "Deep learning approach to NLP (2988)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Architectural signaling of group\" OR \"social cognition\") AND (\"architectural configuration\" OR \"social space\") AND (\"Architectural signaling of group\" OR \"group identity\") -review",
+    "gap_template_id": "SOCIAL-AFFILIATION-002",
+    "voi_score": 0.61,
+    "snippet": "Convolutional neural networks. Batch normalization. ImageNet."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000007",
+    "doi": null,
+    "title_raw": "Effects of circadian on cognitive performance",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Architectural signaling of group\" OR \"social cognition\") AND (\"architectural configuration\" OR \"social space\") AND (\"Architectural signaling of group\" OR \"group identity\") -review",
+    "gap_template_id": "SOCIAL-AFFILIATION-002",
+    "voi_score": 0.61,
+    "snippet": "Repeated study (synthetic duplicate)."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000008",
+    "doi": null,
+    "title_raw": "Circadian modulates attention restoration in adults: a empirical study (4240)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Architectural signaling of group\" OR \"social cognition\") AND (\"architectural configuration\" OR \"social space\") AND (\"Architectural signaling of group\" OR \"group identity\") -review",
+    "gap_template_id": "SOCIAL-AFFILIATION-002",
+    "voi_score": 0.61,
+    "snippet": "We investigated whether circadian influences attention restoration. Randomized controlled trial with N=75. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000009",
+    "doi": "10.1234/synth.social-affiliation-002.8.5270",
+    "title_raw": "Circadian modulates cognitive restoration in adults: a empirical study (5270)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Architectural signaling of group\" OR \"social cognition\") AND (\"architectural configuration\" OR \"social space\") AND (\"Architectural signaling of group\" OR \"group identity\") -review",
+    "gap_template_id": "SOCIAL-AFFILIATION-002",
+    "voi_score": 0.61,
+    "snippet": "We investigated whether circadian influences cognitive restoration. Randomized controlled trial with N=155. Built environment, green space, biophilic design, attention. p < 0.05."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000010",
+    "doi": "10.1234/synth.social-affiliation-002.9.5984",
+    "title_raw": "Interoception modulates cognitive restoration in adults: a empirical study (5984)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Architectural signaling of group\" OR \"social cognition\") AND (\"architectural configuration\" OR \"social space\") AND (\"Architectural signaling of group\" OR \"group identity\") -review",
+    "gap_template_id": "SOCIAL-AFFILIATION-002",
+    "voi_score": 0.61,
+    "snippet": "We investigated whether interoception influences cognitive restoration. Randomized controlled trial with N=150. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000011",
+    "doi": null,
+    "title_raw": "Spatial memory may modulate cognitive restoration in adults: a theoretical study (9287)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Interoceptive PE failure\" OR \"interoception\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"allostatic cascade\" OR \"allostatic load\") -review",
+    "gap_template_id": "INTERO-PP-ALLOSTASIS-001",
+    "voi_score": 0.61,
+    "snippet": "We investigated whether spatial memory influences cognitive restoration. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000012",
+    "doi": "10.1234/synth.intero-pp-allostasis-001.2.7941",
+    "title_raw": "Thermal comfort may modulate focus in adults: a theoretical study (7941)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Interoceptive PE failure\" OR \"interoception\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"allostatic cascade\" OR \"allostatic load\") -review",
+    "gap_template_id": "INTERO-PP-ALLOSTASIS-001",
+    "voi_score": 0.61,
+    "snippet": "We investigated whether thermal comfort influences focus. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.05."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000013",
+    "doi": "10.1234/synth.intero-pp-allostasis-001.3.8554",
+    "title_raw": "Interoception modulates attention performance in adults: a empirical study (8554)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Interoceptive PE failure\" OR \"interoception\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"allostatic cascade\" OR \"allostatic load\") -review",
+    "gap_template_id": "INTERO-PP-ALLOSTASIS-001",
+    "voi_score": 0.61,
+    "snippet": "We investigated whether interoception influences attention performance. Randomized controlled trial with N=209. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000014",
+    "doi": null,
+    "title_raw": "Deep learning approach to GAN (4995)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Interoceptive PE failure\" OR \"interoception\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"allostatic cascade\" OR \"allostatic load\") -review",
+    "gap_template_id": "INTERO-PP-ALLOSTASIS-001",
+    "voi_score": 0.61,
+    "snippet": "Convolutional neural networks. Batch normalization. ImageNet."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000015",
+    "doi": "10.1234/synth.intero-pp-allostasis-001.5.3073",
+    "title_raw": "Indoor light modulates attention performance in adults: a empirical study (3073)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Interoceptive PE failure\" OR \"interoception\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"allostatic cascade\" OR \"allostatic load\") -review",
+    "gap_template_id": "INTERO-PP-ALLOSTASIS-001",
+    "voi_score": 0.61,
+    "snippet": "We investigated whether indoor light influences attention performance. Randomized controlled trial with N=216. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000016",
+    "doi": null,
+    "title_raw": "Effects of biophilic design on cognitive performance",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Interoceptive PE failure\" OR \"interoception\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"allostatic cascade\" OR \"allostatic load\") -review",
+    "gap_template_id": "INTERO-PP-ALLOSTASIS-001",
+    "voi_score": 0.61,
+    "snippet": "Repeated study (synthetic duplicate)."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000017",
+    "doi": null,
+    "title_raw": "Built environment modulates focus in adults: a empirical study (2713)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Interoceptive PE failure\" OR \"interoception\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"allostatic cascade\" OR \"allostatic load\") -review",
+    "gap_template_id": "INTERO-PP-ALLOSTASIS-001",
+    "voi_score": 0.61,
+    "snippet": "We investigated whether built environment influences focus. Randomized controlled trial with N=183. Built environment, green space, biophilic design, attention. p < 0.05."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000018",
+    "doi": "10.1234/synth.intero-pp-allostasis-001.8.7174",
+    "title_raw": "Built environment modulates directed attention in adults: a empirical study (7174)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Interoceptive PE failure\" OR \"interoception\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"allostatic cascade\" OR \"allostatic load\") -review",
+    "gap_template_id": "INTERO-PP-ALLOSTASIS-001",
+    "voi_score": 0.61,
+    "snippet": "We investigated whether built environment influences directed attention. Randomized controlled trial with N=86. Built environment, green space, biophilic design, attention. p < 0.05."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000019",
+    "doi": "10.1234/synth.social-acoustic-coupling-001.0.9443",
+    "title_raw": "Spatial memory modulates cognitive restoration in adults: a empirical study (9443)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Acoustic SNR \u00d7 sightline\" OR \"signal-to-noise ratio\") AND (\"acoustic environment\" OR \"multisensory environment\") AND (\"coupling\" OR \"neural coupling\") -review",
+    "gap_template_id": "SOCIAL-ACOUSTIC-COUPLING-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether spatial memory influences cognitive restoration. Randomized controlled trial with N=96. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000020",
+    "doi": "10.1234/synth.social-acoustic-coupling-001.1.1879",
+    "title_raw": "Multisensory modulates focus in adults: a empirical study (1879)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Acoustic SNR \u00d7 sightline\" OR \"signal-to-noise ratio\") AND (\"acoustic environment\" OR \"multisensory environment\") AND (\"coupling\" OR \"neural coupling\") -review",
+    "gap_template_id": "SOCIAL-ACOUSTIC-COUPLING-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether multisensory influences focus. Randomized controlled trial with N=122. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000021",
+    "doi": "10.1234/synth.social-acoustic-coupling-001.2.9928",
+    "title_raw": "Thermal comfort modulates cognitive restoration in adults: a empirical study (9928)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Acoustic SNR \u00d7 sightline\" OR \"signal-to-noise ratio\") AND (\"acoustic environment\" OR \"multisensory environment\") AND (\"coupling\" OR \"neural coupling\") -review",
+    "gap_template_id": "SOCIAL-ACOUSTIC-COUPLING-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether thermal comfort influences cognitive restoration. Randomized controlled trial with N=191. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000022",
+    "doi": null,
+    "title_raw": "Built environment may modulate attention restoration in adults: a theoretical study (7684)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Acoustic SNR \u00d7 sightline\" OR \"signal-to-noise ratio\") AND (\"acoustic environment\" OR \"multisensory environment\") AND (\"coupling\" OR \"neural coupling\") -review",
+    "gap_template_id": "SOCIAL-ACOUSTIC-COUPLING-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether built environment influences attention restoration. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000023",
+    "doi": null,
+    "title_raw": "Social affiliation modulates cognitive restoration in adults: a empirical study (6253)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Acoustic SNR \u00d7 sightline\" OR \"signal-to-noise ratio\") AND (\"acoustic environment\" OR \"multisensory environment\") AND (\"coupling\" OR \"neural coupling\") -review",
+    "gap_template_id": "SOCIAL-ACOUSTIC-COUPLING-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether social affiliation influences cognitive restoration. Randomized controlled trial with N=155. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000024",
+    "doi": "10.1234/synth.social-acoustic-coupling-001.6.4119",
+    "title_raw": "Thermal comfort modulates cognitive restoration in adults: a empirical study (4119)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Acoustic SNR \u00d7 sightline\" OR \"signal-to-noise ratio\") AND (\"acoustic environment\" OR \"multisensory environment\") AND (\"coupling\" OR \"neural coupling\") -review",
+    "gap_template_id": "SOCIAL-ACOUSTIC-COUPLING-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether thermal comfort influences cognitive restoration. Randomized controlled trial with N=212. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000025",
+    "doi": "10.1234/synth.social-acoustic-coupling-001.7.8662",
+    "title_raw": "Spatial memory modulates stress recovery in adults: a empirical study (8662)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Acoustic SNR \u00d7 sightline\" OR \"signal-to-noise ratio\") AND (\"acoustic environment\" OR \"multisensory environment\") AND (\"coupling\" OR \"neural coupling\") -review",
+    "gap_template_id": "SOCIAL-ACOUSTIC-COUPLING-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether spatial memory influences stress recovery. Randomized controlled trial with N=214. Built environment, green space, biophilic design, attention. p < 0.02."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000026",
+    "doi": null,
+    "title_raw": "Deep learning approach to GAN (7943)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Acoustic SNR \u00d7 sightline\" OR \"signal-to-noise ratio\") AND (\"acoustic environment\" OR \"multisensory environment\") AND (\"coupling\" OR \"neural coupling\") -review",
+    "gap_template_id": "SOCIAL-ACOUSTIC-COUPLING-001",
+    "voi_score": 0.53,
+    "snippet": "Convolutional neural networks. Batch normalization. ImageNet."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000027",
+    "doi": "10.1234/synth.social-acoustic-coupling-001.9.8486",
+    "title_raw": "Circadian may modulate attention performance in adults: a theoretical study (8486)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Acoustic SNR \u00d7 sightline\" OR \"signal-to-noise ratio\") AND (\"acoustic environment\" OR \"multisensory environment\") AND (\"coupling\" OR \"neural coupling\") -review",
+    "gap_template_id": "SOCIAL-ACOUSTIC-COUPLING-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether circadian influences attention performance. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.05."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000028",
+    "doi": null,
+    "title_raw": "Built environment modulates stress recovery in adults: a empirical study (7625)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Cross modal alignment\" OR \"cross-modal congruence\") AND (\"multisensory environment\" OR \"built environment\") AND (\"superadditivity\" OR \"superadditivity\") -review",
+    "gap_template_id": "MULTISENSORY-CONGRUENCE-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether built environment influences stress recovery. Randomized controlled trial with N=102. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000029",
+    "doi": null,
+    "title_raw": "Built environment may modulate stress recovery in adults: a theoretical study (9649)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Cross modal alignment\" OR \"cross-modal congruence\") AND (\"multisensory environment\" OR \"built environment\") AND (\"superadditivity\" OR \"superadditivity\") -review",
+    "gap_template_id": "MULTISENSORY-CONGRUENCE-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether built environment influences stress recovery. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000030",
+    "doi": "10.1234/synth.multisensory-congruence-001.3.5703",
+    "title_raw": "Social affiliation modulates attention restoration in adults: a empirical study (5703)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Cross modal alignment\" OR \"cross-modal congruence\") AND (\"multisensory environment\" OR \"built environment\") AND (\"superadditivity\" OR \"superadditivity\") -review",
+    "gap_template_id": "MULTISENSORY-CONGRUENCE-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether social affiliation influences attention restoration. Randomized controlled trial with N=112. Built environment, green space, biophilic design, attention. p < 0.02."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000031",
+    "doi": null,
+    "title_raw": "Built environment may modulate focus in adults: a theoretical study (4339)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Cross modal alignment\" OR \"cross-modal congruence\") AND (\"multisensory environment\" OR \"built environment\") AND (\"superadditivity\" OR \"superadditivity\") -review",
+    "gap_template_id": "MULTISENSORY-CONGRUENCE-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether built environment influences focus. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.05."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000032",
+    "doi": "10.1234/synth.multisensory-congruence-001.5.7933",
+    "title_raw": "Olfactory modulates focus in adults: a empirical study (7933)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Cross modal alignment\" OR \"cross-modal congruence\") AND (\"multisensory environment\" OR \"built environment\") AND (\"superadditivity\" OR \"superadditivity\") -review",
+    "gap_template_id": "MULTISENSORY-CONGRUENCE-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether olfactory influences focus. Randomized controlled trial with N=190. Built environment, green space, biophilic design, attention. p < 0.02."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000033",
+    "doi": "10.1234/synth.multisensory-congruence-001.6.2421",
+    "title_raw": "Indoor light modulates stress recovery in adults: a empirical study (2421)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Cross modal alignment\" OR \"cross-modal congruence\") AND (\"multisensory environment\" OR \"built environment\") AND (\"superadditivity\" OR \"superadditivity\") -review",
+    "gap_template_id": "MULTISENSORY-CONGRUENCE-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether indoor light influences stress recovery. Randomized controlled trial with N=113. Built environment, green space, biophilic design, attention. p < 0.02."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000034",
+    "doi": null,
+    "title_raw": "Effects of built environment on cognitive performance",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Cross modal alignment\" OR \"cross-modal congruence\") AND (\"multisensory environment\" OR \"built environment\") AND (\"superadditivity\" OR \"superadditivity\") -review",
+    "gap_template_id": "MULTISENSORY-CONGRUENCE-001",
+    "voi_score": 0.53,
+    "snippet": "Repeated study (synthetic duplicate)."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000035",
+    "doi": null,
+    "title_raw": "Deep learning approach to GAN (1877)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Cross modal alignment\" OR \"cross-modal congruence\") AND (\"multisensory environment\" OR \"built environment\") AND (\"superadditivity\" OR \"superadditivity\") -review",
+    "gap_template_id": "MULTISENSORY-CONGRUENCE-001",
+    "voi_score": 0.53,
+    "snippet": "Convolutional neural networks. Batch normalization. ImageNet."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000036",
+    "doi": "10.1234/synth.complexity-load-001.0.6731",
+    "title_raw": "Biophilic design modulates stress recovery in adults: a empirical study (6731)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Environmental complexity & cognitive\" OR \"prediction error\") AND (\"architectural space\" OR \"visual environment\") AND (\"Environmental complexity & cognitive\" OR \"cognitive load\") -review",
+    "gap_template_id": "COMPLEXITY-LOAD-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether biophilic design influences stress recovery. Randomized controlled trial with N=220. Built environment, green space, biophilic design, attention. p < 0.02."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000037",
+    "doi": "10.1234/synth.complexity-load-001.1.2776",
+    "title_raw": "Thermal comfort may modulate focus in adults: a theoretical study (2776)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Environmental complexity & cognitive\" OR \"prediction error\") AND (\"architectural space\" OR \"visual environment\") AND (\"Environmental complexity & cognitive\" OR \"cognitive load\") -review",
+    "gap_template_id": "COMPLEXITY-LOAD-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether thermal comfort influences focus. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000038",
+    "doi": "10.1234/synth.complexity-load-001.2.5232",
+    "title_raw": "Biophilic design modulates attention restoration in adults: a empirical study (5232)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Environmental complexity & cognitive\" OR \"prediction error\") AND (\"architectural space\" OR \"visual environment\") AND (\"Environmental complexity & cognitive\" OR \"cognitive load\") -review",
+    "gap_template_id": "COMPLEXITY-LOAD-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether biophilic design influences attention restoration. Randomized controlled trial with N=211. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000039",
+    "doi": null,
+    "title_raw": "Biophilic design modulates stress recovery in adults: a empirical study (4804)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Environmental complexity & cognitive\" OR \"prediction error\") AND (\"architectural space\" OR \"visual environment\") AND (\"Environmental complexity & cognitive\" OR \"cognitive load\") -review",
+    "gap_template_id": "COMPLEXITY-LOAD-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether biophilic design influences stress recovery. Randomized controlled trial with N=193. Built environment, green space, biophilic design, attention. p < 0.02."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000040",
+    "doi": "10.1234/synth.complexity-load-001.4.7810",
+    "title_raw": "Indoor light modulates stress recovery in adults: a empirical study (7810)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Environmental complexity & cognitive\" OR \"prediction error\") AND (\"architectural space\" OR \"visual environment\") AND (\"Environmental complexity & cognitive\" OR \"cognitive load\") -review",
+    "gap_template_id": "COMPLEXITY-LOAD-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether indoor light influences stress recovery. Randomized controlled trial with N=94. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000041",
+    "doi": null,
+    "title_raw": "Deep learning approach to NLP (9370)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Environmental complexity & cognitive\" OR \"prediction error\") AND (\"architectural space\" OR \"visual environment\") AND (\"Environmental complexity & cognitive\" OR \"cognitive load\") -review",
+    "gap_template_id": "COMPLEXITY-LOAD-001",
+    "voi_score": 0.53,
+    "snippet": "Convolutional neural networks. Batch normalization. ImageNet."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000042",
+    "doi": "10.1234/synth.complexity-load-001.7.2901",
+    "title_raw": "Circadian may modulate directed attention in adults: a theoretical study (2901)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Environmental complexity & cognitive\" OR \"prediction error\") AND (\"architectural space\" OR \"visual environment\") AND (\"Environmental complexity & cognitive\" OR \"cognitive load\") -review",
+    "gap_template_id": "COMPLEXITY-LOAD-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether circadian influences directed attention. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000043",
+    "doi": null,
+    "title_raw": "Deep learning approach to NLP (6679)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Environmental complexity & cognitive\" OR \"prediction error\") AND (\"architectural space\" OR \"visual environment\") AND (\"Environmental complexity & cognitive\" OR \"cognitive load\") -review",
+    "gap_template_id": "COMPLEXITY-LOAD-001",
+    "voi_score": 0.53,
+    "snippet": "Convolutional neural networks. Batch normalization. ImageNet."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000044",
+    "doi": null,
+    "title_raw": "Social affiliation modulates directed attention in adults: a empirical study (6429)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Environmental complexity & cognitive\" OR \"prediction error\") AND (\"architectural space\" OR \"visual environment\") AND (\"Environmental complexity & cognitive\" OR \"cognitive load\") -review",
+    "gap_template_id": "COMPLEXITY-LOAD-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether social affiliation influences directed attention. Randomized controlled trial with N=92. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000045",
+    "doi": "10.1234/synth.wayfinding-002.0.1887",
+    "title_raw": "Thermal comfort may modulate directed attention in adults: a theoretical study (1887)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Geometric coherence & route\" OR \"spatial memory\") AND (\"spatial environment\" OR \"architectural layout\") AND (\"Geometric coherence & route\" OR \"hippocampal encoding\") -review",
+    "gap_template_id": "WAYFINDING-002",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether thermal comfort influences directed attention. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000046",
+    "doi": null,
+    "title_raw": "Spatial memory may modulate directed attention in adults: a theoretical study (5241)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Geometric coherence & route\" OR \"spatial memory\") AND (\"spatial environment\" OR \"architectural layout\") AND (\"Geometric coherence & route\" OR \"hippocampal encoding\") -review",
+    "gap_template_id": "WAYFINDING-002",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether spatial memory influences directed attention. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000047",
+    "doi": "10.1234/synth.wayfinding-002.2.4428",
+    "title_raw": "Olfactory modulates attention performance in adults: a empirical study (4428)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Geometric coherence & route\" OR \"spatial memory\") AND (\"spatial environment\" OR \"architectural layout\") AND (\"Geometric coherence & route\" OR \"hippocampal encoding\") -review",
+    "gap_template_id": "WAYFINDING-002",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether olfactory influences attention performance. Randomized controlled trial with N=196. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000048",
+    "doi": null,
+    "title_raw": "Spatial memory modulates attention restoration in adults: a empirical study (2190)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Geometric coherence & route\" OR \"spatial memory\") AND (\"spatial environment\" OR \"architectural layout\") AND (\"Geometric coherence & route\" OR \"hippocampal encoding\") -review",
+    "gap_template_id": "WAYFINDING-002",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether spatial memory influences attention restoration. Randomized controlled trial with N=90. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000049",
+    "doi": "10.1234/synth.wayfinding-002.4.7973",
+    "title_raw": "Thermal comfort modulates attention performance in adults: a empirical study (7973)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Geometric coherence & route\" OR \"spatial memory\") AND (\"spatial environment\" OR \"architectural layout\") AND (\"Geometric coherence & route\" OR \"hippocampal encoding\") -review",
+    "gap_template_id": "WAYFINDING-002",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether thermal comfort influences attention performance. Randomized controlled trial with N=93. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000050",
+    "doi": "10.1234/synth.wayfinding-002.5.6499",
+    "title_raw": "Biophilic design modulates directed attention in adults: a empirical study (6499)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Geometric coherence & route\" OR \"spatial memory\") AND (\"spatial environment\" OR \"architectural layout\") AND (\"Geometric coherence & route\" OR \"hippocampal encoding\") -review",
+    "gap_template_id": "WAYFINDING-002",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether biophilic design influences directed attention. Randomized controlled trial with N=117. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000051",
+    "doi": "10.1234/synth.wayfinding-002.6.8218",
+    "title_raw": "Olfactory may modulate attention restoration in adults: a theoretical study (8218)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Geometric coherence & route\" OR \"spatial memory\") AND (\"spatial environment\" OR \"architectural layout\") AND (\"Geometric coherence & route\" OR \"hippocampal encoding\") -review",
+    "gap_template_id": "WAYFINDING-002",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether olfactory influences attention restoration. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.05."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000052",
+    "doi": "10.1234/synth.wayfinding-002.7.2312",
+    "title_raw": "Thermal comfort may modulate attention performance in adults: a theoretical study (2312)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Geometric coherence & route\" OR \"spatial memory\") AND (\"spatial environment\" OR \"architectural layout\") AND (\"Geometric coherence & route\" OR \"hippocampal encoding\") -review",
+    "gap_template_id": "WAYFINDING-002",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether thermal comfort influences attention performance. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000053",
+    "doi": "10.1234/synth.wayfinding-002.8.5720",
+    "title_raw": "Thermal comfort modulates attention restoration in adults: a empirical study (5720)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Geometric coherence & route\" OR \"spatial memory\") AND (\"spatial environment\" OR \"architectural layout\") AND (\"Geometric coherence & route\" OR \"hippocampal encoding\") -review",
+    "gap_template_id": "WAYFINDING-002",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether thermal comfort influences attention restoration. Randomized controlled trial with N=101. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000054",
+    "doi": "10.1234/synth.wayfinding-002.9.5845",
+    "title_raw": "Indoor light modulates directed attention in adults: a empirical study (5845)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Geometric coherence & route\" OR \"spatial memory\") AND (\"spatial environment\" OR \"architectural layout\") AND (\"Geometric coherence & route\" OR \"hippocampal encoding\") -review",
+    "gap_template_id": "WAYFINDING-002",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether indoor light influences directed attention. Randomized controlled trial with N=43. Built environment, green space, biophilic design, attention. p < 0.02."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000055",
+    "doi": "10.1234/synth.circadian-dev-program-001.0.3827",
+    "title_raw": "Indoor light modulates cognitive restoration in adults: a empirical study (3827)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Morning light\" OR \"circadian rhythm\") AND (\"daylight\" OR \"natural light\") AND (\"circadian calibration\" OR \"light entrainment\") -review",
+    "gap_template_id": "CIRCADIAN-DEV-PROGRAM-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether indoor light influences cognitive restoration. Randomized controlled trial with N=127. Built environment, green space, biophilic design, attention. p < 0.02."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000056",
+    "doi": "10.1234/synth.circadian-dev-program-001.1.4616",
+    "title_raw": "Indoor light modulates stress recovery in adults: a empirical study (4616)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Morning light\" OR \"circadian rhythm\") AND (\"daylight\" OR \"natural light\") AND (\"circadian calibration\" OR \"light entrainment\") -review",
+    "gap_template_id": "CIRCADIAN-DEV-PROGRAM-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether indoor light influences stress recovery. Randomized controlled trial with N=53. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000057",
+    "doi": null,
+    "title_raw": "Deep learning approach to ImageNet (3277)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Morning light\" OR \"circadian rhythm\") AND (\"daylight\" OR \"natural light\") AND (\"circadian calibration\" OR \"light entrainment\") -review",
+    "gap_template_id": "CIRCADIAN-DEV-PROGRAM-001",
+    "voi_score": 0.53,
+    "snippet": "Convolutional neural networks. Batch normalization. ImageNet."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000058",
+    "doi": "10.1234/synth.circadian-dev-program-001.3.5978",
+    "title_raw": "Spatial memory modulates focus in adults: a empirical study (5978)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Morning light\" OR \"circadian rhythm\") AND (\"daylight\" OR \"natural light\") AND (\"circadian calibration\" OR \"light entrainment\") -review",
+    "gap_template_id": "CIRCADIAN-DEV-PROGRAM-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether spatial memory influences focus. Randomized controlled trial with N=80. Built environment, green space, biophilic design, attention. p < 0.02."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000059",
+    "doi": "10.1234/synth.circadian-dev-program-001.4.5455",
+    "title_raw": "Biophilic design modulates cognitive restoration in adults: a empirical study (5455)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Morning light\" OR \"circadian rhythm\") AND (\"daylight\" OR \"natural light\") AND (\"circadian calibration\" OR \"light entrainment\") -review",
+    "gap_template_id": "CIRCADIAN-DEV-PROGRAM-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether biophilic design influences cognitive restoration. Randomized controlled trial with N=198. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000060",
+    "doi": "10.1234/synth.circadian-dev-program-001.6.8098",
+    "title_raw": "Built environment modulates attention restoration in adults: a empirical study (8098)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Morning light\" OR \"circadian rhythm\") AND (\"daylight\" OR \"natural light\") AND (\"circadian calibration\" OR \"light entrainment\") -review",
+    "gap_template_id": "CIRCADIAN-DEV-PROGRAM-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether built environment influences attention restoration. Randomized controlled trial with N=69. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000061",
+    "doi": "10.1234/synth.circadian-dev-program-001.7.8646",
+    "title_raw": "Built environment modulates focus in adults: a empirical study (8646)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Morning light\" OR \"circadian rhythm\") AND (\"daylight\" OR \"natural light\") AND (\"circadian calibration\" OR \"light entrainment\") -review",
+    "gap_template_id": "CIRCADIAN-DEV-PROGRAM-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether built environment influences focus. Randomized controlled trial with N=106. Built environment, green space, biophilic design, attention. p < 0.05."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000062",
+    "doi": null,
+    "title_raw": "Circadian modulates stress recovery in adults: a empirical study (6681)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Morning light\" OR \"circadian rhythm\") AND (\"daylight\" OR \"natural light\") AND (\"circadian calibration\" OR \"light entrainment\") -review",
+    "gap_template_id": "CIRCADIAN-DEV-PROGRAM-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether circadian influences stress recovery. Randomized controlled trial with N=196. Built environment, green space, biophilic design, attention. p < 0.02."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000063",
+    "doi": null,
+    "title_raw": "Multisensory modulates focus in adults: a empirical study (8750)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Morning light\" OR \"circadian rhythm\") AND (\"daylight\" OR \"natural light\") AND (\"circadian calibration\" OR \"light entrainment\") -review",
+    "gap_template_id": "CIRCADIAN-DEV-PROGRAM-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether multisensory influences focus. Randomized controlled trial with N=188. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000064",
+    "doi": "10.1234/synth.thermal-social-warmth-001.0.3607",
+    "title_raw": "Thermal comfort modulates attention performance in adults: a empirical study (3607)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Physical warmth\" OR \"embodied simulation\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"social warmth\" OR \"social warmth\") -review",
+    "gap_template_id": "THERMAL-SOCIAL-WARMTH-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether thermal comfort influences attention performance. Randomized controlled trial with N=73. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000065",
+    "doi": "10.1234/synth.thermal-social-warmth-001.1.8773",
+    "title_raw": "Interoception modulates stress recovery in adults: a empirical study (8773)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Physical warmth\" OR \"embodied simulation\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"social warmth\" OR \"social warmth\") -review",
+    "gap_template_id": "THERMAL-SOCIAL-WARMTH-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether interoception influences stress recovery. Randomized controlled trial with N=65. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000066",
+    "doi": "10.1234/synth.thermal-social-warmth-001.2.1193",
+    "title_raw": "Built environment modulates stress recovery in adults: a empirical study (1193)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Physical warmth\" OR \"embodied simulation\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"social warmth\" OR \"social warmth\") -review",
+    "gap_template_id": "THERMAL-SOCIAL-WARMTH-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether built environment influences stress recovery. Randomized controlled trial with N=140. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000067",
+    "doi": "10.1234/synth.thermal-social-warmth-001.3.6728",
+    "title_raw": "Multisensory may modulate attention performance in adults: a theoretical study (6728)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Physical warmth\" OR \"embodied simulation\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"social warmth\" OR \"social warmth\") -review",
+    "gap_template_id": "THERMAL-SOCIAL-WARMTH-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether multisensory influences attention performance. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000068",
+    "doi": "10.1234/synth.thermal-social-warmth-001.4.1379",
+    "title_raw": "Interoception may modulate stress recovery in adults: a theoretical study (1379)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Physical warmth\" OR \"embodied simulation\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"social warmth\" OR \"social warmth\") -review",
+    "gap_template_id": "THERMAL-SOCIAL-WARMTH-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether interoception influences stress recovery. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000069",
+    "doi": "10.1234/synth.thermal-social-warmth-001.5.7289",
+    "title_raw": "Natural environment modulates focus in adults: a empirical study (7289)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Physical warmth\" OR \"embodied simulation\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"social warmth\" OR \"social warmth\") -review",
+    "gap_template_id": "THERMAL-SOCIAL-WARMTH-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether natural environment influences focus. Randomized controlled trial with N=133. Built environment, green space, biophilic design, attention. p < 0.02."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000070",
+    "doi": null,
+    "title_raw": "Indoor light may modulate stress recovery in adults: a theoretical study (9489)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Physical warmth\" OR \"embodied simulation\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"social warmth\" OR \"social warmth\") -review",
+    "gap_template_id": "THERMAL-SOCIAL-WARMTH-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether indoor light influences stress recovery. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000071",
+    "doi": "10.1234/synth.thermal-social-warmth-001.7.1754",
+    "title_raw": "Interoception modulates attention performance in adults: a empirical study (1754)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Physical warmth\" OR \"embodied simulation\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"social warmth\" OR \"social warmth\") -review",
+    "gap_template_id": "THERMAL-SOCIAL-WARMTH-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether interoception influences attention performance. Randomized controlled trial with N=102. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000072",
+    "doi": "10.1234/synth.thermal-social-warmth-001.8.7912",
+    "title_raw": "Natural environment modulates directed attention in adults: a empirical study (7912)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Physical warmth\" OR \"embodied simulation\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"social warmth\" OR \"social warmth\") -review",
+    "gap_template_id": "THERMAL-SOCIAL-WARMTH-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether natural environment influences directed attention. Randomized controlled trial with N=214. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000073",
+    "doi": "10.1234/synth.thermal-social-warmth-001.9.9738",
+    "title_raw": "Social affiliation modulates attention restoration in adults: a empirical study (9738)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Physical warmth\" OR \"embodied simulation\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"social warmth\" OR \"social warmth\") -review",
+    "gap_template_id": "THERMAL-SOCIAL-WARMTH-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether social affiliation influences attention restoration. Randomized controlled trial with N=43. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000074",
+    "doi": null,
+    "title_raw": "Multisensory modulates cognitive restoration in adults: a empirical study (9667)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Safety cues & emotion\" OR \"stress recovery\") AND (\"natural environment\" OR \"restorative space\") AND (\"Safety cues & emotion\" OR \"amygdala response\") -review",
+    "gap_template_id": "EMOTION-REGULATION-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether multisensory influences cognitive restoration. Randomized controlled trial with N=99. Built environment, green space, biophilic design, attention. p < 0.05."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000075",
+    "doi": "10.1234/synth.emotion-regulation-001.1.5207",
+    "title_raw": "Natural environment modulates stress recovery in adults: a empirical study (5207)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Safety cues & emotion\" OR \"stress recovery\") AND (\"natural environment\" OR \"restorative space\") AND (\"Safety cues & emotion\" OR \"amygdala response\") -review",
+    "gap_template_id": "EMOTION-REGULATION-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether natural environment influences stress recovery. Randomized controlled trial with N=60. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000076",
+    "doi": null,
+    "title_raw": "Deep learning approach to GAN (8613)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Safety cues & emotion\" OR \"stress recovery\") AND (\"natural environment\" OR \"restorative space\") AND (\"Safety cues & emotion\" OR \"amygdala response\") -review",
+    "gap_template_id": "EMOTION-REGULATION-001",
+    "voi_score": 0.53,
+    "snippet": "Convolutional neural networks. Batch normalization. ImageNet."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000077",
+    "doi": null,
+    "title_raw": "Thermal comfort modulates focus in adults: a empirical study (7639)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Safety cues & emotion\" OR \"stress recovery\") AND (\"natural environment\" OR \"restorative space\") AND (\"Safety cues & emotion\" OR \"amygdala response\") -review",
+    "gap_template_id": "EMOTION-REGULATION-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether thermal comfort influences focus. Randomized controlled trial with N=217. Built environment, green space, biophilic design, attention. p < 0.05."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000078",
+    "doi": "10.1234/synth.emotion-regulation-001.4.5865",
+    "title_raw": "Interoception modulates attention performance in adults: a empirical study (5865)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Safety cues & emotion\" OR \"stress recovery\") AND (\"natural environment\" OR \"restorative space\") AND (\"Safety cues & emotion\" OR \"amygdala response\") -review",
+    "gap_template_id": "EMOTION-REGULATION-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether interoception influences attention performance. Randomized controlled trial with N=71. Built environment, green space, biophilic design, attention. p < 0.05."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000079",
+    "doi": null,
+    "title_raw": "Deep learning approach to NLP (3965)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Safety cues & emotion\" OR \"stress recovery\") AND (\"natural environment\" OR \"restorative space\") AND (\"Safety cues & emotion\" OR \"amygdala response\") -review",
+    "gap_template_id": "EMOTION-REGULATION-001",
+    "voi_score": 0.53,
+    "snippet": "Convolutional neural networks. Batch normalization. ImageNet."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000080",
+    "doi": "10.1234/synth.emotion-regulation-001.6.5779",
+    "title_raw": "Biophilic design modulates attention performance in adults: a empirical study (5779)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Safety cues & emotion\" OR \"stress recovery\") AND (\"natural environment\" OR \"restorative space\") AND (\"Safety cues & emotion\" OR \"amygdala response\") -review",
+    "gap_template_id": "EMOTION-REGULATION-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether biophilic design influences attention performance. Randomized controlled trial with N=72. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000081",
+    "doi": "10.1234/synth.emotion-regulation-001.7.1380",
+    "title_raw": "Interoception modulates stress recovery in adults: a empirical study (1380)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Safety cues & emotion\" OR \"stress recovery\") AND (\"natural environment\" OR \"restorative space\") AND (\"Safety cues & emotion\" OR \"amygdala response\") -review",
+    "gap_template_id": "EMOTION-REGULATION-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether interoception influences stress recovery. Randomized controlled trial with N=74. Built environment, green space, biophilic design, attention. p < 0.02."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000082",
+    "doi": null,
+    "title_raw": "Spatial memory modulates directed attention in adults: a empirical study (5519)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Safety cues & emotion\" OR \"stress recovery\") AND (\"natural environment\" OR \"restorative space\") AND (\"Safety cues & emotion\" OR \"amygdala response\") -review",
+    "gap_template_id": "EMOTION-REGULATION-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether spatial memory influences directed attention. Randomized controlled trial with N=216. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000083",
+    "doi": null,
+    "title_raw": "Thermal comfort may modulate attention restoration in adults: a theoretical study (8358)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Safety cues & emotion\" OR \"stress recovery\") AND (\"natural environment\" OR \"restorative space\") AND (\"Safety cues & emotion\" OR \"amygdala response\") -review",
+    "gap_template_id": "EMOTION-REGULATION-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether thermal comfort influences attention restoration. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000084",
+    "doi": "10.1234/synth.olfactory-spatial-memory-001.0.8551",
+    "title_raw": "Spatial memory modulates attention performance in adults: a empirical study (8551)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Scent tagged spatial encoding\" OR \"olfactory memory\") AND (\"indoor air quality\" OR \"olfactory environment\") AND (\"Scent tagged spatial encoding\" OR \"hippocampal binding\") -review",
+    "gap_template_id": "OLFACTORY-SPATIAL-MEMORY-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether spatial memory influences attention performance. Randomized controlled trial with N=143. Built environment, green space, biophilic design, attention. p < 0.02."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000085",
+    "doi": "10.1234/synth.olfactory-spatial-memory-001.2.6350",
+    "title_raw": "Biophilic design modulates attention performance in adults: a empirical study (6350)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Scent tagged spatial encoding\" OR \"olfactory memory\") AND (\"indoor air quality\" OR \"olfactory environment\") AND (\"Scent tagged spatial encoding\" OR \"hippocampal binding\") -review",
+    "gap_template_id": "OLFACTORY-SPATIAL-MEMORY-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether biophilic design influences attention performance. Randomized controlled trial with N=214. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000086",
+    "doi": null,
+    "title_raw": "Olfactory modulates attention restoration in adults: a empirical study (9629)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Scent tagged spatial encoding\" OR \"olfactory memory\") AND (\"indoor air quality\" OR \"olfactory environment\") AND (\"Scent tagged spatial encoding\" OR \"hippocampal binding\") -review",
+    "gap_template_id": "OLFACTORY-SPATIAL-MEMORY-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether olfactory influences attention restoration. Randomized controlled trial with N=98. Built environment, green space, biophilic design, attention. p < 0.05."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000087",
+    "doi": "10.1234/synth.olfactory-spatial-memory-001.4.7521",
+    "title_raw": "Thermal comfort may modulate attention restoration in adults: a theoretical study (7521)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Scent tagged spatial encoding\" OR \"olfactory memory\") AND (\"indoor air quality\" OR \"olfactory environment\") AND (\"Scent tagged spatial encoding\" OR \"hippocampal binding\") -review",
+    "gap_template_id": "OLFACTORY-SPATIAL-MEMORY-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether thermal comfort influences attention restoration. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.03."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000088",
+    "doi": "10.1234/synth.olfactory-spatial-memory-001.6.5832",
+    "title_raw": "Built environment modulates focus in adults: a empirical study (5832)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Scent tagged spatial encoding\" OR \"olfactory memory\") AND (\"indoor air quality\" OR \"olfactory environment\") AND (\"Scent tagged spatial encoding\" OR \"hippocampal binding\") -review",
+    "gap_template_id": "OLFACTORY-SPATIAL-MEMORY-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether built environment influences focus. Randomized controlled trial with N=52. Built environment, green space, biophilic design, attention. p < 0.05."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000089",
+    "doi": "10.1234/synth.olfactory-spatial-memory-001.7.6153",
+    "title_raw": "Multisensory may modulate directed attention in adults: a theoretical study (6153)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Scent tagged spatial encoding\" OR \"olfactory memory\") AND (\"indoor air quality\" OR \"olfactory environment\") AND (\"Scent tagged spatial encoding\" OR \"hippocampal binding\") -review",
+    "gap_template_id": "OLFACTORY-SPATIAL-MEMORY-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether multisensory influences directed attention. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.01."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000090",
+    "doi": "10.1234/synth.olfactory-spatial-memory-001.8.9124",
+    "title_raw": "Spatial memory may modulate focus in adults: a theoretical study (9124)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Scent tagged spatial encoding\" OR \"olfactory memory\") AND (\"indoor air quality\" OR \"olfactory environment\") AND (\"Scent tagged spatial encoding\" OR \"hippocampal binding\") -review",
+    "gap_template_id": "OLFACTORY-SPATIAL-MEMORY-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether spatial memory influences focus. Conceptual review. Built environment, green space, biophilic design, attention. p < 0.04."
+  },
+  {
+    "reference_id": "REF-2026-05-08-000091",
+    "doi": "10.1234/synth.olfactory-spatial-memory-001.9.6428",
+    "title_raw": "Built environment modulates cognitive restoration in adults: a empirical study (6428)",
+    "discovered_via": "mock_synthetic",
+    "discovered_query": "(\"Scent tagged spatial encoding\" OR \"olfactory memory\") AND (\"indoor air quality\" OR \"olfactory environment\") AND (\"Scent tagged spatial encoding\" OR \"hippocampal binding\") -review",
+    "gap_template_id": "OLFACTORY-SPATIAL-MEMORY-001",
+    "voi_score": 0.53,
+    "snippet": "We investigated whether built environment influences cognitive restoration. Randomized controlled trial with N=140. Built environment, green space, biophilic design, attention. p < 0.03."
+  }
+]

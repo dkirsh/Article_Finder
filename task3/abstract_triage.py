@@ -196,7 +196,34 @@ def run(db_path: Path, min_year: int, voi_threshold: float) -> dict:
         (counts["stage1_pass"] + counts["stage1_reject"],
          counts.get("ACCEPT", 0) + counts.get("EDGE_CASE", 0),
          json.dumps(counts), run_id))
-    conn.commit(); conn.close()
+    conn.commit()
+
+    # Export triage_results.json (rubric-required deliverable; per-row
+    # decisions with non-empty triage_reason).
+    rows_out = conn.execute(
+        "SELECT reference_id, title_raw AS title, doi, abstract_source, "
+        "       triage_decision, triage_reason, triage_confidence, "
+        "       voi_score, gap_template_id "
+        "FROM article_references WHERE triage_decision IS NOT NULL "
+        "ORDER BY voi_score DESC, reference_id ASC"
+    ).fetchall()
+    triage_export = [{
+        "reference_id": r["reference_id"],
+        "title": r["title"],
+        "doi": r["doi"],
+        "gap_id": r["gap_template_id"],
+        "classifier_topic": "Nature and Attention",
+        "classifier_confidence": r["triage_confidence"],
+        "voi_score": r["voi_score"],
+        "abstract_source": r["abstract_source"],
+        "triage_decision": r["triage_decision"],
+        "triage_reason": r["triage_reason"],
+        "triage_stage": "abstract_triage",
+    } for r in rows_out]
+    out_path = REPO_ROOT / "task3" / "data" / "triage_results.json"
+    out_path.write_text(json.dumps(triage_export, indent=2), encoding="utf-8")
+
+    conn.close()
 
     print("Triage results:")
     for k, v in counts.items():
