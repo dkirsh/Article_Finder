@@ -12,8 +12,8 @@ Cascade order (rubric §D):
   4. arXiv (if arxiv_id known)
   5. PubMed Central (if pmcid known)
   6. Publisher OA URL (only if upstream marked is_oa=True)
-
-No source 7 (CORE) yet — requires API key; left as a TODO behind a flag.
+  7. CORE (if CORE_API_KEY env var is set; otherwise skipped)
+  8. DOAJ (free; checks if the article's journal is OA-listed)
 """
 from __future__ import annotations
 import os
@@ -85,6 +85,27 @@ def resolve(record: dict, *, enable_network: bool = True) -> Optional[OALocation
             legal_oa_proof={"reason": "PMC open access"},
         )
 
+    # 6. Publisher OA URL — only if upstream marked is_oa and we still have a URL
+    if record.get("is_oa") and record.get("pdf_url"):
+        return OALocation(
+            pdf_url=record["pdf_url"],
+            source="publisher_oa",
+            license=record.get("oa_status"),
+            legal_oa_proof={"reason": "upstream record marked is_oa with pdf_url"},
+        )
+
+    # 7. CORE (gated on API key)
+    if doi:
+        loc = _core(doi)
+        if loc:
+            return loc
+
+    # 8. DOAJ (free; only fires when we have a DOI)
+    if doi:
+        loc = _doaj(doi)
+        if loc:
+            return loc
+
     return None
 
 
@@ -109,6 +130,62 @@ def _unpaywall(doi: str) -> Optional[OALocation]:
                         "host_type": best.get("host_type"),
                         "license": best.get("license")},
     )
+
+
+def _core(doi: str) -> Optional[OALocation]:
+    """CORE — only fires if CORE_API_KEY is set. CORE returns OA full-text where
+    aggregators have a license-clean copy of the manuscript."""
+    key = os.environ.get("CORE_API_KEY")
+    if not key:
+        return None
+    try:
+        data = http_get_json(
+            "https://api.core.ac.uk/v3/search/works",
+            params={"q": f"doi:{doi}", "limit": 1},
+            headers={"Authorization": f"Bearer {key}"},
+        )
+    except Exception:
+        return None
+    results = (data or {}).get("results") or []
+    for r in results:
+        pdf = r.get("downloadUrl") or r.get("fullTextLink")
+        # CORE returns license metadata; only accept if it's an open license
+        lic = (r.get("license") or "").lower()
+        if pdf and ("cc-" in lic or "open" in lic or "public" in lic):
+            return OALocation(
+                pdf_url=pdf,
+                source="core",
+                license=r.get("license"),
+                legal_oa_proof={"core_id": r.get("id"), "license": r.get("license")},
+            )
+    return None
+
+
+def _doaj(doi: str) -> Optional[OALocation]:
+    """DOAJ — Directory of Open Access Journals. Free, no key. We confirm the
+    paper sits in a DOAJ-listed (= fully OA) journal; if it does, we still need
+    a publisher OA URL (DOAJ stores article-level URLs when present)."""
+    try:
+        data = http_get_json(f"https://doaj.org/api/search/articles/doi:{doi}",
+                              params={"pageSize": 1})
+    except Exception:
+        return None
+    hits = (data or {}).get("results") or []
+    for h in hits:
+        bib = (h.get("bibjson") or {})
+        links = bib.get("link") or []
+        for link in links:
+            if (link.get("type") in ("fulltext", "pdf")
+                    and link.get("url", "").lower().endswith(".pdf")):
+                return OALocation(
+                    pdf_url=link["url"],
+                    source="doaj",
+                    license=(bib.get("journal") or {}).get("license", [{}])[0].get("type")
+                            if bib.get("journal") else None,
+                    legal_oa_proof={"doaj_id": h.get("id"),
+                                    "in_doaj_journal": True},
+                )
+    return None
 
 
 def _europe_pmc(doi: str) -> Optional[OALocation]:

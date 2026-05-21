@@ -24,6 +24,9 @@ from typing import Any, Dict, List
 from .search.openalex import OpenAlexBackend
 from .search.crossref import CrossrefBackend
 from .search.arxiv import ArxivBackend
+from .search.semantic_scholar import SemanticScholarBackend
+from .search.pubmed import PubmedBackend
+from .search.europe_pmc import EuropePmcBackend
 from .dedup.deduplicator import deduplicate
 from .pdf.downloader import download_pdf
 from .ranking.scorer import rank_records
@@ -32,9 +35,12 @@ from .ai.abstract_triage import triage
 from .export.handoff import write_handoff
 
 BACKENDS = {
-    "openalex": OpenAlexBackend,
-    "crossref": CrossrefBackend,
-    "arxiv":    ArxivBackend,
+    "openalex":         OpenAlexBackend,
+    "crossref":         CrossrefBackend,
+    "arxiv":            ArxivBackend,
+    "semantic_scholar": SemanticScholarBackend,
+    "pubmed":           PubmedBackend,
+    "europe_pmc":       EuropePmcBackend,
 }
 
 

@@ -22,8 +22,9 @@ class OpenAlexBackend:
         params = {
             "search": query,
             "per-page": min(max_results, 50),
-            "select": "id,doi,title,publication_year,host_venue,authorships,abstract_inverted_index,"
-                      "open_access,primary_location,cited_by_count",
+            # NOTE: OpenAlex deprecated `host_venue` — use primary_location.source.
+            "select": "id,doi,title,publication_year,primary_location,authorships,"
+                      "abstract_inverted_index,open_access,cited_by_count",
         }
         if self.mailto:
             params["mailto"] = self.mailto
@@ -46,7 +47,9 @@ class OpenAlexBackend:
                    for a in (w.get("authorships") or []) if a.get("author")]
         oa = w.get("open_access") or {}
         prim = w.get("primary_location") or {}
-        venue = (w.get("host_venue") or {}).get("display_name")
+        # OpenAlex now nests venue under primary_location.source
+        venue = ((prim.get("source") or {}).get("display_name")
+                 or (w.get("host_venue") or {}).get("display_name"))
         abstract = self._reconstruct_abstract(w.get("abstract_inverted_index"))
         return {
             "canonical_id": f"openalex:{oa_id}" if oa_id else (f"doi:{doi}" if doi else None),
