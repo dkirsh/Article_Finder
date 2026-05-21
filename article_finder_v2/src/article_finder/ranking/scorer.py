@@ -50,7 +50,7 @@ def _citation_signal(c: int | None) -> float:
 def _recency(year: int | None) -> float:
     if not year:
         return 0.0
-    now = dt.datetime.utcnow().year
+    now = dt.datetime.now(dt.timezone.utc).year
     age = max(0, now - int(year))
     # Anything ≤ 1 year old → 1.0; linear decay to 0 at 25 years.
     return max(0.0, 1.0 - (age / 25))

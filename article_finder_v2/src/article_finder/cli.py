@@ -62,7 +62,7 @@ def cmd_search(args) -> int:
     all_records: List[Dict[str, Any]] = []
     query_log: List[Dict[str, Any]] = [{
         "stage": "plan",
-        "timestamp": dt.datetime.utcnow().isoformat() + "Z",
+        "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
         "gap": gap_text,
         "plan": plan.to_log(),
     }]
@@ -83,7 +83,7 @@ def cmd_search(args) -> int:
                 qr = backend.search(q, max_results=args.max_results)
             query_log.append({
                 "stage": "search",
-                "timestamp": dt.datetime.utcnow().isoformat() + "Z",
+                "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
                 "source": qr.source,
                 "query": qr.query,
                 "n_results": qr.n_results,
