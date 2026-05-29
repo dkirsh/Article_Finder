@@ -100,6 +100,35 @@ check("no Boolean is bare comma list",
       all("," not in q["boolean_query"].replace('","', "").replace('", "', "")
           for q in queries))
 
+# --- query_quality_flags closed-enum coverage (was untested) -------------
+# The contract defines a closed set of 8 flags; prove (a) a clean query trips
+# none, (b) a deliberately bad query trips all of them, and (c) the function
+# never emits a flag outside the closed enum.
+QUALITY_ENUM = {
+    "degenerate_dv", "no_question_mark", "too_short", "no_synonyms",
+    "single_term_only", "exceeds_length_limit", "no_review_filter",
+}
+_clean_gap = {"mechanism_name": "Daylight exposure → Alertness"}
+_clean_ai = "What experimental evidence shows that daylight exposure modulates alertness in humans?"
+_clean_bool = '"daylight exposure" AND "alertness" OR "vigilance" -review'
+_clean = set(qg.quality_flags(_clean_gap, _clean_ai, _clean_bool))
+check("query_quality_flags: clean query trips no flags",
+      _clean == set(), f"got {_clean}")
+
+_bad_gap = {"mechanism_name": "Selfloop"}        # no arrow -> src==dst -> degenerate
+_bad_ai = "too short"                              # <50 chars, no '?'
+_bad_bool = "x" + " y" * 130                       # >250 chars, no OR, 0 quotes, no -review
+_bad = set(qg.quality_flags(_bad_gap, _bad_ai, _bad_bool))
+check("query_quality_flags: all 7 flags fire on a deliberately bad query",
+      _bad == QUALITY_ENUM, f"got {_bad}; missing {QUALITY_ENUM - _bad}")
+
+# Across the real generated queries, no flag escapes the closed enum.
+_seen = set()
+for q in queries:
+    _seen |= set(q.get("query_quality_flags", []))
+check("query_quality_flags: real queries emit only closed-enum values",
+      _seen <= QUALITY_ENUM, f"out-of-enum: {_seen - QUALITY_ENUM}")
+
 # ─────────────────────────────────────────────────────────────────────────────
 # TASK 3
 # ─────────────────────────────────────────────────────────────────────────────
