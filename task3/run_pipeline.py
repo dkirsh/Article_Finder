@@ -11,6 +11,7 @@ Runs every stage in order against a fresh DB:
     4. abstract_triage.py   (Stage 2B — classifier decision)
     5. pdf_acquirer.py      (Stage 3 — only ACCEPT rows)
     6. prisma_dashboard.py
+    7. ae_handoff.py        (LAST MILE — write data/handoff/*.json for ACCEPT rows)
 """
 from __future__ import annotations
 import argparse, subprocess, sys
@@ -56,8 +57,10 @@ def main() -> None:
     if args.enable_scidownl: cmd_pdf.append("--enable-scidownl")
     step("5. PDF cascade (Stage 3)", cmd_pdf)
     step("6. PRISMA dashboard", [py, "prisma_dashboard.py"])
+    step("7. Article Eater handoff (last mile)", [py, "ae_handoff.py"])
 
     print("\n✓ Pipeline complete. See task3/data/prisma_dashboard.html")
+    print("  Handoff artefacts (ACCEPT only): task3/data/handoff/*.json")
 
 
 if __name__ == "__main__":

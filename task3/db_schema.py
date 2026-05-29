@@ -135,6 +135,22 @@ CREATE TABLE IF NOT EXISTS run_log (
     n_out       INTEGER,
     notes       TEXT
 );
+
+
+-- ============================================================================
+-- handoff_log: the Track 2 -> Article Eater last mile (rubric ka_track2_setup
+-- .html:101-102 — AF "writes a well-defined handoff artefact data/handoff/*.json
+-- that the Eater reads"). One row per artefact written by ae_handoff.py.
+-- UNIQUE(reference_id) enforces idempotency: a paper is handed off at most once.
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS handoff_log (
+    handoff_id      TEXT PRIMARY KEY,                     -- HANDOFF-<8 hex>
+    reference_id    TEXT NOT NULL UNIQUE,                 -- idempotency key
+    artefact_path   TEXT NOT NULL,                        -- data/handoff/<reference_id>.json
+    handoff_status  TEXT NOT NULL,                        -- written
+    created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+    FOREIGN KEY (reference_id) REFERENCES article_references(reference_id)
+);
 """
 
 
