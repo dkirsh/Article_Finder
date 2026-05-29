@@ -214,6 +214,56 @@ check("PRISMA accept count matches manual GROUP BY",
 check("PRISMA edge_case count matches manual GROUP BY",
       prisma["edge_case"] == manual["edge"])
 
+# --- Finding 8: PRISMA was only spot-checked on 2 of 15 fields. Extend to
+# the full decision-bucket set + the definitional identity + completeness. ---
+check("PRISMA funnel exposes all 15 fields",
+      len(prisma) == 15, f"len={len(prisma)}: {sorted(prisma)}")
+check("PRISMA identity: included == accept + edge_case",
+      prisma["included"] == prisma["accept"] + prisma["edge_case"],
+      f'{prisma["included"]} vs {prisma["accept"]}+{prisma["edge_case"]}')
+man2 = conn.execute(
+    "SELECT "
+    "SUM(triage_decision='MISSING_ABSTRACT') AS miss, "
+    "SUM(triage_decision='REJECT' AND triage_stage<>'rejected_at_metadata') AS rej_topic, "
+    "SUM(triage_stage='rejected_at_metadata') AS rem_meta "
+    "FROM article_references"
+).fetchone()
+check("PRISMA missing_abstract matches manual GROUP BY",
+      prisma["missing_abstract"] == (man2["miss"] or 0),
+      f'{prisma["missing_abstract"]} vs {man2["miss"]}')
+check("PRISMA reject_topic matches manual GROUP BY",
+      prisma["reject_topic"] == (man2["rej_topic"] or 0),
+      f'{prisma["reject_topic"]} vs {man2["rej_topic"]}')
+check("PRISMA removed_at_metadata matches manual GROUP BY",
+      prisma["removed_at_metadata"] == (man2["rem_meta"] or 0),
+      f'{prisma["removed_at_metadata"]} vs {man2["rem_meta"]}')
+# Disjoint buckets (each row has exactly one triage_decision; reject_topic and
+# removed_at_metadata are mutually exclusive) must sum within records_returned.
+_bucket_sum = (prisma["accept"] + prisma["edge_case"] + prisma["missing_abstract"]
+               + prisma["reject_topic"] + prisma["removed_at_metadata"])
+check("PRISMA decision buckets disjoint & within records_returned",
+      _bucket_sum <= prisma["records_returned"],
+      f'sum={_bucket_sum} > records={prisma["records_returned"]}')
+
+# --- Finding 7: lifecycle_transitions was never read by any test. ----------
+lt_n = conn.execute("SELECT COUNT(*) n FROM lifecycle_transitions").fetchone()["n"]
+check("lifecycle_transitions is populated", lt_n > 0, f"n={lt_n}")
+lt_agents = {r["agent"] for r in conn.execute(
+    "SELECT DISTINCT agent FROM lifecycle_transitions").fetchall()}
+check("lifecycle_transitions logged by search_runner + abstract_collector",
+      {"search_runner", "abstract_collector"}.issubset(lt_agents),
+      f"agents={sorted(lt_agents)}")
+# Every row that reached a triage_decision must have at least one transition
+# logged — proves the state machine is audited, not just asserted in prose.
+orphans = conn.execute(
+    "SELECT COUNT(*) n FROM article_references ar "
+    "WHERE ar.triage_decision IS NOT NULL "
+    "AND NOT EXISTS (SELECT 1 FROM lifecycle_transitions lt "
+    "                WHERE lt.reference_id = ar.reference_id)"
+).fetchone()["n"]
+check("every decided reference_id has >=1 lifecycle transition",
+      orphans == 0, f"orphans={orphans}")
+
 conn.close()
 
 # ─────────────────────────────────────────────────────────────────────────────
