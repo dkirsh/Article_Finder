@@ -14,10 +14,52 @@ should be able to read each section and run the listed test that proves it.
 | `scripts/coordination/lifecycle/schema.sql` | DDL referenced in rubric | re-implemented in `db_schema.py::SCHEMA_SQL` | File not present on this checkout. Schema mirrors the rubric §3A spec verbatim. |
 | Search backends | SerpAPI primary + scholarly + paper-scraper + scidownl | all four wired; default demo run uses `mock` (deterministic, offline) | Real SerpAPI/scholarly/paperscraper calls work but cost credits. The mock backend produces a 60/20/10/10 mix so dedupe + Stage 1 + Stage 2 all exercise real branches. |
 | `atlas_shared` constitutions | full constitution catalogue | only `SQ-ART-001 Nature & Attention` ships in `question_constitutions_starter.json` | data limitation; not a code limitation. Adding more constitutions changes verdicts without code changes. |
+| **Article Eater handoff sink** | `data/handoff/*.json` read by the Eater (rubric `ka_track2_setup.html:101-102`: *"The Finder writes a well-defined handoff artefact (`data/handoff/*.json`) that the Eater reads; the contract between them is the only thing Track 2 needs to honour."*) | local writer `task3/ae_handoff.py` → `task3/data/handoff/<reference_id>.json`, plus a dedup probe `probe_pdf_against_article_eater()` that queries the local `pdf_identity_inventory` / corpus tables | The Eater repo and its inbox path live on the instructor VM, absent on this checkout. AF honors the **named contract** (the `data/handoff/*.json` artefact + schema, §0.1) so the bundle is drop-in when the Eater is mounted. AF does **not** run the Eater's pipeline — `track2_hub.html:102`: *"AF's contract with AE is the job bundle and its metadata, not the extraction result."* |
 
 Default demo run command: `python3 task3/run_pipeline.py --backend mock --include-edge-case`.
 
 Manual artifacts required: **none** for Task 3 — every check is automated by `task3/tests_task2_task3.py`.
+
+---
+
+## 0.1 Handoff Artefact (local schema)
+
+**Status: documented LOCAL schema.** The rubric names the artefact path
+(`data/handoff/*.json`, `ka_track2_setup.html:101-102`; the per-paper bundle is
+called `paper.json` in `track2_hub.html:119`) but does **not** enumerate its
+fields. AF therefore defines its own documented local schema below. `ae_handoff.py`
+writes one JSON object per handed-off paper to `task3/data/handoff/<reference_id>.json`.
+Fields AF cannot compute are emitted as `null` with a `source_note` — never invented.
+
+| Field | Type | Source |
+|---|---|---|
+| `handoff_id` | string | `HANDOFF-<8 hex>` minted at write time |
+| `article_id` | string | `article_references.reference_id` |
+| `citation` | string \| null | `raw_citation` if present, else null |
+| `title` | string \| null | `title_raw` |
+| `doi` | string \| null | normalized `doi`, else null |
+| `abstract` | string | **required** — handoff withheld if `MISSING_ABSTRACT` (the gate) |
+| `article_type` | string \| null | classifier output if available, else null |
+| `topic` | string \| null | matched question/topic |
+| `subfocus_area` | string \| null | sub-topic if assigned, else null |
+| `source_note` | string \| null | provenance: `discovered_via`, abstract_source, probe result |
+| `handoff_status` | string | `written` on success |
+| `blocked_reason` | string \| null | null on success; set when a candidate is withheld |
+| `created_at` | datetime | ISO-8601 UTC |
+| `updated_at` | datetime | ISO-8601 UTC |
+
+**Gate (makes the abstract requirement real):** only rows in `v_acquisition_queue`
+(`triage_decision='ACCEPT'`, which by construction excludes `MISSING_ABSTRACT`)
+become handoff candidates, and `ae_handoff.py` re-asserts a non-empty `abstract`
+before writing. A missing-abstract paper therefore **never** produces a
+`data/handoff/*.json` file — proven by `tests_task2_task3.py`.
+
+**Idempotency:** the writer skips a `reference_id` whose artefact already exists
+and records each write once in the `handoff_log` table (`UNIQUE(reference_id)`).
+
+**Out of AF scope (AE-owned):** `article_eater_running` / `article_eater_complete`
+/ `article_eater_failed` are the Eater's downstream states. AF's terminal stage is
+`handed_off`.
 
 ---
 
