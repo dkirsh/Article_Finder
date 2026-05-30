@@ -39,8 +39,21 @@ Runs both per-task suites and asserts the last-mile handoff end-to-end. Current 
 | Suite | Result |
 |---|---|
 | Task 1 — `Knowledge_Atlas/data/test_pdfs/validate_task1.py` | **40/40** |
-| Task 2 + 3 — `Article_Finder/task3/tests_task2_task3.py` | **37/37** |
-| Chain + handoff — `Article_Finder/scripts/verify_track2_workflow.py` | **8/8** |
+| Task 2 + 3 — `Article_Finder/task3/tests_task2_task3.py` | **44/44** (46/46 with `T2_LIVE=1`) |
+| Chain + handoff — `Article_Finder/scripts/verify_track2_workflow.py` | **9/9** |
+
+**Verification depth (gaps closed after the ruthless pass):**
+- **AE consumability** — `task3/ae_inbox_stub.py` plays Article Eater's intake side:
+  it reads `data/handoff/*.json` and validates it (accepts valid artefacts,
+  rejects missing-field / empty-abstract / bad-JSON). The handoff is proven
+  *consumable*, not just *written*.
+- **Task 1 → Task 3 bridge** — `task3/contribute_bridge.py` is the documented data
+  seam: a contributed `articles` row maps to an `article_references` candidate and
+  flows end-to-end to a handoff artefact (tested). The two tasks are separate
+  deployables, so this is a proven data bridge, not live auto-wiring.
+- **Live network** — an opt-in smoke test (`T2_LIVE=1`) hits the real
+  Crossref/OpenAlex/Semantic-Scholar/PubMed endpoints; skipped by default so CI
+  stays deterministic and offline.
 
 ## Remediation closure — audit findings → fix → proof
 

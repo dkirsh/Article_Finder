@@ -71,7 +71,9 @@ by sprint (= the three graded Track 2 tasks).
 |---|---|---|
 | `lifecycle_transitions` | Append-only audit of every stage change | `db_schema.py` (table) |
 | `v_acquisition_queue` | View: ACCEPT rows with no PDF yet — the only rows PDF acquisition can see | `db_schema.py` |
-| chain verifier | One command: runs both suites + asserts the last-mile handoff end-to-end | `scripts/verify_track2_workflow.py` |
+| chain verifier | One command: runs both suites + asserts the last-mile handoff end-to-end (incl. AE consume) | `scripts/verify_track2_workflow.py` |
+| AE inbox stub | Article Eater's intake side: reads + validates `data/handoff/*.json` (proves consumability) | `task3/ae_inbox_stub.py` |
+| Task 1→3 bridge | Documented data seam: maps a Task-1 `articles` row to a Task-3 `article_references` candidate | `task3/contribute_bridge.py` |
 
 ## The Article Finder → Article Eater boundary
 
