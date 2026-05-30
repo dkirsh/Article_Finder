@@ -115,6 +115,12 @@ n_tx = conn.execute(
 ).fetchone()[0]
 check("handed_off transition logged", n_tx == 1, f"n={n_tx}")
 
+# The artefact is CONSUMABLE by the Article Eater intake side (stub).
+import ae_inbox_stub  # noqa: E402
+inbox = ae_inbox_stub.read_inbox(out)
+check("AE inbox stub consumes the handoff artefact",
+      len(inbox["accepted"]) == 1 and not inbox["rejected"], str(inbox))
+
 conn.close()
 try:
     shutil.rmtree(tmp)

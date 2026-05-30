@@ -296,6 +296,85 @@ check("every decided reference_id has >=1 lifecycle transition",
 conn.close()
 
 # ─────────────────────────────────────────────────────────────────────────────
+# GAP CLOSURES — AE inbox consumer, Task1->Task3 bridge, live network (opt-in)
+# ─────────────────────────────────────────────────────────────────────────────
+print("\n=== Gap closures ===")
+import tempfile, shutil
+import db_schema, ae_handoff, ae_inbox_stub, contribute_bridge
+
+# --- Gap 2: the handoff artefact is CONSUMABLE by an AE-side reader -------
+_d = Path(tempfile.mkdtemp(prefix="gap_ae_"))
+_conn = db_schema.open_db(_d / "x.db"); _out = _d / "handoff"
+_conn.execute(
+    "INSERT INTO article_references (reference_id, doi, title_raw, discovered_via, "
+    "triage_stage, triage_decision, abstract, abstract_source, gap_template_id, "
+    "voi_score, raw_citation, acquired_paper_id) VALUES "
+    "('REF-AEOK','10/ae','AE title','mock_synthetic','acquired','ACCEPT',"
+    "'A consumable abstract of sufficient length.','s2','G',0.7,'c','paper:REF-AEOK')")
+_conn.commit()
+ae_handoff.write_handoffs(_conn, _out)
+inbox = ae_inbox_stub.read_inbox(_out)
+check("AE inbox stub ACCEPTS a valid handoff artefact",
+      len(inbox["accepted"]) == 1 and not inbox["rejected"], str(inbox))
+# negative tests: AE must REJECT malformed artefacts
+import json as _json
+(_out / "bad_missing.json").write_text(_json.dumps({"handoff_id": "x"}))          # missing fields
+(_out / "bad_empty_abs.json").write_text(_json.dumps(
+    {k: ("" if k == "abstract" else "v") for k in ae_handoff.HANDOFF_SCHEMA_FIELDS}))  # empty abstract
+(_out / "bad_json.json").write_text("{not valid json")
+inbox2 = ae_inbox_stub.read_inbox(_out)
+_rej = {r["file"] for r in inbox2["rejected"]}
+check("AE inbox REJECTS malformed artefacts (missing/empty-abstract/bad-json)",
+      {"bad_missing.json", "bad_empty_abs.json", "bad_json.json"} <= _rej,
+      f"rejected={sorted(_rej)}")
+check("AE inbox still accepts only the one valid artefact",
+      len(inbox2["accepted"]) == 1, str(len(inbox2["accepted"])))
+_conn.close(); shutil.rmtree(_d)
+
+# --- Gap 3: a Task-1 contributed paper flows through to a handoff ---------
+_d = Path(tempfile.mkdtemp(prefix="gap_bridge_"))
+_conn = db_schema.open_db(_d / "x.db"); _out = _d / "handoff"
+task1_row = {  # shape of a Task-1 accepted `articles` row
+    "article_id": "KA-ART-DEADBEEF", "title": "Daylight and cognition in classrooms",
+    "doi": "https://doi.org/10.1234/BRIDGE", "abstract": "A bridged abstract long enough to pass.",
+    "citation_apa": "Author (2025). Daylight and cognition.",
+}
+fields = contribute_bridge.task1_row_to_reference(task1_row, reference_id="REF-BRIDGE", verdict="accept")
+check("bridge maps Task-1 verdict=accept -> triage_decision=ACCEPT",
+      fields["triage_decision"] == "ACCEPT" and fields["discovered_via"] == "contribute_page")
+check("bridge normalizes the DOI", fields["doi"] == "10.1234/bridge", fields["doi"])
+contribute_bridge.insert_reference(_conn, fields)
+hres = ae_handoff.write_handoffs(_conn, _out)
+check("contributed Task-1 paper reaches a handoff artefact",
+      hres["written"] == ["REF-BRIDGE"] and (_out / "REF-BRIDGE.json").exists(), str(hres))
+# and it is consumable by AE
+binbox = ae_inbox_stub.read_inbox(_out)
+check("bridged paper's handoff is AE-consumable",
+      len(binbox["accepted"]) == 1 and binbox["accepted"][0]["job_id"] == "REF-BRIDGE")
+_conn.close(); shutil.rmtree(_d)
+
+# --- Gap 1: live-network smoke test (OPT-IN via T2_LIVE=1) ----------------
+if os.environ.get("T2_LIVE") == "1":
+    import abstract_collector as ac
+    KNOWN_DOI = "10.3390/ijerph20085576"  # has an abstract on Crossref
+    abs = ac.fetch_crossref(KNOWN_DOI)
+    check("LIVE: fetch_crossref returns a real abstract for a known DOI",
+          isinstance(abs, str) and len(abs.strip()) > 50, f"len={len(abs or '')}")
+    # every fetcher must return str|None, never raise, even on a junk DOI
+    junk = "10.0000/this-doi-does-not-exist-zzz"
+    ok_types = True
+    for fn, arg in ((ac.fetch_crossref, junk), (ac.fetch_openalex, junk),
+                    (ac.fetch_s2, junk), (ac.fetch_pubmed, "zzzz no such title zzzz")):
+        try:
+            v = fn(arg) if fn is not ac.fetch_s2 else fn(arg, None)
+            ok_types = ok_types and (v is None or isinstance(v, str))
+        except Exception as e:
+            ok_types = False
+    check("LIVE: all fetchers return str|None on junk input (never raise)", ok_types)
+else:
+    print("  SKIP  live-network smoke test (set T2_LIVE=1 to run real API calls)")
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Summary
 # ─────────────────────────────────────────────────────────────────────────────
 n_pass = sum(1 for _, ok, _ in results if ok)
