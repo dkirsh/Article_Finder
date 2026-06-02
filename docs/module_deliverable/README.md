@@ -38,11 +38,21 @@ Runs both per-task suites and asserts the last-mile handoff end-to-end. Current 
 
 | Suite | Result |
 |---|---|
-| Task 1 — `Knowledge_Atlas/data/test_pdfs/validate_task1.py` | **40/40** |
-| Task 2 + 3 — `Article_Finder/task3/tests_task2_task3.py` | **44/44** (46/46 with `T2_LIVE=1`) |
+| Task 1 — `Knowledge_Atlas/data/test_pdfs/validate_task1.py` | **42/42** |
+| Task 2 + 3 — `Article_Finder/task3/tests_task2_task3.py` | **44/44** (47/47 with `T2_LIVE=1`) |
 | Chain + handoff — `Article_Finder/scripts/verify_track2_workflow.py` | **9/9** |
 
-**Verification depth (gaps closed after the ruthless pass):**
+**Instructor-review round (see [RUTHLESS_PROMPT_SELFAUDIT.md](RUTHLESS_PROMPT_SELFAUDIT.md) for the full 10-point map):**
+- **Real OA PDF retrieval (was a stub)** — `pdf_acquirer.py` now does real Unpaywall/OpenAlex
+  downloads behind `--enable-network`, `%PDF`-validated + SHA-256 + lifecycle transition.
+  Proven: PLOS `10.1371/journal.pone.0173955` → 829 KB PDF via Unpaywall (`T2_LIVE=1`).
+- **Portability** — no `sys.exit` in library code; `pytest task3/tests_task2_task3.py` collects +
+  passes; `validate_task1.py` locates `atlas_shared` (install→env→sibling) and SKIPs cleanly if
+  absent; constitutions repo-bundled. No `/private/tmp` / sibling-path assumptions.
+- **Task 1 assets from Kaden Leung (PR #9), credited** — Layer C structural call-site checks +
+  his response-schema reference (`Knowledge_Atlas/data/contracts/ATTRIBUTION.md`).
+
+**Verification depth (gaps closed in the prior round):**
 - **AE consumability** — `task3/ae_inbox_stub.py` plays Article Eater's intake side:
   it reads `data/handoff/*.json` and validates it (accepts valid artefacts,
   rejects missing-field / empty-abstract / bad-JSON). The handoff is proven
