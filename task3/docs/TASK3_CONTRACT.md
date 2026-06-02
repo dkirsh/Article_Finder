@@ -283,7 +283,7 @@ Every stage writes a single row to `run_log` with:
 ## H. Success conditions (combined, runnable)
 
 1. `python3 run_pipeline.py --backend mock` runs end-to-end without error.
-2. `tests_task2_task3.py` reports **25/25 PASS**.
+2. `tests_task2_task3.py` reports **44/44 PASS** (47/47 with `T2_LIVE=1`).
 3. PRISMA `included == accept + edge_case`.
 4. `lifecycle_transitions` has at least one row per `reference_id`.
 5. `v_acquisition_queue` returns 0 rows when no ACCEPT exists; > 0 when ACCEPT exists.
@@ -311,4 +311,4 @@ Every stage writes a single row to `run_log` with:
 - [x] dashboard counts match a separate manual GROUP BY (test PASS)
 - [x] one paper traceable end-to-end (`docs/END_TO_END_TRACE.md`)
 
-Run: `python3 task3/tests_task2_task3.py` → **25/25 PASS** (covers Task 2 + Task 3).
+Run: `python3 task3/tests_task2_task3.py` → **44/44 PASS** (47/47 with `T2_LIVE=1`; covers Task 2 + Task 3).
