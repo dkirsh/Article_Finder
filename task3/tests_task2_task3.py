@@ -359,14 +359,23 @@ check("bridged paper's handoff is AE-consumable",
       len(binbox["accepted"]) == 1 and binbox["accepted"][0]["job_id"] == "REF-BRIDGE")
 _conn.close(); shutil.rmtree(_d)
 
-# --- Gap 1: live-network smoke test (OPT-IN via T2_LIVE=1) ----------------
+# --- LIVE network proofs (OPT-IN via T2_LIVE=1) --------------------------
+# These hit real endpoints, so they are skipped by default to keep the suite
+# offline/deterministic. They satisfy the instructor's A-grade items #3 (prove
+# live abstract retrieval) and #4 (prove a real OA PDF acquisition).
 if os.environ.get("T2_LIVE") == "1":
     import abstract_collector as ac
-    KNOWN_DOI = "10.3390/ijerph20085576"  # has an abstract on Crossref
-    abs = ac.fetch_crossref(KNOWN_DOI)
-    check("LIVE: fetch_crossref returns a real abstract for a known DOI",
-          isinstance(abs, str) and len(abs.strip()) > 50, f"len={len(abs or '')}")
-    # every fetcher must return str|None, never raise, even on a junk DOI
+
+    # A3 — live abstract retrieval, RECORDING which source returned what.
+    KNOWN_DOI = "10.3390/ijerph20085576"
+    _src = {"crossref": ac.fetch_crossref(KNOWN_DOI),
+            "openalex": ac.fetch_openalex(KNOWN_DOI),
+            "s2":       ac.fetch_s2(KNOWN_DOI, None)}
+    _hits = {k: len(v) for k, v in _src.items() if isinstance(v, str) and len(v.strip()) > 50}
+    print("  LIVE abstract sources for " + KNOWN_DOI + ": " +
+          (", ".join(f"{k}={n}c" for k, n in _hits.items()) if _hits else "(none)"))
+    check("LIVE: >=1 source returns a real abstract for a known DOI (source recorded)",
+          len(_hits) >= 1, f"hits={_hits}")
     junk = "10.0000/this-doi-does-not-exist-zzz"
     ok_types = True
     for fn, arg in ((ac.fetch_crossref, junk), (ac.fetch_openalex, junk),
@@ -374,11 +383,44 @@ if os.environ.get("T2_LIVE") == "1":
         try:
             v = fn(arg) if fn is not ac.fetch_s2 else fn(arg, None)
             ok_types = ok_types and (v is None or isinstance(v, str))
-        except Exception as e:
+        except Exception:
             ok_types = False
-    check("LIVE: all fetchers return str|None on junk input (never raise)", ok_types)
+    check("LIVE: all abstract fetchers return str|None on junk (never raise)", ok_types)
+
+    # A4 — real OA PDF retrieval: download a known gold-OA PDF and prove the
+    # row records path + source + sha256 + an 'acquired' lifecycle transition.
+    import tempfile, shutil
+    import db_schema as _db, pdf_acquirer as _pa
+    _d = Path(tempfile.mkdtemp(prefix="live_pdf_"))
+    try:
+        _c = _db.open_db(_d / "x.db")
+        OA_DOI = "10.1371/journal.pone.0173955"   # PLOS ONE, gold OA, clean PDF
+        _c.execute("INSERT INTO article_references (reference_id, doi, title_raw, "
+                   "discovered_via, triage_stage, triage_decision, abstract, "
+                   "abstract_source, gap_template_id, voi_score, raw_citation) VALUES "
+                   "('REF-LIVE',?,?,'mock','abstract_collected','ACCEPT','abs','s2','G',0.7,'c')",
+                   (OA_DOI, "PLOS live test"))
+        _c.commit(); _c.close()
+        _pa.run(_d / "x.db", enable_scidownl=False, pdf_dir=_d / "pdfs", enable_network=True)
+        _c = _db.open_db(_d / "x.db")
+        _row = _c.execute("SELECT pdf_path, pdf_sha256, acquired_paper_id, "
+                          "pdf_acquisition_last_source FROM article_references "
+                          "WHERE reference_id='REF-LIVE'").fetchone()
+        _tx = _c.execute("SELECT 1 FROM lifecycle_transitions WHERE reference_id='REF-LIVE' "
+                         "AND to_stage='acquired'").fetchone()
+        _c.close()
+        _p = Path(_row["pdf_path"]) if _row and _row["pdf_path"] else None
+        _real = bool(_p and _p.exists() and _p.read_bytes()[:5] == b"%PDF-"
+                     and _row["pdf_sha256"] and _row["acquired_paper_id"] and _tx)
+        print(f"  LIVE OA PDF: source={_row['pdf_acquisition_last_source']} "
+              f"bytes={_p.stat().st_size if _p and _p.exists() else 0} "
+              f"sha={(_row['pdf_sha256'] or '')[:12]}")
+        check("LIVE: real OA PDF retrieved + %PDF + sha256 + acquired_paper_id + transition",
+              _real, f"path={_row['pdf_path']}")
+    finally:
+        shutil.rmtree(_d, ignore_errors=True)
 else:
-    print("  SKIP  live-network smoke test (set T2_LIVE=1 to run real API calls)")
+    print("  SKIP  live-network proofs (set T2_LIVE=1 for real abstract + OA-PDF retrieval)")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Summary

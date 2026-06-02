@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS article_references (
     pdf_acquisition_last_source TEXT,                     -- unpaywall | openalex_oa | scidownl
     acquired_paper_id       TEXT,                         -- set on success
     pdf_path                TEXT,
+    pdf_sha256              TEXT,                         -- SHA-256 of retrieved PDF bytes
 
     updated_at              TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
 
