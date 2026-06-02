@@ -67,13 +67,19 @@ except Exception:
     ok = False
 check("compute_voi tolerates empty mechanism", ok)
 
-# explicit non-low-confidence skip
-gap_count_high_thresh = len(ge.extract_gaps(ge.DEFAULT_MECHANISMS, 1.0, 0))
-gap_count_zero_thresh = len(ge.extract_gaps(ge.DEFAULT_MECHANISMS, 0.0, 0))
-check("threshold=0 returns 0 gaps", gap_count_zero_thresh == 0,
-      f"got {gap_count_zero_thresh}")
-check("threshold=1.0 returns ALL mechanisms", gap_count_high_thresh > 30,
-      f"got {gap_count_high_thresh}")
+# explicit non-low-confidence skip — data-dependent, so SKIP cleanly when the
+# mechanisms.json sibling file is absent (clean Article_Finder-only checkout)
+# instead of aborting. The committed gap_results.json checks below still run.
+if ge.DEFAULT_MECHANISMS.exists():
+    gap_count_high_thresh = len(ge.extract_gaps(ge.DEFAULT_MECHANISMS, 1.0, 0))
+    gap_count_zero_thresh = len(ge.extract_gaps(ge.DEFAULT_MECHANISMS, 0.0, 0))
+    check("threshold=0 returns 0 gaps", gap_count_zero_thresh == 0,
+          f"got {gap_count_zero_thresh}")
+    check("threshold=1.0 returns ALL mechanisms", gap_count_high_thresh > 30,
+          f"got {gap_count_high_thresh}")
+else:
+    print(f"  SKIP  live extract_gaps checks (mechanisms.json not in this checkout: "
+          f"{ge.DEFAULT_MECHANISMS})")
 
 gaps = json.loads((REPO / "gap_results.json").read_text())
 check("≥10 gaps in gap_results.json", len(gaps) >= 10, f"got {len(gaps)}")
@@ -378,5 +384,19 @@ else:
 # Summary
 # ─────────────────────────────────────────────────────────────────────────────
 n_pass = sum(1 for _, ok, _ in results if ok)
-print(f"\n{n_pass}/{len(results)} checks passed")
-sys.exit(0 if n_pass == len(results) else 1)
+_failed = [label for label, ok, _ in results if not ok]
+
+
+def test_task2_task3_suite():
+    """Pytest entry point. The checks above run at import; assert none failed.
+
+    This makes `pytest task3/tests_task2_task3.py` collect and pass without
+    aborting — no module-level sys.exit (that is guarded under __main__ below),
+    and missing optional data (mechanisms.json) is skipped, not fatal.
+    """
+    assert not _failed, f"{len(_failed)} check(s) failed: {_failed}"
+
+
+if __name__ == "__main__":
+    print(f"\n{n_pass}/{len(results)} checks passed")
+    sys.exit(0 if n_pass == len(results) else 1)

@@ -123,8 +123,11 @@ def extract_gaps(
     min_gaps: int,
 ) -> list[dict]:
     if not mechanisms_path.exists():
-        print(f"ERROR: mechanisms file not found: {mechanisms_path}", file=sys.stderr)
-        sys.exit(1)
+        # Raise — never sys.exit() from a library function. The CLI main()
+        # catches this and exits cleanly; importers (e.g. the test suite) can
+        # catch it and skip data-dependent checks rather than aborting
+        # pytest collection.
+        raise FileNotFoundError(f"mechanisms file not found: {mechanisms_path}")
 
     raw = json.loads(mechanisms_path.read_text(encoding="utf-8"))
     mlist: list[dict] = raw.get("mechanisms", raw) if isinstance(raw, dict) else raw
@@ -212,7 +215,11 @@ def main() -> None:
     args = parser.parse_args()
 
     print(f"Loading mechanisms from: {args.mechanisms_path}")
-    gaps = extract_gaps(args.mechanisms_path, args.confidence_threshold, args.min_gaps)
+    try:
+        gaps = extract_gaps(args.mechanisms_path, args.confidence_threshold, args.min_gaps)
+    except FileNotFoundError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        raise SystemExit(1)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(gaps, indent=2, ensure_ascii=False), encoding="utf-8")
