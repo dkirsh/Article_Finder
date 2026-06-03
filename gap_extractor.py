@@ -33,7 +33,7 @@ def _default_mechanisms() -> Path:
     import os
     if os.environ.get("TRACK2_MECHANISMS"):
         return Path(os.environ["TRACK2_MECHANISMS"])
-    bundled = REPO_ROOT / "task3" / "data" / "fixtures" / "mechanisms.json"
+    bundled = REPO_ROOT / "task3" / "fixtures" / "mechanisms.json"
     if bundled.exists():
         return bundled
     return REPO_ROOT.parent / "Knowledge_Atlas" / "data" / "ka_payloads" / "mechanisms.json"

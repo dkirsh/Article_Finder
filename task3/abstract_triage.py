@@ -68,7 +68,7 @@ def _resolve_constitutions() -> Path:
     $KA_CONSTITUTIONS -> AF-bundled fixture -> sibling atlas_shared."""
     if os.environ.get("KA_CONSTITUTIONS"):
         return Path(os.environ["KA_CONSTITUTIONS"])
-    bundled = REPO_ROOT / "task3" / "data" / "fixtures" / "question_constitutions_starter.json"
+    bundled = REPO_ROOT / "task3" / "fixtures" / "question_constitutions_starter.json"
     if bundled.exists():
         return bundled
     return (REPO_ROOT.parent / "atlas_shared" / "src" / "atlas_shared" / "data"
