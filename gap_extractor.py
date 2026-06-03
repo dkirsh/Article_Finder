@@ -25,9 +25,21 @@ from pathlib import Path
 
 # ── defaults ──────────────────────────────────────────────────────────────────
 REPO_ROOT = Path(__file__).resolve().parent
-DEFAULT_MECHANISMS = (
-    REPO_ROOT.parent / "Knowledge_Atlas" / "data" / "ka_payloads" / "mechanisms.json"
-)
+
+
+def _default_mechanisms() -> Path:
+    """Portable default (no sibling-repo assumption):
+    $TRACK2_MECHANISMS -> AF-bundled fixture -> sibling Knowledge_Atlas."""
+    import os
+    if os.environ.get("TRACK2_MECHANISMS"):
+        return Path(os.environ["TRACK2_MECHANISMS"])
+    bundled = REPO_ROOT / "task3" / "data" / "fixtures" / "mechanisms.json"
+    if bundled.exists():
+        return bundled
+    return REPO_ROOT.parent / "Knowledge_Atlas" / "data" / "ka_payloads" / "mechanisms.json"
+
+
+DEFAULT_MECHANISMS = _default_mechanisms()
 DEFAULT_OUTPUT = REPO_ROOT / "gap_results.json"
 DEFAULT_THRESHOLD = 0.60
 DEFAULT_MIN_GAPS = 10

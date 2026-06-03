@@ -35,13 +35,47 @@ from pathlib import Path
 
 from db_schema import open_db, DEFAULT_DB, log_transition
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-ATLAS_SHARED_SRC = REPO_ROOT.parent / "atlas_shared" / "src"
-sys.path.insert(0, str(ATLAS_SHARED_SRC))
+import os
 
-CONSTITUTIONS_PATH = (
-    ATLAS_SHARED_SRC / "atlas_shared" / "data" / "question_constitutions_starter.json"
-)
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _locate_atlas_shared() -> None:
+    """Put atlas_shared on sys.path WITHOUT hardcoding one machine's layout.
+    Order: already-importable -> $KA_ATLAS_SHARED_SRC -> sibling checkout.
+    (Fixes the brittle sibling-only assumption flagged in review.)"""
+    try:
+        import atlas_shared.relevance  # noqa: F401
+        return
+    except Exception:
+        pass
+    cands = []
+    if os.environ.get("KA_ATLAS_SHARED_SRC"):
+        cands.append(Path(os.environ["KA_ATLAS_SHARED_SRC"]))
+    cands += [REPO_ROOT.parent / "atlas_shared" / "src",
+              REPO_ROOT.parent / "atlas_shared"]
+    for c in cands:
+        if (c / "atlas_shared").is_dir():
+            sys.path.insert(0, str(c))
+            return
+
+
+_locate_atlas_shared()
+
+
+def _resolve_constitutions() -> Path:
+    """Constitutions path, honoring $KA_CONSTITUTIONS (previously ignored):
+    $KA_CONSTITUTIONS -> AF-bundled fixture -> sibling atlas_shared."""
+    if os.environ.get("KA_CONSTITUTIONS"):
+        return Path(os.environ["KA_CONSTITUTIONS"])
+    bundled = REPO_ROOT / "task3" / "data" / "fixtures" / "question_constitutions_starter.json"
+    if bundled.exists():
+        return bundled
+    return (REPO_ROOT.parent / "atlas_shared" / "src" / "atlas_shared" / "data"
+            / "question_constitutions_starter.json")
+
+
+CONSTITUTIONS_PATH = _resolve_constitutions()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
