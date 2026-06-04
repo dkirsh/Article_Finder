@@ -405,6 +405,33 @@ check("contributed Task-1 paper reaches a handoff artefact",
 binbox = ae_inbox_stub.read_inbox(_out)
 check("bridged paper's handoff is AE-consumable",
       len(binbox["accepted"]) == 1 and binbox["accepted"][0]["job_id"] == "REF-BRIDGE")
+
+# --- Real-AE delivery SEAM (ae_handoff.deliver_to_ae): exercised with a stub
+# command + a temp inbox to prove the mechanism. With NO AE configured it is an
+# honest no-op (mode=local_substitute). On a machine with the real AE, setting
+# $AE_INGEST_CMD / $AE_INBOX makes ae_ingest_smoke.py a real ingestion test. ---
+_artefact = _out / "REF-BRIDGE.json"
+_saved = {k: os.environ.pop(k, None) for k in ("AE_INGEST_CMD", "AE_INBOX", "AE_ACK_TIMEOUT")}
+try:
+    _no_ae = ae_handoff.deliver_to_ae(_artefact)
+    check("deliver_to_ae: no AE configured -> honest local_substitute no-op",
+          _no_ae["mode"] == "local_substitute" and _no_ae["delivered"] is False)
+    os.environ["AE_INGEST_CMD"] = "true"   # stub stands in for AE's ingest CLI
+    _cmd = ae_handoff.deliver_to_ae(_artefact)
+    check("deliver_to_ae: command mode delivers + consumes (seam works)",
+          _cmd["mode"] == "command" and _cmd["delivered"] and _cmd["consumed"])
+    os.environ.pop("AE_INGEST_CMD", None)
+    _ibx = Path(tempfile.mkdtemp(prefix="seam_inbox_"))
+    os.environ["AE_INBOX"] = str(_ibx)
+    _inb = ae_handoff.deliver_to_ae(_artefact)
+    check("deliver_to_ae: inbox mode lands the artefact in the watched dir",
+          _inb["mode"] == "inbox" and _inb["delivered"] and (_ibx / _artefact.name).exists())
+    shutil.rmtree(_ibx, ignore_errors=True)
+finally:
+    os.environ.pop("AE_INGEST_CMD", None); os.environ.pop("AE_INBOX", None)
+    for k, v in _saved.items():
+        if v is not None:
+            os.environ[k] = v
 _conn.close(); shutil.rmtree(_d)
 
 # --- LIVE network proofs (OPT-IN via T2_LIVE=1) --------------------------

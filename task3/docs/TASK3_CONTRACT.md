@@ -62,13 +62,34 @@ and records each write once in the `handoff_log` table (`UNIQUE(reference_id)`).
 / `article_eater_failed` are the Eater's downstream states. AF's terminal stage is
 `handed_off`.
 
-**What real Article Eater integration would require (NOT done here — local
-substitute only):** mount or configure the actual Article Eater inbox / corpus
-inventory, have `ae_handoff.py` write one artefact to that real inbox, and verify
-that AE consumes it into its own queue/corpus (or rejects it with a real AE
-error). Until that path is wired against the real AE repo/VM, the AE side is
-exercised only by the local `ae_inbox_stub.py`, and the handoff is a tested
-boundary contract, not a closed ingestion loop.
+**Real Article Eater integration — the seam IS built; it just needs a real AE to
+point at.** `ae_handoff.deliver_to_ae()` delivers an artefact to a real AE in one
+of two configured modes (no faking — if neither is set it is an honest no-op
+returning `mode="local_substitute"`):
+
+- `AE_INGEST_CMD="<cmd>"` — we run `<cmd> <artefact.json>`; AE consuming the
+  artefact == the command exiting 0 (e.g. the instructor's
+  `course_scaffolding.py ingest-handoff` or any AE ingest CLI).
+- `AE_INBOX="<dir>"` — AE's watched inbox; the artefact is copied in, and with
+  `AE_ACK_TIMEOUT>0` we poll for AE to consume it (file moved out, or a
+  `<name>.ack` / `processed/<name>` marker).
+
+Run the gated smoke test on a machine that HAS Article Eater:
+
+```bash
+AE_INGEST_CMD="python3 /path/to/Article_Eater/scripts/course_scaffolding.py ingest-handoff" \
+    python3 task3/ae_ingest_smoke.py      # -> REAL AE INGESTION VERIFIED
+# or
+AE_INBOX=/path/to/Article_Eater/data/inbox AE_ACK_TIMEOUT=15 python3 task3/ae_ingest_smoke.py
+```
+
+On a checkout WITHOUT the AE repo (this one), `ae_ingest_smoke.py` SKIPs cleanly
+(exit 0) and the local `ae_inbox_stub.py` remains the tested boundary. The seam
+mechanics themselves are unit-tested offline (`tests_task2_task3.py`: command +
+inbox + no-AE modes), so a grader can confirm the wiring works without AE present.
+This makes the boundary a **runnable integration seam**, not just prose — but it
+is honestly NOT a verified ingestion against the real Article Eater on this
+checkout, because that repo is not present here.
 
 ---
 

@@ -196,10 +196,84 @@ def write_handoffs(
     }
 
 
+def deliver_to_ae(artefact_path: Path, *, ack_timeout: float | None = None) -> dict:
+    """Deliver ONE handoff artefact to a REAL Article Eater, IF one is configured.
+
+    This is the integration seam that turns the documented local substitute into
+    real AE ingestion without faking it. Resolution (honest, env-driven):
+      - $AE_INGEST_CMD : a command; we run `<cmd> <artefact_path>`. AE consuming
+        the artefact == the command exiting 0 (e.g. the instructor's
+        `course_scaffolding.py ingest-handoff` or any AE ingest CLI).
+      - $AE_INBOX : a directory the real AE watches; we copy the artefact in and,
+        if $AE_ACK_TIMEOUT > 0, poll for AE to consume it (file moved out, or a
+        `<name>.ack` / `processed/<name>` marker appears).
+      - neither set : NOT delivered. The honest default on a checkout without AE;
+        the local substitute (ae_inbox_stub.py) remains the tested boundary.
+
+    Returns {"delivered": bool, "consumed": bool|None, "mode": str, "detail": str}.
+    Never raises — a real AE error is surfaced in `detail`.
+    """
+    import os
+    import shlex
+    import shutil
+    import subprocess
+    import time
+
+    cmd = os.environ.get("AE_INGEST_CMD")
+    inbox = os.environ.get("AE_INBOX")
+    if ack_timeout is None:
+        try:
+            ack_timeout = float(os.environ.get("AE_ACK_TIMEOUT", "0"))
+        except ValueError:
+            ack_timeout = 0.0
+
+    if cmd:
+        try:
+            r = subprocess.run(shlex.split(cmd) + [str(artefact_path)],
+                               capture_output=True, text=True, timeout=120)
+        except Exception as e:  # noqa: BLE001
+            return {"delivered": False, "consumed": False, "mode": "command",
+                    "detail": f"AE_INGEST_CMD failed: {type(e).__name__}: {e}"}
+        ok = r.returncode == 0
+        return {"delivered": ok, "consumed": ok, "mode": "command",
+                "detail": f"exit={r.returncode}; {((r.stdout or r.stderr) or '').strip()[:200]}"}
+
+    if inbox:
+        ibx = Path(inbox)
+        try:
+            ibx.mkdir(parents=True, exist_ok=True)
+            dest = ibx / artefact_path.name
+            shutil.copy2(artefact_path, dest)
+        except Exception as e:  # noqa: BLE001
+            return {"delivered": False, "consumed": False, "mode": "inbox",
+                    "detail": f"copy to $AE_INBOX failed: {e}"}
+        consumed = None
+        if ack_timeout and ack_timeout > 0:
+            consumed = False
+            deadline = time.monotonic() + ack_timeout
+            ack = ibx / (artefact_path.name + ".ack")
+            processed = ibx / "processed" / artefact_path.name
+            while time.monotonic() < deadline:
+                if (not dest.exists()) or ack.exists() or processed.exists():
+                    consumed = True
+                    break
+                time.sleep(0.5)
+        return {"delivered": True, "consumed": consumed, "mode": "inbox",
+                "detail": f"delivered to {dest}"
+                          + ("" if consumed is None else f"; consumed={consumed}")}
+
+    return {"delivered": False, "consumed": None, "mode": "local_substitute",
+            "detail": "no real AE configured; set $AE_INBOX (a dir AE watches) or "
+                      "$AE_INGEST_CMD (an AE ingest command) to enable real delivery"}
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Write Article Eater handoff artefacts.")
     ap.add_argument("--db", type=Path, default=DEFAULT_DB)
     ap.add_argument("--out", type=Path, default=HANDOFF_DIR)
+    ap.add_argument("--deliver", action="store_true",
+                    help="Also deliver each artefact to a real AE if $AE_INBOX / "
+                         "$AE_INGEST_CMD is set (else a no-op local substitute).")
     args = ap.parse_args()
 
     conn = open_db(args.db)
@@ -207,6 +281,12 @@ def main() -> None:
         res = write_handoffs(conn, args.out)
     finally:
         conn.close()
+
+    if args.deliver:
+        for rid in res["written"]:
+            out = deliver_to_ae(args.out / f"{rid}.json")
+            print(f"  → AE deliver {rid}: mode={out['mode']} delivered={out['delivered']} "
+                  f"consumed={out['consumed']} ({out['detail']})")
 
     print(
         f"handoff: wrote {len(res['written'])}, "

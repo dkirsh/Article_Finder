@@ -96,8 +96,11 @@ step required.
 
 ## 4. Honest boundaries
 - **Article Eater handoff** is a documented **local substitute** (`ae_handoff.py` writes
-  `data/handoff/*.json`; `ae_inbox_stub.py` validates it). It is **not** real AE ingestion. See
-  `task3/docs/TASK3_CONTRACT.md §0` for exactly what real AE integration would require.
+  `data/handoff/*.json`; `ae_inbox_stub.py` validates it). The **real delivery seam is built**
+  (`ae_handoff.deliver_to_ae()` + `task3/ae_ingest_smoke.py`): on a machine with AE, set
+  `AE_INGEST_CMD` or `AE_INBOX` and it performs a real ingestion; on this checkout (no AE repo)
+  it SKIPs cleanly. The seam mechanics are unit-tested offline. It is **not** a verified
+  ingestion against the real AE here. See `task3/docs/TASK3_CONTRACT.md §0`.
 - **VOI** is a first-stage search-ranking **heuristic**, not the full Article Eater/BN VOI model.
   See `TRACK2_VOI_COMPARISON.md`.
 - **scidownl** stays gated + default-closed (not a live downloader).
