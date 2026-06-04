@@ -149,5 +149,5 @@ sqlite3 data/pipeline_lifecycle_full.db \
   "SELECT triage_decision, COUNT(*) FROM article_references GROUP BY triage_decision"
 
 # Run rubric tests:
-python3 tests_task2_task3.py     # 44/44 PASS (47/47 with T2_LIVE=1)
+python3 tests_task2_task3.py     # 51/51 PASS (55/55 with T2_LIVE=1)
 ```

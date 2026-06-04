@@ -37,8 +37,8 @@ sibling `Knowledge_Atlas` checkout is needed for Task 2/3. Override with
 ```bash
 # --- Article_Finder (Tasks 2 & 3) — from the Article_Finder repo root ---
 python3 -m pytest task3/tests_task2_task3.py -q     # collects + passes (1 passed)
-python3 task3/tests_task2_task3.py                  # 44/44 offline (deterministic, isolated temp DB)
-T2_LIVE=1 python3 task3/tests_task2_task3.py         # 47/47 — real abstract + real OA PDF
+python3 task3/tests_task2_task3.py                  # 51/51 offline (deterministic, isolated temp DB)
+T2_LIVE=1 python3 task3/tests_task2_task3.py         # 55/55 — real abstract + real OA PDF
 python3 scripts/verify_track2_workflow.py            # CHAIN 9/9 (incl. handoff + AE-consume)
 
 # --- Knowledge_Atlas (Task 1) — needs atlas_shared (declared above) ---
@@ -67,10 +67,19 @@ step required.
 | `task3/prisma_dashboard.py` | Task 3 — PRISMA funnel from a single SQL `GROUP BY` |
 | `task3/ae_handoff.py` | Task 3 — Article Eater handoff artefact writer (local substitute) |
 | `task3/db_schema.py` | Task 3 — schema, `article_references`, lifecycle, views |
-| `task3/tests_task2_task3.py` | Task 2+3 automated checklist (44/44 · 47/47 live) |
+| `task3/tests_task2_task3.py` | Task 2+3 automated checklist (51/51 · 55/55 live) |
 | `scripts/verify_track2_workflow.py` | one-command chain verifier (9/9) |
 | `Knowledge_Atlas/ka_article_endpoints.py` + `ka_contribute_public.html` | Task 1 — contribute page |
 | `Knowledge_Atlas/data/test_pdfs/validate_task1.py` | Task 1 validator (42/42) |
+
+> The `Knowledge_Atlas/…` rows live in the **sibling Knowledge_Atlas repo** (Task 1), relative to the `track2` parent dir — not under `Article_Finder/`. Run them from the Knowledge_Atlas repo root (see §2).
+
+### Evidence & integration proofs (runnable)
+| File | Role |
+|---|---|
+| `task3/eval_triage.py` | labeled triage eval — 30 abstracts incl. 6 within-domain hard near-misses; lenient **P 0.765 / R 0.929**, strict ACCEPT-only **P 1.0**; reports false-accept/reject + EDGE_CASE→human-review routing |
+| `task3/ae_ingest_smoke.py` | gated **real** Article-Eater ingestion smoke test (SKIPs cleanly with no AE; performs a real ingestion when `$AE_INGEST_CMD`/`$AE_INBOX` is set) |
+| `TRACK2_VOI_COMPARISON.md` | Track 2 heuristic VOI vs Article Eater/BN structural + epistemic VOI |
 
 ### Support fixtures (small, committed on purpose)
 - `task3/fixtures/question_constitutions_starter.json`, `task3/fixtures/mechanisms.json` — bundled

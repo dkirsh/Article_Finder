@@ -42,7 +42,7 @@ It does today. Commands are run from each fork's root:
 ```
 # Tasks 2 & 3 — from the Article_Finder repo root
 python3 scripts/verify_track2_workflow.py        → CHAIN 9/9   (chain + handoff end-to-end)
-python3 task3/tests_task2_task3.py               → 44/44
+python3 task3/tests_task2_task3.py               → 51/51
 T2_LIVE=1 python3 task3/tests_task2_task3.py     → 46/46       (real API calls)
 
 # Task 1 — from the Knowledge_Atlas repo root

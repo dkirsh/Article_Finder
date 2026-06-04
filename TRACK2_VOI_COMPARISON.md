@@ -29,6 +29,8 @@ A single scalar in [0, 1]. Good for a first pass; deliberately coarse.
 | **Active learning coordinator** | `…/services/active_learning_coordinator.py` | bn_uncertainty, bn_estimate, credible_interval, structural_voi, epistemic_voi, priority, search_terms, n_supporting_papers |
 | **Bayesian VOI service** | `…/docs/BAYESIAN_VOI_SERVICE_IMPLEMENTATION.md` | prior credence + uncertainty, likelihood by design type, expected information gain, expected utility gain, expected posterior change |
 
+> **Provenance note.** The Article Eater rows are corroborated by instructor material present on this checkout (the `structural_voi`/`epistemic_voi` split and `gap_priority = structural_voi*0.6 + epistemic_voi*0.4 * gap_type_weight` appear in `Knowledge_Atlas/docs/MASTER_DOC_CMR_ASSEMBLED.md`). The **BN opportunity-scorer weights** (0.25 / 0.20 / 0.25 / 0.20 / 0.10) are **illustrative**: the `BN_graphical` working tree is not on this checkout, so those exact figures are reproduced from the review brief, not read from a live file here. None of these numbers are injected into Track 2's `voi_breakdown` — fields Track 2 cannot compute are emitted as explicit `null` (see `gap_extractor.voi_breakdown`), never fabricated.
+
 ## The cases the Track 2 scalar collapses (and the richer model distinguishes)
 - A gap may be **uncertain but peripheral** (Track 2 over-ranks it).
 - A gap may be **central but already well supported** (Track 2 may over- rank on centrality).

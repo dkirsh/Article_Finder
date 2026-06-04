@@ -34,7 +34,7 @@ docs/QUERY_SPOT_CHECK_TASK2.md
 ```bash
 python3 gap_extractor.py
 python3 query_generator.py --gaps gap_results.json
-python3 task3/tests_task2_task3.py    # rubric checklist — 44/44 PASS (47/47 with T2_LIVE=1)
+python3 task3/tests_task2_task3.py    # rubric checklist — 51/51 PASS (55/55 with T2_LIVE=1)
 ```
 
 ---

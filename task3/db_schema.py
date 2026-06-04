@@ -14,7 +14,7 @@ article_references (or update an existing row's provenance). Free-floating JSON
 files do not count for grading.
 
 Note on substitution: the upstream pipeline_lifecycle_full.db file shipped with
-this checkout is 0 bytes (placeholder) and the canonical scripts/coordination/
+this checkout is a populated local SQLite file (gitignored; created on first run) and the canonical scripts/coordination/
 lifecycle/schema.sql is not present. This local schema is a faithful
 implementation of the documented spec; columns and types match the rubric
 verbatim so any later swap to the upstream DB is a drop-in.
