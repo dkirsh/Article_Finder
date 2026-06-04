@@ -89,6 +89,13 @@ step required.
 | `task3/find_similar.py` | **"more like this"** — seed a paper (DOI/title) → forward citations + related_works → live OA PDF download → HTML report |
 | `task3/browser_acquire.py` | **assisted** acquisition for publisher-blocked OA PDFs (MDPI/Frontiers behind Cloudflare): `--check` classifies a DOI; `--doi/--pdf` registers a Claude-in-Chrome–retrieved PDF into the lifecycle DB. Runbook: `task3/docs/BROWSER_ACQUISITION.md`. Honest: assisted, not headless |
 
+### Front-end (UI mockup, API-ready)
+- `frontend/` — a self-contained React UI over the pipeline (ingest → triage → retrieve →
+  library → VOI → scholar-compare). **Faithful mockup of the real outputs**, not yet wired
+  to the backend: all data flows through `frontend/src/api.js` (swap mock → `fetch('/api/...')`
+  to connect). Run: `cd frontend && python3 -m http.server 8000` → `http://localhost:8000/Article%20Finder.html`.
+  See `frontend/README.md`.
+
 ### Support fixtures (small, committed on purpose)
 - `task3/fixtures/question_constitutions_starter.json`, `task3/fixtures/mechanisms.json` — bundled
   copies so Task 2/3 needs no sibling repo. Regenerate by copying from `atlas_shared` / `Knowledge_Atlas`.
