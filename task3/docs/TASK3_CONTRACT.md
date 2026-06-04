@@ -264,6 +264,19 @@ Failure on any condition sets `pdf_acquisition_last_source='gated:<reason>'` and
 
 Every cascade attempt — hit, miss, or gated — increments `pdf_acquisition_attempts` and writes a `lifecycle_transitions` row with the source, outcome, and timestamp. PDF retrieval has a 30 s timeout. PDFs are validated post-download (magic bytes `%PDF-`, ≥ 1 KB) before they're written to disk.
 
+### E.4a Browser-assisted acquisition (publisher-blocked OA — assisted, not headless)
+
+Some OA publishers (MDPI, Frontiers, PeerJ) serve PDFs behind Cloudflare bot
+protection that returns `403` to the automated cascade, so Unpaywall/OpenAlex
+`miss` even though the paper is open access. For those, `browser_acquire.py` is an
+**assisted** fallback: a connected Claude-in-Chrome session loads the article (a
+real browser clears the challenge), the PDF is downloaded by a genuine browser
+gesture, and `browser_acquire.py --doi … --pdf …` validates `%PDF` and records it
+in `article_references` exactly like the cascade (`acquired` + `pdf_sha256` +
+transition), with `discovered_via='claude_in_chrome'`. This is **not** part of an
+automated headless run — it needs an interactive browser and a real click (a
+scripted JS click is blocked by Chrome). Runbook: `docs/BROWSER_ACQUISITION.md`.
+
 ### E.5 Fatal failures (the rubric calls these out as automatic deductions)
 
 - [!] PDF download before abstract triage → impossible: cascade reads only from `v_acquisition_queue`.

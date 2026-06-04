@@ -82,6 +82,13 @@ step required.
 | `task3/ae_ingest_smoke.py` | gated **real** Article-Eater ingestion smoke test (SKIPs cleanly with no AE; performs a real ingestion when `$AE_INGEST_CMD`/`$AE_INBOX` is set) |
 | `TRACK2_VOI_COMPARISON.md` | Track 2 heuristic VOI vs Article Eater/BN structural + epistemic VOI |
 
+### Interactive retrieval tools (live, real OA PDFs — network)
+| File | Role |
+|---|---|
+| `task3/question_run.py` | drive Task 3 from a **free-text question** → live OpenAlex search → triage-accept → live OA PDF download → HTML report (`"<question>"`) |
+| `task3/find_similar.py` | **"more like this"** — seed a paper (DOI/title) → forward citations + related_works → live OA PDF download → HTML report |
+| `task3/browser_acquire.py` | **assisted** acquisition for publisher-blocked OA PDFs (MDPI/Frontiers behind Cloudflare): `--check` classifies a DOI; `--doi/--pdf` registers a Claude-in-Chrome–retrieved PDF into the lifecycle DB. Runbook: `task3/docs/BROWSER_ACQUISITION.md`. Honest: assisted, not headless |
+
 ### Support fixtures (small, committed on purpose)
 - `task3/fixtures/question_constitutions_starter.json`, `task3/fixtures/mechanisms.json` — bundled
   copies so Task 2/3 needs no sibling repo. Regenerate by copying from `atlas_shared` / `Knowledge_Atlas`.
