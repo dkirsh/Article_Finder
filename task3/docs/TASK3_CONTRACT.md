@@ -62,6 +62,14 @@ and records each write once in the `handoff_log` table (`UNIQUE(reference_id)`).
 / `article_eater_failed` are the Eater's downstream states. AF's terminal stage is
 `handed_off`.
 
+**What real Article Eater integration would require (NOT done here — local
+substitute only):** mount or configure the actual Article Eater inbox / corpus
+inventory, have `ae_handoff.py` write one artefact to that real inbox, and verify
+that AE consumes it into its own queue/corpus (or rejects it with a real AE
+error). Until that path is wired against the real AE repo/VM, the AE side is
+exercised only by the local `ae_inbox_stub.py`, and the handoff is a tested
+boundary contract, not a closed ingestion loop.
+
 ---
 
 ## 1. Cardinal rules (rubric, non-negotiable)
