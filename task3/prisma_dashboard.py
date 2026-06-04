@@ -13,9 +13,9 @@ Outputs:
 from __future__ import annotations
 import argparse, json, sqlite3
 from pathlib import Path
-from db_schema import open_db, DEFAULT_DB
+from db_schema import open_db, DEFAULT_DB, DEFAULT_OUT_DIR
 
-OUT_DIR = Path(__file__).resolve().parent / "data"
+OUT_DIR = DEFAULT_OUT_DIR
 
 # The single SQL statement. Every row in article_references is counted once;
 # columns sum disjoint buckets that map onto the rubric's funnel stages.

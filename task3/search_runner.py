@@ -35,8 +35,8 @@ import uuid
 from pathlib import Path
 from typing import Iterable
 
-from db_schema import (open_db, DEFAULT_DB, normalize_doi, normalize_title,
-                       make_reference_id, log_transition)
+from db_schema import (open_db, DEFAULT_DB, DEFAULT_OUT_DIR, normalize_doi,
+                       normalize_title, make_reference_id, log_transition)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_QUERIES = REPO_ROOT / "query_results.json"
@@ -327,7 +327,7 @@ def run(queries_path: Path, backend: str, per_query: int, top_n: int,
     conn.commit()
 
     # Also dump raw search_results.json for the deliverable list
-    out_json = REPO_ROOT / "task3" / "data" / "search_results.json"
+    out_json = DEFAULT_OUT_DIR / "search_results.json"
     summary_rows = conn.execute(
         "SELECT reference_id, doi, title_raw, discovered_via, discovered_query, "
         "gap_template_id, voi_score, snippet FROM article_references "

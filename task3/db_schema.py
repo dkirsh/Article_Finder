@@ -21,11 +21,19 @@ verbatim so any later swap to the upstream DB is a drop-in.
 """
 
 from __future__ import annotations
+import os
 import sqlite3
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent
-DEFAULT_DB = REPO_ROOT / "data" / "pipeline_lifecycle_full.db"
+# $TRACK2_DB lets every stage (and subprocess) run against an isolated DB — the
+# test harness points it at a per-run temp file so repeated/parallel runs never
+# share mutable SQLite state (no DOI-uniqueness collisions / stale PRISMA).
+DEFAULT_DB = Path(os.environ.get(
+    "TRACK2_DB", str(REPO_ROOT / "data" / "pipeline_lifecycle_full.db")))
+# $TRACK2_OUT routes generated JSON/HTML outputs to a temp dir during tests, so
+# a verification run leaves the committed data/ tree untouched (full isolation).
+DEFAULT_OUT_DIR = Path(os.environ.get("TRACK2_OUT", str(REPO_ROOT / "data")))
 
 
 SCHEMA_SQL = """

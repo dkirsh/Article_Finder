@@ -33,7 +33,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from db_schema import open_db, DEFAULT_DB, log_transition
+from db_schema import open_db, DEFAULT_DB, DEFAULT_OUT_DIR, log_transition
 
 import os
 
@@ -254,7 +254,7 @@ def run(db_path: Path, min_year: int, voi_threshold: float) -> dict:
         "triage_reason": r["triage_reason"],
         "triage_stage": "abstract_triage",
     } for r in rows_out]
-    out_path = REPO_ROOT / "task3" / "data" / "triage_results.json"
+    out_path = DEFAULT_OUT_DIR / "triage_results.json"
     out_path.write_text(json.dumps(triage_export, indent=2), encoding="utf-8")
 
     conn.close()

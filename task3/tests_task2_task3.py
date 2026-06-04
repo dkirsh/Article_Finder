@@ -175,15 +175,19 @@ check("scidownl gate refuses without policy_clearance.json (default state)",
       clearance_present or not ok4,
       "clearance_present" if clearance_present else "absent → blocked")
 
-# Run a small in-memory pipeline and inspect
-db = HERE / "data" / "tests_scratch.db"
-if db.exists(): db.unlink()
-import subprocess
+# Run the pipeline against an ISOLATED per-run temp DB (test isolation fix):
+# $TRACK2_DB makes run_pipeline + every stage subprocess write a temp DB instead
+# of the committed pipeline_lifecycle_full.db, so repeated/parallel runs never
+# share mutable SQLite state (no DOI-uniqueness collisions, no stale PRISMA).
+import subprocess, tempfile, shutil
+_tmp_pipe = Path(tempfile.mkdtemp(prefix="t2t3_pipe_"))
+os.environ["TRACK2_DB"] = str(_tmp_pipe / "pipeline.db")
+os.environ["TRACK2_OUT"] = str(_tmp_pipe)   # stage JSON/HTML outputs -> temp too
 py = sys.executable
 subprocess.run([py, "run_pipeline.py", "--backend", "mock",
                 "--per-query", "10", "--top-n", "5"], cwd=HERE, check=True,
-               capture_output=True)
-conn = open_db(HERE / "data" / "pipeline_lifecycle_full.db")
+               capture_output=True, env={**os.environ})
+conn = open_db(Path(os.environ["TRACK2_DB"]))
 
 # zero-result handling: on mock backend every query produces records, so
 # verify the recorder by injecting an empty result manually.
@@ -234,8 +238,10 @@ prov = conn.execute("SELECT discovered_via FROM article_references WHERE doi=?",
 check("duplicate DOI updates provenance instead of inserting",
       action == "dedup_doi" and "scholarly_search" in prov, f"prov={prov}")
 
-# PRISMA: a separate manual GROUP BY equals the dashboard's numbers
-prisma = json.loads((HERE / "data" / "prisma_funnel.json").read_text())
+# PRISMA: compute the funnel from THIS run's temp DB (not the committed JSON),
+# so the numbers are isolated and always consistent with the rows we just read.
+import prisma_dashboard
+prisma = prisma_dashboard.compute(conn)
 manual = conn.execute(
     "SELECT COUNT(*) c, "
     "SUM(CASE WHEN triage_decision='ACCEPT' THEN 1 ELSE 0 END) AS accept, "
@@ -300,6 +306,9 @@ check("every decided reference_id has >=1 lifecycle transition",
       orphans == 0, f"orphans={orphans}")
 
 conn.close()
+shutil.rmtree(_tmp_pipe, ignore_errors=True)   # drop the per-run temp DB + outputs
+os.environ.pop("TRACK2_DB", None)
+os.environ.pop("TRACK2_OUT", None)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # GAP CLOSURES — AE inbox consumer, Task1->Task3 bridge, live network (opt-in)
