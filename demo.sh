@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
-# demo.sh — narrated, end-to-end Track 2 demo (Tasks 2 & 3).
+# demo.sh — narrated, end-to-end Track 2 demo (Tasks 1, 2 & 3).
 #
-#   ./demo.sh           # offline, deterministic (~15s)
+#   ./demo.sh           # offline, deterministic (~20s)
 #   ./demo.sh --live    # also downloads a REAL open-access PDF (needs network)
 #
 # Everything runs against an isolated temp DB/out ($TRACK2_DB/$TRACK2_OUT); the
 # committed tree is restored on exit. atlas_shared is resolved via install or
-# $KA_ATLAS_SHARED_SRC (see TRACK2_DELIVERABLE_MAP.md).
+# $KA_ATLAS_SHARED_SRC (see TRACK2_DELIVERABLE_MAP.md). Task 1 runs from the
+# sibling Knowledge_Atlas repo when it is checked out next to Article_Finder.
 set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
-export KA_ATLAS_SHARED_SRC="${KA_ATLAS_SHARED_SRC:-../atlas_shared/src}"
+_AS_ABS="$(cd ../atlas_shared/src 2>/dev/null && pwd)"
+export KA_ATLAS_SHARED_SRC="${KA_ATLAS_SHARED_SRC:-${_AS_ABS:-../atlas_shared/src}}"
 W="$(mktemp -d /tmp/track2_demo.XXXXXX)"
 export TRACK2_DB="$W/demo.db" TRACK2_OUT="$W"
 PY=python3
@@ -17,6 +19,19 @@ LIVE=0; [ "${1:-}" = "--live" ] && LIVE=1
 cleanup(){ git checkout -- query_results.json gap_results.json task3/data 2>/dev/null; rm -rf "$W"; }
 trap cleanup EXIT
 hr(){ printf '\n\033[1;36m━━ %s ━━\033[0m\n' "$1"; }
+
+hr "TASK 1 · Contribute page — classify a submitted article + store ONLY if relevant"
+KA_DIR="$(cd ../Knowledge_Atlas 2>/dev/null && pwd)"
+if [ -n "$KA_DIR" ]; then
+  ( cd "$KA_DIR" && $PY data/test_pdfs/validate_task1.py ) > "$W/task1.txt" 2>&1
+  sed $'s/\x1b\\[[0-9;]*m//g' "$W/task1.txt" | grep -E \
+"on-topic empirical|off-topic ML|biophilic theory|status=staged_pending_review|no DB row inserted|forced need_abstract|accept@0.50 demoted|accept@0.60 stays|OVERALL" \
+    | sed 's/^ *//; s/^/    /'
+  echo "    → on-topic stored as staged_pending_review · off-topic rejected WITHOUT storing"
+  echo "      uncertain → edge_case · no abstract → needs_more_info · confidence <0.55 demoted"
+else
+  echo "    (sibling Knowledge_Atlas repo not found next to Article_Finder — Task 1 skipped)"
+fi
 
 hr "TASK 2 · extract low-confidence mechanism gaps + score by VOI"
 $PY gap_extractor.py --confidence-threshold 0.6 --output "$W/gaps.json" >/dev/null

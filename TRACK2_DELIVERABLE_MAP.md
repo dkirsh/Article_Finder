@@ -77,7 +77,7 @@ step required.
 ### Evidence & integration proofs (runnable)
 | File | Role |
 |---|---|
-| `demo.sh` | one-command narrated end-to-end demo of Tasks 2 & 3 (`./demo.sh`, or `--live` to download a real OA PDF); runs against an isolated temp DB and restores the tree on exit. Captured run + annotations: `docs/DEMO_TRANSCRIPT.md` |
+| `demo.sh` | one-command narrated end-to-end demo of **Tasks 1, 2 & 3** (`./demo.sh`, or `--live` to download a real OA PDF); Task 1 runs from the sibling Knowledge_Atlas repo. Isolated temp DB, restores both trees on exit. Captured run + annotations: `docs/DEMO_TRANSCRIPT.md` |
 | `task3/eval_triage.py` | labeled triage eval — 30 abstracts incl. 6 within-domain hard near-misses; lenient **P 0.765 / R 0.929**, strict ACCEPT-only **P 1.0**; reports false-accept/reject + EDGE_CASE→human-review routing |
 | `task3/ae_ingest_smoke.py` | gated **real** Article-Eater ingestion smoke test (SKIPs cleanly with no AE; performs a real ingestion when `$AE_INGEST_CMD`/`$AE_INBOX` is set) |
 | `TRACK2_VOI_COMPARISON.md` | Track 2 heuristic VOI vs Article Eater/BN structural + epistemic VOI |
