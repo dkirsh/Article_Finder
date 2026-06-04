@@ -196,6 +196,17 @@ def _next_seq(conn: sqlite3.Connection) -> int:
     return (row["n"] or 0) + 1
 
 
+def _title_jaccard(a: str, b: str) -> float:
+    """Token Jaccard over normalized titles (tokens longer than 2 chars)."""
+    ta = {t for t in (a or "").split() if len(t) > 2}
+    tb = {t for t in (b or "").split() if len(t) > 2}
+    return len(ta & tb) / len(ta | tb) if ta and tb else 0.0
+
+
+# DOI-less near-duplicate threshold (token similarity, not just exact equality).
+FUZZY_TITLE_THRESHOLD = 0.85
+
+
 def insert_or_dedupe(conn: sqlite3.Connection, rec: dict, *,
                      discovered_via: str, discovered_query: str,
                      discovery_run_id: str, gap_template_id: str,
@@ -220,6 +231,17 @@ def insert_or_dedupe(conn: sqlite3.Connection, rec: dict, *,
             (title_norm,),
         ).fetchone()
         action = "dedup_title"
+    # DOI-less FUZZY title dedup (token Jaccard) — catches near-duplicates that
+    # exact normalized-title equality misses (e.g. trailing words, minor edits).
+    if existing is None and title_norm and len(title_norm.split()) >= 4:
+        for row in conn.execute(
+                "SELECT reference_id, discovered_via, title_normalized "
+                "FROM article_references "
+                "WHERE (doi IS NULL OR doi = '') AND title_normalized IS NOT NULL"):
+            if _title_jaccard(title_norm, row["title_normalized"]) >= FUZZY_TITLE_THRESHOLD:
+                existing = row
+                action = "dedup_title"
+                break
 
     if existing is not None:
         # Append channel to provenance only if not already present

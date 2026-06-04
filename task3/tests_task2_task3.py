@@ -94,6 +94,18 @@ vois = [g["voi_score"] for g in gaps]
 check("all VOI scores in [0,1]", all(0 <= v <= 1 for v in vois))
 check("gaps sorted desc by VOI", vois == sorted(vois, reverse=True))
 
+# N3 — voi_breakdown transparency (see TRACK2_VOI_COMPARISON.md): every gap
+# carries a structured breakdown; REAL fields are numeric, AE/BN-VOI fields are
+# EXPLICITLY null (honest placeholders, not silent omission).
+_VOI_BD_KEYS = {"local_confidence_gap", "evidence_sparsity", "network_centrality",
+                "downstream_impact", "contestation", "feasibility",
+                "structural_voi", "epistemic_voi"}
+check("every gap has a full voi_breakdown (8 keys)",
+      all(set(g.get("voi_breakdown", {})) == _VOI_BD_KEYS for g in gaps))
+check("voi_breakdown: real fields numeric, AE/BN fields explicitly null",
+      all(isinstance(g["voi_breakdown"]["local_confidence_gap"], (int, float))
+          and g["voi_breakdown"]["structural_voi"] is None for g in gaps))
+
 queries = json.loads((REPO / "query_results.json").read_text())
 check("≥10 query pairs", len(queries) >= 10, f"got {len(queries)}")
 check("AI Citation > 50 chars, ends with ?",
@@ -238,6 +250,23 @@ prov = conn.execute("SELECT discovered_via FROM article_references WHERE doi=?",
 check("duplicate DOI updates provenance instead of inserting",
       action == "dedup_doi" and "scholarly_search" in prov, f"prov={prov}")
 
+# N2 — DOI-less FUZZY title dedup: a near-duplicate title (exact-match misses it)
+# is caught by token similarity, so it is NOT inserted as a second row.
+conn.execute(
+    "INSERT INTO article_references (reference_id, doi, title_raw, title_normalized, "
+    "discovered_via, discovered_query, discovery_run_id, triage_stage) VALUES "
+    "('REF-fuzzy-1', NULL, 'Biophilic design improves attention restoration in offices', "
+    "'biophilic design improves attention restoration in offices', "
+    "'serpapi_scholar', 'qf', 'runf', 'metadata_only')")
+conn.commit()
+_fref, _faction = sr.insert_or_dedupe(
+    conn, {"doi": None, "title": "Biophilic design improves attention restoration offices"},
+    discovered_via="scholarly_search", discovered_query="qf2",
+    discovery_run_id="runf2", gap_template_id="g", voi_score=0.5)
+check("DOI-less near-duplicate title is fuzzy-deduped (token Jaccard >= 0.85)",
+      _faction == "dedup_title" and _fref == "REF-fuzzy-1",
+      f"action={_faction} ref={_fref}")
+
 # PRISMA: compute the funnel from THIS run's temp DB (not the committed JSON),
 # so the numbers are isolated and always consistent with the rows we just read.
 import prisma_dashboard
@@ -304,6 +333,16 @@ orphans = conn.execute(
 ).fetchone()["n"]
 check("every decided reference_id has >=1 lifecycle transition",
       orphans == 0, f"orphans={orphans}")
+
+# N4 — labeled-abstract triage evaluation: proves the classifier accepts relevant
+# and rejects irrelevant abstracts (classification VALIDITY, not just parser shape).
+import eval_triage
+_ev = eval_triage.evaluate()
+print(f"  triage eval: n={_ev['n']} precision={_ev['precision']} recall={_ev['recall']} "
+      f"false_accepts={_ev['false_accepts']} false_rejects={_ev['false_rejects']}")
+check("labeled triage eval: >=20 abstracts, precision & recall >= 0.7",
+      _ev["n"] >= 20 and _ev["precision"] >= 0.7 and _ev["recall"] >= 0.7,
+      f"p={_ev['precision']} r={_ev['recall']} n={_ev['n']}")
 
 conn.close()
 shutil.rmtree(_tmp_pipe, ignore_errors=True)   # drop the per-run temp DB + outputs
@@ -426,6 +465,22 @@ if os.environ.get("T2_LIVE") == "1":
               f"sha={(_row['pdf_sha256'] or '')[:12]}")
         check("LIVE: real OA PDF retrieved + %PDF + sha256 + acquired_paper_id + transition",
               _real, f"path={_row['pdf_path']}")
+
+        # N1 — multi-publisher OA proof: download from >=2 distinct publishers
+        # (robust to one publisher blocking on a given day).
+        _multi = {"PLOS": "10.1371/journal.pone.0173955",
+                  "BMC":  "10.1186/s12889-020-08720-7",
+                  "PeerJ": "10.7717/peerj.4375"}
+        _got = []
+        for _pub, _doi in _multi.items():
+            _r = _pa.try_unpaywall(_doi, "REF-" + _pub, _d / "multi", enable_network=True)
+            if _r[0] != "hit":
+                _r = _pa.try_openalex_oa(_doi, "REF-" + _pub + "-oa", _d / "multi", enable_network=True)
+            if _r[0] == "hit" and _r[2]:   # verified %PDF + sha256
+                _got.append((_pub, Path(_r[1]).stat().st_size))
+        print("  LIVE multi-publisher OA: " + ", ".join(f"{p}={s}B" for p, s in _got))
+        check("LIVE: OA PDF retrieved from >=2 distinct publishers (not just one DOI)",
+              len(_got) >= 2, f"publishers={[p for p, _ in _got]}")
     finally:
         shutil.rmtree(_d, ignore_errors=True)
 else:

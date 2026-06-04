@@ -86,6 +86,25 @@ def compute_voi(mechanism: dict, confidence: float) -> float:
     return round(max(0.0, min(1.0, voi)), 4)
 
 
+def voi_breakdown(mechanism: dict, confidence: float) -> dict:
+    """Structured VOI breakdown. REAL fields are computed here; `null` fields are
+    EXPLICIT placeholders that would come from the Article Eater / BN VOI services
+    (see TRACK2_VOI_COMPARISON.md). This is an honest statement of what the Track 2
+    heuristic does and does NOT model — not silent omission."""
+    fw = mechanism.get("framework_id", "") or ""
+    word_count = mechanism.get("word_count") or 0
+    return {
+        "local_confidence_gap": round(1.0 - confidence, 4),                  # REAL
+        "evidence_sparsity":    round(1.0 - min(word_count / 2000.0, 1.0), 4),  # REAL (coverage proxy)
+        "network_centrality":   0.15 if fw == "cross_framework" else 0.0,    # REAL (coarse)
+        "downstream_impact":    None,   # placeholder -> BN downstream_count
+        "contestation":         None,   # placeholder -> BN contestation_score
+        "feasibility":          None,   # placeholder -> BN feasibility_score
+        "structural_voi":       None,   # placeholder -> Article Eater voi_search
+        "epistemic_voi":        None,   # placeholder -> Article Eater voi_search
+    }
+
+
 def _voi_explanation(mechanism: dict, confidence: float, voi: float) -> str:
     """Human-readable breakdown of why this gap scored what it did."""
     parts = [f"base={1.0 - confidence:.2f} (1 - confidence={confidence:.2f})"]
@@ -173,6 +192,7 @@ def extract_gaps(
             "confidence":       confidence,
             "gap_type":         _gap_type(maturity, m.get("word_count") or 0),
             "voi_score":        voi,
+            "voi_breakdown":    voi_breakdown(m, confidence),
             "missing_evidence": _what_is_missing(m, maturity),
             "voi_explanation":  _voi_explanation(m, confidence, voi),
             "temporal":         m.get("temporal") or "",
