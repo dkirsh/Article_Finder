@@ -6,10 +6,10 @@ PORTS_JSON="$ROOT_DIR/contracts/ports.json"
 
 PORT=8501
 if [ -f "$PORTS_JSON" ]; then
-  PORT=$(python3 - <<'PY'
-import json
+  PORT=$(PORTS_JSON="$PORTS_JSON" python3 - <<'PY'
+import json, os
 from pathlib import Path
-p=Path("/Users/davidusa/REPOS/article_finder_v3.2.2/contracts/ports.json")
+p=Path(os.environ["PORTS_JSON"])
 try:
     data=json.loads(p.read_text(encoding='utf-8'))
     print(int(data.get('ports',{}).get('ui',{}).get('host',8501)))

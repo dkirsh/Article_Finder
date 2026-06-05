@@ -1,0 +1,17 @@
+{
+  "records_returned": 91,
+  "removed_at_metadata": 9,
+  "abstracts_collected": 77,
+  "missing_abstract": 5,
+  "screened_by_classifier": 77,
+  "accept": 0,
+  "edge_case": 77,
+  "reject_topic": 0,
+  "pdf_acquired": 0,
+  "pdf_gated": 0,
+  "dedup_provenance_merges": 0,
+  "dedupe_skipped": 9,
+  "included": 77,
+  "queries_executed": 10,
+  "gaps_targeted": 10
+}

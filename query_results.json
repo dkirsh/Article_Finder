@@ -1,0 +1,352 @@
+[
+  {
+    "gap_id": "SOCIAL-AFFILIATION-002",
+    "template_id": "SOCIAL-AFFILIATION-002",
+    "mechanism_name": "Architectural signaling of group identity",
+    "framework_id": "cross_framework",
+    "framework_name": "Cross-Framework",
+    "voi_score": 0.61,
+    "confidence": 0.42,
+    "gap_type": "mechanism_underpowered",
+    "gap_summary": "Architectural signaling of group identity (Cross-Framework, How-Plausibly)",
+    "ai_citation_query": "What longitudinal evidence shows that exposure to architectural configuration shapes 'Architectural signaling of group identity', and how does 'social cognition' mediate the effect in healthy adults, as predicted by social neuroscience and embodied cognition?",
+    "boolean_query": "(\"Architectural signaling of group\" OR \"social cognition\") AND (\"architectural configuration\" OR \"social space\") AND (\"Architectural signaling of group\" OR \"group identity\") -review",
+    "query_terms": {
+      "environment_terms": [
+        "architectural configuration",
+        "social space",
+        "built environment"
+      ],
+      "mechanism_terms": [
+        "Architectural signaling of group identity",
+        "social cognition"
+      ],
+      "outcome_terms": [
+        "group identity",
+        "oxytocin"
+      ],
+      "method_terms": [
+        "longitudinal evidence"
+      ]
+    },
+    "query_quality_flags": [
+      "degenerate_dv"
+    ],
+    "query_rationale": "Targets longitudinal evidence linking 'Architectural signaling of group identity' to 'Architectural signaling of group identity' within Cross-Framework. -review excludes narrative summaries to prioritise primary studies. VOI=0.610 (confidence=0.42).",
+    "what_is_missing": "Empirical grounding for 'Architectural signaling of group identity' (Cross-Framework, Chronic) is at the plausible stage; primary neurobiological or psychophysiological evidence is needed."
+  },
+  {
+    "gap_id": "INTERO-PP-ALLOSTASIS-001",
+    "template_id": "INTERO-PP-ALLOSTASIS-001",
+    "mechanism_name": "Interoceptive PE failure → allostatic cascade",
+    "framework_id": "cross_framework",
+    "framework_name": "Cross-Framework",
+    "voi_score": 0.61,
+    "confidence": 0.42,
+    "gap_type": "mechanism_underpowered",
+    "gap_summary": "Interoceptive PE failure → allostatic cascade (Cross-Framework, How-Plausibly)",
+    "ai_citation_query": "What longitudinal evidence shows that thermal environment exposure influences 'Interoceptive PE failure' leading to 'allostatic cascade' in healthy adults, consistent with interoceptive predictive processing and Allostatic Load theory?",
+    "boolean_query": "(\"Interoceptive PE failure\" OR \"interoception\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"allostatic cascade\" OR \"allostatic load\") -review",
+    "query_terms": {
+      "environment_terms": [
+        "thermal environment",
+        "indoor climate",
+        "built environment"
+      ],
+      "mechanism_terms": [
+        "Interoceptive PE failure → allostatic cascade",
+        "interoception"
+      ],
+      "outcome_terms": [
+        "allostatic load",
+        "autonomic regulation"
+      ],
+      "method_terms": [
+        "longitudinal evidence"
+      ]
+    },
+    "query_quality_flags": [],
+    "query_rationale": "Targets longitudinal evidence linking 'Interoceptive PE failure' to 'allostatic cascade' within Cross-Framework. -review excludes narrative summaries to prioritise primary studies. VOI=0.610 (confidence=0.42).",
+    "what_is_missing": "Direct empirical measurement linking 'Interoceptive PE failure' to 'allostatic cascade' in built-environment contexts (Chronic) is absent. The pathway is theorised within Cross-Framework but lacks grounding in primary human studies."
+  },
+  {
+    "gap_id": "SOCIAL-ACOUSTIC-COUPLING-001",
+    "template_id": "SOCIAL-ACOUSTIC-COUPLING-001",
+    "mechanism_name": "Acoustic SNR × sightline → coupling",
+    "framework_id": "cross_framework",
+    "framework_name": "Cross-Framework",
+    "voi_score": 0.53,
+    "confidence": 0.42,
+    "gap_type": "mechanism_underpowered",
+    "gap_summary": "Acoustic SNR × sightline → coupling (Cross-Framework, How-Plausibly)",
+    "ai_citation_query": "What empirical evidence shows that acoustic environment exposure influences 'Acoustic SNR × sightline' leading to 'coupling' in healthy adults, as explained by multisensory integration and social neuroscience?",
+    "boolean_query": "(\"Acoustic SNR × sightline\" OR \"signal-to-noise ratio\") AND (\"acoustic environment\" OR \"multisensory environment\") AND (\"coupling\" OR \"neural coupling\") -review",
+    "query_terms": {
+      "environment_terms": [
+        "acoustic environment",
+        "multisensory environment",
+        "built environment"
+      ],
+      "mechanism_terms": [
+        "Acoustic SNR × sightline → coupling",
+        "signal-to-noise ratio"
+      ],
+      "outcome_terms": [
+        "neural coupling",
+        "cross-modal congruence"
+      ],
+      "method_terms": [
+        "empirical evidence"
+      ]
+    },
+    "query_quality_flags": [],
+    "query_rationale": "Targets empirical evidence linking 'Acoustic SNR × sightline' to 'coupling' within Cross-Framework. -review excludes narrative summaries to prioritise primary studies. VOI=0.530 (confidence=0.42).",
+    "what_is_missing": "Direct empirical measurement linking 'Acoustic SNR × sightline' to 'coupling' in built-environment contexts (Fast neural) is absent. The pathway is theorised within Cross-Framework but lacks grounding in primary human studies."
+  },
+  {
+    "gap_id": "MULTISENSORY-CONGRUENCE-001",
+    "template_id": "MULTISENSORY-CONGRUENCE-001",
+    "mechanism_name": "Cross-modal alignment → superadditivity",
+    "framework_id": "cross_framework",
+    "framework_name": "Cross-Framework",
+    "voi_score": 0.53,
+    "confidence": 0.42,
+    "gap_type": "mechanism_underpowered",
+    "gap_summary": "Cross-modal alignment → superadditivity (Cross-Framework, How-Plausibly)",
+    "ai_citation_query": "What empirical evidence shows that multisensory environment exposure influences 'Cross modal alignment' leading to 'superadditivity' in healthy adults, as explained by multisensory integration theory?",
+    "boolean_query": "(\"Cross modal alignment\" OR \"cross-modal congruence\") AND (\"multisensory environment\" OR \"built environment\") AND (\"superadditivity\" OR \"superadditivity\") -review",
+    "query_terms": {
+      "environment_terms": [
+        "multisensory environment",
+        "built environment",
+        "acoustic and visual space"
+      ],
+      "mechanism_terms": [
+        "Cross-modal alignment → superadditivity",
+        "cross-modal congruence"
+      ],
+      "outcome_terms": [
+        "superadditivity",
+        "multisensory binding"
+      ],
+      "method_terms": [
+        "empirical evidence"
+      ]
+    },
+    "query_quality_flags": [],
+    "query_rationale": "Targets empirical evidence linking 'Cross modal alignment' to 'superadditivity' within Cross-Framework. -review excludes narrative summaries to prioritise primary studies. VOI=0.530 (confidence=0.42).",
+    "what_is_missing": "Direct empirical measurement linking 'Cross-modal alignment' to 'superadditivity' in built-environment contexts (Fast neural) is absent. The pathway is theorised within Cross-Framework but lacks grounding in primary human studies."
+  },
+  {
+    "gap_id": "COMPLEXITY-LOAD-001",
+    "template_id": "COMPLEXITY-LOAD-001",
+    "mechanism_name": "Environmental complexity & cognitive load",
+    "framework_id": "cross_framework",
+    "framework_name": "Cross-Framework",
+    "voi_score": 0.53,
+    "confidence": 0.42,
+    "gap_type": "mechanism_underpowered",
+    "gap_summary": "Environmental complexity & cognitive load (Cross-Framework, How-Plausibly)",
+    "ai_citation_query": "What empirical evidence shows that exposure to architectural space shapes 'Environmental complexity & cognitive load', and how does 'prediction error' mediate the effect in healthy adults, as predicted by Predictive Processing theory?",
+    "boolean_query": "(\"Environmental complexity & cognitive\" OR \"prediction error\") AND (\"architectural space\" OR \"visual environment\") AND (\"Environmental complexity & cognitive\" OR \"cognitive load\") -review",
+    "query_terms": {
+      "environment_terms": [
+        "architectural space",
+        "visual environment",
+        "built environment"
+      ],
+      "mechanism_terms": [
+        "Environmental complexity & cognitive load",
+        "prediction error"
+      ],
+      "outcome_terms": [
+        "cognitive load",
+        "precision weighting"
+      ],
+      "method_terms": [
+        "empirical evidence"
+      ]
+    },
+    "query_quality_flags": [
+      "degenerate_dv"
+    ],
+    "query_rationale": "Targets empirical evidence linking 'Environmental complexity & cognitive load' to 'Environmental complexity & cognitive load' within Cross-Framework. -review excludes narrative summaries to prioritise primary studies. VOI=0.530 (confidence=0.42).",
+    "what_is_missing": "Empirical grounding for 'Environmental complexity & cognitive load' (Cross-Framework, Variable) is at the plausible stage; primary neurobiological or psychophysiological evidence is needed."
+  },
+  {
+    "gap_id": "WAYFINDING-002",
+    "template_id": "WAYFINDING-002",
+    "mechanism_name": "Geometric coherence & route planning",
+    "framework_id": "cross_framework",
+    "framework_name": "Cross-Framework",
+    "voi_score": 0.53,
+    "confidence": 0.42,
+    "gap_type": "mechanism_underpowered",
+    "gap_summary": "Geometric coherence & route planning (Cross-Framework, How-Plausibly)",
+    "ai_citation_query": "What empirical evidence shows that exposure to spatial environment shapes 'Geometric coherence & route planning', and how does 'spatial memory' mediate the effect in healthy adults, within the memory-systems framework?",
+    "boolean_query": "(\"Geometric coherence & route\" OR \"spatial memory\") AND (\"spatial environment\" OR \"architectural layout\") AND (\"Geometric coherence & route\" OR \"hippocampal encoding\") -review",
+    "query_terms": {
+      "environment_terms": [
+        "spatial environment",
+        "architectural layout",
+        "built space"
+      ],
+      "mechanism_terms": [
+        "Geometric coherence & route planning",
+        "spatial memory"
+      ],
+      "outcome_terms": [
+        "hippocampal encoding",
+        "place cells"
+      ],
+      "method_terms": [
+        "empirical evidence"
+      ]
+    },
+    "query_quality_flags": [
+      "degenerate_dv"
+    ],
+    "query_rationale": "Targets empirical evidence linking 'Geometric coherence & route planning' to 'Geometric coherence & route planning' within Cross-Framework. -review excludes narrative summaries to prioritise primary studies. VOI=0.530 (confidence=0.42).",
+    "what_is_missing": "Empirical grounding for 'Geometric coherence & route planning' (Cross-Framework, Network) is at the plausible stage; primary neurobiological or psychophysiological evidence is needed."
+  },
+  {
+    "gap_id": "CIRCADIAN-DEV-PROGRAM-001",
+    "template_id": "CIRCADIAN-DEV-PROGRAM-001",
+    "mechanism_name": "Morning light → circadian calibration",
+    "framework_id": "cross_framework",
+    "framework_name": "Cross-Framework",
+    "voi_score": 0.53,
+    "confidence": 0.42,
+    "gap_type": "mechanism_underpowered",
+    "gap_summary": "Morning light → circadian calibration (Cross-Framework, How-Plausibly)",
+    "ai_citation_query": "What empirical evidence shows that daylight exposure influences 'Morning light' leading to 'circadian calibration' in healthy adults, consistent with circadian entrainment research?",
+    "boolean_query": "(\"Morning light\" OR \"circadian rhythm\") AND (\"daylight\" OR \"natural light\") AND (\"circadian calibration\" OR \"light entrainment\") -review",
+    "query_terms": {
+      "environment_terms": [
+        "daylight",
+        "natural light",
+        "light exposure"
+      ],
+      "mechanism_terms": [
+        "Morning light → circadian calibration",
+        "circadian rhythm"
+      ],
+      "outcome_terms": [
+        "light entrainment",
+        "melatonin"
+      ],
+      "method_terms": [
+        "empirical evidence"
+      ]
+    },
+    "query_quality_flags": [],
+    "query_rationale": "Targets empirical evidence linking 'Morning light' to 'circadian calibration' within Cross-Framework. -review excludes narrative summaries to prioritise primary studies. VOI=0.530 (confidence=0.42).",
+    "what_is_missing": "Direct empirical measurement linking 'Morning light' to 'circadian calibration' in built-environment contexts (Developmental) is absent. The pathway is theorised within Cross-Framework but lacks grounding in primary human studies."
+  },
+  {
+    "gap_id": "THERMAL-SOCIAL-WARMTH-001",
+    "template_id": "THERMAL-SOCIAL-WARMTH-001",
+    "mechanism_name": "Physical warmth → social warmth",
+    "framework_id": "cross_framework",
+    "framework_name": "Cross-Framework",
+    "voi_score": 0.53,
+    "confidence": 0.42,
+    "gap_type": "mechanism_underpowered",
+    "gap_summary": "Physical warmth → social warmth (Cross-Framework, How-Plausibly)",
+    "ai_citation_query": "What empirical evidence shows that thermal environment exposure influences 'Physical warmth' leading to 'social warmth' in healthy adults, as explained by embodied cognition and social neuroscience?",
+    "boolean_query": "(\"Physical warmth\" OR \"embodied simulation\") AND (\"thermal environment\" OR \"indoor climate\") AND (\"social warmth\" OR \"social warmth\") -review",
+    "query_terms": {
+      "environment_terms": [
+        "thermal environment",
+        "indoor climate",
+        "built environment"
+      ],
+      "mechanism_terms": [
+        "Physical warmth → social warmth",
+        "embodied simulation"
+      ],
+      "outcome_terms": [
+        "social warmth",
+        "sensorimotor coupling"
+      ],
+      "method_terms": [
+        "empirical evidence"
+      ]
+    },
+    "query_quality_flags": [],
+    "query_rationale": "Targets empirical evidence linking 'Physical warmth' to 'social warmth' within Cross-Framework. -review excludes narrative summaries to prioritise primary studies. VOI=0.530 (confidence=0.42).",
+    "what_is_missing": "Direct empirical measurement linking 'Physical warmth' to 'social warmth' in built-environment contexts (Neuromod) is absent. The pathway is theorised within Cross-Framework but lacks grounding in primary human studies."
+  },
+  {
+    "gap_id": "EMOTION-REGULATION-001",
+    "template_id": "EMOTION-REGULATION-001",
+    "mechanism_name": "Safety cues & emotion downregulation",
+    "framework_id": "cross_framework",
+    "framework_name": "Cross-Framework",
+    "voi_score": 0.53,
+    "confidence": 0.42,
+    "gap_type": "mechanism_underpowered",
+    "gap_summary": "Safety cues & emotion downregulation (Cross-Framework, How-Plausibly)",
+    "ai_citation_query": "What empirical evidence shows that exposure to natural environment shapes 'Safety cues & emotion downregulation', and how does 'stress recovery' mediate the effect in healthy adults, as predicted by Stress Recovery Theory?",
+    "boolean_query": "(\"Safety cues & emotion\" OR \"stress recovery\") AND (\"natural environment\" OR \"restorative space\") AND (\"Safety cues & emotion\" OR \"amygdala response\") -review",
+    "query_terms": {
+      "environment_terms": [
+        "natural environment",
+        "restorative space",
+        "built environment"
+      ],
+      "mechanism_terms": [
+        "Safety cues & emotion downregulation",
+        "stress recovery"
+      ],
+      "outcome_terms": [
+        "amygdala response",
+        "autonomic restoration"
+      ],
+      "method_terms": [
+        "empirical evidence"
+      ]
+    },
+    "query_quality_flags": [
+      "degenerate_dv"
+    ],
+    "query_rationale": "Targets empirical evidence linking 'Safety cues & emotion downregulation' to 'Safety cues & emotion downregulation' within Cross-Framework. -review excludes narrative summaries to prioritise primary studies. VOI=0.530 (confidence=0.42).",
+    "what_is_missing": "Empirical grounding for 'Safety cues & emotion downregulation' (Cross-Framework, Neuromod) is at the plausible stage; primary neurobiological or psychophysiological evidence is needed."
+  },
+  {
+    "gap_id": "OLFACTORY-SPATIAL-MEMORY-001",
+    "template_id": "OLFACTORY-SPATIAL-MEMORY-001",
+    "mechanism_name": "Scent-tagged spatial encoding",
+    "framework_id": "cross_framework",
+    "framework_name": "Cross-Framework",
+    "voi_score": 0.53,
+    "confidence": 0.42,
+    "gap_type": "mechanism_underpowered",
+    "gap_summary": "Scent-tagged spatial encoding (Cross-Framework, How-Plausibly)",
+    "ai_citation_query": "What empirical evidence shows that exposure to indoor air quality shapes 'Scent tagged spatial encoding', and how does 'olfactory memory' mediate the effect in healthy adults, within the olfactory-limbic memory framework?",
+    "boolean_query": "(\"Scent tagged spatial encoding\" OR \"olfactory memory\") AND (\"indoor air quality\" OR \"olfactory environment\") AND (\"Scent tagged spatial encoding\" OR \"hippocampal binding\") -review",
+    "query_terms": {
+      "environment_terms": [
+        "indoor air quality",
+        "olfactory environment",
+        "built environment"
+      ],
+      "mechanism_terms": [
+        "Scent-tagged spatial encoding",
+        "olfactory memory"
+      ],
+      "outcome_terms": [
+        "hippocampal binding",
+        "place memory"
+      ],
+      "method_terms": [
+        "empirical evidence"
+      ]
+    },
+    "query_quality_flags": [
+      "degenerate_dv"
+    ],
+    "query_rationale": "Targets empirical evidence linking 'Scent tagged spatial encoding' to 'Scent tagged spatial encoding' within Cross-Framework. -review excludes narrative summaries to prioritise primary studies. VOI=0.530 (confidence=0.42).",
+    "what_is_missing": "Empirical grounding for 'Scent-tagged spatial encoding' (Cross-Framework, Network) is at the plausible stage; primary neurobiological or psychophysiological evidence is needed."
+  }
+]

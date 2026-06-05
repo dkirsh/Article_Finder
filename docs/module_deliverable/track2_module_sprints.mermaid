@@ -1,0 +1,77 @@
+%%{init: {'flowchart': {'nodeSpacing': 28, 'rankSpacing': 38, 'curve': 'basis', 'useMaxWidth': true}, 'themeVariables': {'fontSize': '12px'}}}%%
+%% COGS 160 Track 2 — Article Finder module, AS BUILT, organised by sprint.
+%% Branch: track2/dhruv-sood  (dkirsh/Knowledge_Atlas PR #1, dkirsh/Article_Finder PR #1)
+%% Pink = the last-mile handoff added in remediation. Grey = AE-owned (out of AF scope).
+flowchart TD
+
+    START(["Contributor / pipeline operator"]):::ext
+
+    subgraph S1["SPRINT 1 — Task 1: Fix the Contribute Page  (Knowledge_Atlas)"]
+        direction TB
+        UI["Contribute UI<br/>ka_contribute_public.html / ka_contribute.html<br/>3 input modes; honest status + needs_more_info"]
+        EP["POST /api/articles/suggest<br/>ka_article_endpoints.py"]
+        VAL["validate PDF: %PDF magic + size + SHA-256"]
+        DUP["dedup probe<br/>_check_duplicate (SHA/DOI/fuzzy)<br/>= local substitute for probe_pdf_against_article_eater"]
+        CLF["classify + assess<br/>AdaptiveClassifierSubsystem +<br/>QuestionArticleRelevanceFilter<br/>§6 floor: accept&lt;0.55 -> edge_case"]
+        VERD{"verdict"}
+        STORE["store row: status=staged_pending_review<br/>(accept / edge_case) + quarantine PDF + audit_log"]
+        NOSTORE["NO store: reject / duplicate(ptr) /<br/>rejected_bad_file / needs_more_info"]
+        UI --> EP --> VAL --> DUP --> CLF --> VERD
+        VERD -->|accept / edge_case| STORE
+        VERD -->|reject / dup / bad / needs_more_info| NOSTORE
+    end
+    START --> UI
+
+    subgraph S2["SPRINT 2 — Task 2: Gap Targeting &amp; Query Generation  (Article_Finder)"]
+        direction TB
+        GAP["gap_extractor.py<br/>walk mechanism manifest; VOI score<br/>(base+centrality+temporal-coverage)"]
+        QRY["query_generator.py<br/>AI Citation + Boolean per gap<br/>+ query_quality_flags (closed enum)"]
+        QJSON["query_results.json"]
+        GAP --> QRY --> QJSON
+    end
+    START --> GAP
+
+    subgraph S3["SPRINT 3 — Task 3: Search, Triage, Acquire, Handoff  (Article_Finder/task3)"]
+        direction TB
+        SR["search_runner.py<br/>4 backends -> article_references<br/>(every ref lands here; dedupe-on-insert)"]
+        T1S["abstract_triage.py (Stage 1)<br/>metadata screen -> rejected_at_metadata"]
+        AC["abstract_collector.py (Stage 2A)<br/>S2/CrossRef/PubMed/OpenAlex<br/>none -> triage_decision=MISSING_ABSTRACT"]
+        T2S["abstract_triage.py (Stage 2B)<br/>ACCEPT / EDGE_CASE / REJECT"]
+        PDF["pdf_acquirer.py (Stage 3)<br/>v_acquisition_queue = ACCEPT only<br/>Unpaywall->OA->scidownl (4-cond gate)"]
+        PRISMA["prisma_dashboard.py<br/>single GROUP BY -> 15-field funnel"]
+        HANDOFF["ae_handoff.py — LAST MILE<br/>ACCEPT + abstract -> data/handoff/&lt;id&gt;.json<br/>idempotent (handoff_log UNIQUE) + handed_off txn"]
+        QJSON --> SR --> T1S --> AC --> T2S --> PDF --> PRISMA --> HANDOFF
+    end
+
+    AE["Article Eater intake<br/>reads data/handoff/*.json<br/>(AE-owned: extraction, BN edges, 'running/complete/failed')"]:::ext
+    HANDOFF --> AE
+
+    LT["lifecycle_transitions — audit log of every stage change<br/>(search_runner -> abstract_collector -> abstract_triage -> pdf_acquirer -> ae_handoff)"]:::audit
+    SR -.-> LT
+    HANDOFF -.-> LT
+
+    subgraph PROOF["Contracts + verification (all green)"]
+        direction TB
+        C1["CLASSIFIER_INTEGRATION_CONTRACT_TASK1.md"]
+        C3["TASK3_CONTRACT.md (+ Task 2 contracts)"]
+        V1["validate_task1.py — 40/40"]
+        V3["tests_task2_task3.py — 37/37"]
+        VC["verify_track2_workflow.py — 8/8 (chain + handoff)"]
+    end
+    STORE -.verified by.-> V1
+    HANDOFF -.verified by.-> VC
+    PRISMA -.verified by.-> V3
+
+    classDef ext fill:#ececec,stroke:#777,color:#222;
+    classDef handoff fill:#fde2f3,stroke:#c2188a,color:#5e0a44;
+    classDef store fill:#e4f4e8,stroke:#2f8f4e,color:#14401f;
+    classDef nostore fill:#fbe6e6,stroke:#c0392b,color:#5b1410;
+    classDef decision fill:#fff4d6,stroke:#b8860b,color:#4a3500;
+    classDef audit fill:#eef2ff,stroke:#3b5b92,color:#1d2b45;
+    classDef proof fill:#f4f4f4,stroke:#999,color:#333;
+
+    class HANDOFF handoff;
+    class STORE store;
+    class NOSTORE nostore;
+    class VERD decision;
+    class C1,C3,V1,V3,VC proof;

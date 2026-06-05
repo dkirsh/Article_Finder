@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "article-finder-v2"
+version = "0.2.0"
+description = "Legal, AI-assisted scholarly discovery and triage. No Sci-Hub."
+requires-python = ">=3.10"
+dependencies = [
+  "requests>=2.31",
+]
+
+[project.optional-dependencies]
+ai = ["anthropic>=0.34", "openai>=1.50"]
+dev = ["pytest>=8", "ruff>=0.4"]
+
+[project.scripts]
+article-finder = "article_finder.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+# Skip live-API tests by default; opt in with `pytest -m live`
+addopts = "-q -m 'not live'"
+markers = [
+  "live: hits real public APIs (skipped by default; run with `pytest -m live`)",
+]

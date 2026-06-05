@@ -1,0 +1,94 @@
+{
+  "version": "2026-04-07",
+  "questions": [
+    {
+      "question_id": "SQ-ART-001",
+      "question_text": "Does exposure to natural environments improve directed attention in adults?",
+      "topic": "Nature and Attention",
+      "subtopic": "Natural and Biophilic Conditions",
+      "panel_status": "llm_panel_drafted",
+      "constitution_version": "v1",
+      "environment_terms": [
+        "nature",
+        "green space",
+        "natural environment",
+        "forest",
+        "biophilic",
+        "green view",
+        "vegetation"
+      ],
+      "outcome_terms": [
+        "directed attention",
+        "attention",
+        "executive attention",
+        "sustained attention",
+        "cognitive restoration"
+      ],
+      "exclusion_terms": [
+        "adhd",
+        "attention deficit",
+        "attention disorder",
+        "clinical treatment"
+      ],
+      "edge_terms": [
+        "stress recovery",
+        "restoration",
+        "mood",
+        "fatigue recovery"
+      ],
+      "search_hints": [
+        "green view",
+        "attention task",
+        "restorative environment"
+      ],
+      "required_evidence_terms": [
+        "participants",
+        "sample",
+        "experiment",
+        "p <",
+        "attention task"
+      ],
+      "accept_indicators": [
+        "Human participants are exposed to natural environments, green views, vegetation, or biophilic conditions.",
+        "The paper contains a direct attention outcome, attention task, or clearly cognate executive-attention measure.",
+        "The natural-exposure construct is not merely decorative preference but part of the explanatory or measured condition."
+      ],
+      "reject_indicators": [
+        "The paper is about ADHD treatment or attention-deficit symptom management rather than ordinary environmental cognition.",
+        "The paper concerns nature exposure but contains no attention outcome and no plausible attention proxy.",
+        "The paper is purely preference, aesthetics, or landscape appreciation without cognitive evidence."
+      ],
+      "edge_case_indicators": [
+        "The paper studies nature exposure and stress or mood recovery but lacks a direct attention task.",
+        "The paper uses restoration language that may imply attention recovery but does not measure it clearly.",
+        "The paper is a review or theory paper that is topically relevant but not direct evidence."
+      ],
+      "allowed_article_types": [
+        "empirical_research",
+        "systematic_review",
+        "meta_analysis",
+        "narrative_review",
+        "case_study",
+        "mixed_methods",
+        "qualitative_research"
+      ],
+      "marginal_article_types": [
+        "theoretical",
+        "commentary",
+        "protocol"
+      ],
+      "rejected_article_types": [
+        "book_review",
+        "editorial",
+        "preprint",
+        "computational_simulation"
+      ],
+      "llm_panel_summary": "This constitution was drafted as an LLM-assisted panel brief. The core distinction is between direct attention evidence and adjacent restoration or affect-only work.",
+      "llm_prompt_version": "question-constitution-panel-v1",
+      "panel_markdown_path": "docs/panels/SQ-ART-001_NATURE_AND_ATTENTION_PANEL.md",
+      "panel_notes": "Starter constitution only. Other question-bank items still require drafting and review.",
+      "source_question": "Does exposure to natural environments improve directed attention in adults?",
+      "source_question_bank": "starter_bank"
+    }
+  ]
+}

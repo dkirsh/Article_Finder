@@ -1,0 +1,252 @@
+/* =========================================================================
+   EcoCast — Foundations
+   Modern SaaS aesthetic (Linear/Vercel) with climate-coded data gradient.
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
+
+:root {
+  /* ---------- Neutrals (dark-first, flip via .light) ---------- */
+  --bg-0: #07090B;         /* page */
+  --bg-1: #0C0F13;         /* surface */
+  --bg-2: #12161C;         /* raised */
+  --bg-3: #1A1F27;         /* overlay / input */
+  --bg-inset: #05070A;     /* pressed / wells */
+
+  --fg-1: #F2F4F7;         /* primary text */
+  --fg-2: #B4BCC7;         /* secondary text */
+  --fg-3: #7A8290;         /* tertiary / meta */
+  --fg-4: #4A525E;         /* disabled / placeholder */
+
+  --border-1: rgba(255,255,255,0.06);
+  --border-2: rgba(255,255,255,0.10);
+  --border-3: rgba(255,255,255,0.16);
+  --border-focus: rgba(255,158,102,0.55);
+
+  /* ---------- Climate Gradient (the core system) ----------
+     Cool (cold / baseline / winners-in-warming-world) → Warm (hot / stressed / losers)
+     Use as: heatmap fills, charts, status pills, delta arrows, brand accent.
+  */
+  --climate-00: #0B2A4A;   /* deep cold */
+  --climate-10: #1E4F8A;
+  --climate-20: #2E7DC4;
+  --climate-30: #57A8D9;
+  --climate-40: #9FD0E8;
+  --climate-50: #F1E9D2;   /* neutral / baseline */
+  --climate-60: #F5C77E;
+  --climate-70: #F29A4B;
+  --climate-80: #E66A2C;
+  --climate-90: #C8391B;
+  --climate-99: #7A1710;   /* extreme hot */
+
+  /* Brand accent: a warm amber pulled from the gradient — signals "climate" without being alarmist */
+  --accent:        #F29A4B;
+  --accent-hover:  #FFAE62;
+  --accent-press:  #D87E32;
+  --accent-soft:   rgba(242,154,75,0.12);
+  --accent-ring:   rgba(242,154,75,0.30);
+
+  /* Cool counterpart — used for baseline state, "winners", links */
+  --cool:          #57A8D9;
+  --cool-hover:    #7DBEE4;
+  --cool-soft:     rgba(87,168,217,0.12);
+
+  /* ---------- Semantic ---------- */
+  --success: #4ADE80;       /* range expanding / thriving */
+  --success-soft: rgba(74,222,128,0.12);
+  --warn:    #F5C77E;       /* range shifting */
+  --warn-soft: rgba(245,199,126,0.14);
+  --danger:  #E05A4A;       /* range collapsing / extirpation */
+  --danger-soft: rgba(224,90,74,0.14);
+  --info:    var(--cool);
+
+  /* ---------- Typography ---------- */
+  --font-sans:    'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-serif:   'Instrument Serif', ui-serif, Georgia, serif;
+  --font-mono:    'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-brand:   'Montserrat', ui-sans-serif, system-ui, sans-serif; /* brand italic accent */
+
+  --fs-xs:   11px;
+  --fs-sm:   12px;
+  --fs-base: 14px;
+  --fs-md:   16px;
+  --fs-lg:   18px;
+  --fs-xl:   22px;
+  --fs-2xl:  28px;
+  --fs-3xl:  36px;
+  --fs-4xl:  48px;
+  --fs-5xl:  64px;
+  --fs-6xl:  88px;
+
+  --lh-tight:   1.12;
+  --lh-snug:    1.28;
+  --lh-normal:  1.5;
+  --lh-loose:   1.7;
+
+  --tracking-tight:  -0.02em;
+  --tracking-snug:   -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.04em;
+  --tracking-caps:   0.08em;
+
+  /* ---------- Spacing (4px base) ---------- */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ---------- Radii ---------- */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-2xl: 20px;
+  --r-full: 999px;
+
+  /* ---------- Shadows (dark-surface tuned) ---------- */
+  --shadow-1: 0 1px 0 rgba(255,255,255,0.04) inset, 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-2: 0 1px 0 rgba(255,255,255,0.04) inset, 0 4px 12px rgba(0,0,0,0.45);
+  --shadow-3: 0 1px 0 rgba(255,255,255,0.05) inset, 0 12px 32px rgba(0,0,0,0.55);
+  --shadow-glow: 0 0 0 1px var(--accent-ring), 0 8px 24px rgba(242,154,75,0.25);
+
+  /* ---------- Motion ---------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 360ms;
+
+  /* ---------- Layout ---------- */
+  --content-max: 1200px;
+  --panel-w: 360px;
+  --header-h: 56px;
+}
+
+/* Light theme override — rarely the default, but available */
+.light {
+  --bg-0: #FAFAF7;
+  --bg-1: #FFFFFF;
+  --bg-2: #F4F4EF;
+  --bg-3: #EAEAE3;
+  --bg-inset: #F0EFE9;
+  --fg-1: #0B0D10;
+  --fg-2: #3A4048;
+  --fg-3: #6B7280;
+  --fg-4: #A1A7B0;
+  --border-1: rgba(0,0,0,0.06);
+  --border-2: rgba(0,0,0,0.10);
+  --border-3: rgba(0,0,0,0.18);
+  --shadow-1: 0 1px 2px rgba(15,20,30,0.06);
+  --shadow-2: 0 4px 14px rgba(15,20,30,0.08);
+  --shadow-3: 0 16px 40px rgba(15,20,30,0.10);
+}
+
+/* =========================================================================
+   Base elements
+   ========================================================================= */
+html, body {
+  background: var(--bg-0);
+  color: var(--fg-1);
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Semantic type scale */
+.eco-display {
+  font-family: var(--font-serif);
+  font-size: var(--fs-6xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 400;
+}
+.eco-h1 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-4xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 500;
+}
+.eco-h2 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-snug);
+  font-weight: 500;
+}
+.eco-h3 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-snug);
+  font-weight: 500;
+}
+.eco-h4 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xl);
+  line-height: var(--lh-snug);
+  font-weight: 500;
+}
+.eco-body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--fg-2);
+}
+.eco-lead {
+  font-family: var(--font-sans);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-normal);
+  color: var(--fg-2);
+}
+.eco-caption {
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--fg-3);
+}
+.eco-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--fg-3);
+  font-weight: 500;
+}
+.eco-data {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-snug);
+}
+.eco-serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+/* Scrollbar (subtle, dark-appropriate) */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 999px; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* Focus ring */
+.eco-focus:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+}
