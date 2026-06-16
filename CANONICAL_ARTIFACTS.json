@@ -1,0 +1,36 @@
+{
+  "schema": "canonical_artifacts_v1",
+  "generated_at": "2026-06-16T03:59:19Z",
+  "generated_by": "scripts/artifact_catalog.py export-json",
+  "roles": {
+    "article_finder_db": {
+      "canonical": {
+        "path": "/Users/davidusa/REPOS/Article_Finder_v3_2_3/data/article_finder.db",
+        "sha256": "fp:3d740306fa9be45ed6228106cfbd1a061e2e3e3090dae82688a2459f7c5f1666",
+        "size_bytes": 541220864,
+        "mtime": "2026-06-12T01:49:10Z"
+      },
+      "other": [
+        {
+          "path": "/Users/davidusa/REPOS/Article_Finder_v3_2_3/data/article_finder.pre_integrity_repair_2026-05-10.db",
+          "sha256": "3e2f05c86a2c3b89d743a6b88c0a4750718350e867e12c2f3402ac4cc1e7cd51",
+          "size_bytes": 39510016,
+          "mtime": "2026-05-10T19:24:33Z",
+          "status": "superseded"
+        }
+      ]
+    },
+    "misc_db": {
+      "canonical": null,
+      "other": [
+        {
+          "path": "/Users/davidusa/REPOS/Article_Finder_v3_2_3/articles.db",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0,
+          "mtime": "2026-02-23T14:15:35Z",
+          "status": "stray"
+        }
+      ]
+    }
+  }
+}

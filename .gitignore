@@ -16,3 +16,7 @@ data/
 zotero_export/
 new_claude_files_to_chase_articles/
 config/settings.local.yaml
+
+# artifact catalog (mutable; referenced not committed)
+artifact_catalog.db
+data/artifact_catalog.db
