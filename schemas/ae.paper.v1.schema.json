@@ -78,6 +78,65 @@
         "null"
       ]
     },
+    "abstract": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "apa_citation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "classification": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "article_type": {
+          "type": "string"
+        },
+        "article_type_confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "v7_lane": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "primary_topic": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "domain_relevance": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "classified_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "method": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
     "source": {
       "type": "object",
       "additionalProperties": false,

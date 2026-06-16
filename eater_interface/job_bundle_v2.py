@@ -130,12 +130,36 @@ class Notes:
 
 
 @dataclass
+class Classification:
+    """Classification info matching ae.paper.v1 schema (added 2026-05-29)."""
+    article_type: str  # e.g., "empirical_research", "meta_analysis"
+    article_type_confidence: float = 0.0  # 0.0 to 1.0
+    v7_lane: Optional[str] = None  # "empirical", "theoretical", "out_of_scope"
+    primary_topic: Optional[str] = None
+    domain_relevance: Optional[str] = None
+    classified_at: Optional[str] = None  # ISO 8601
+    method: Optional[str] = None  # e.g., "atlas_shared_adaptive_v2"
+    
+    def to_dict(self) -> Dict:
+        return {
+            "article_type": self.article_type,
+            "article_type_confidence": self.article_type_confidence,
+            "v7_lane": self.v7_lane,
+            "primary_topic": self.primary_topic,
+            "domain_relevance": self.domain_relevance,
+            "classified_at": self.classified_at,
+            "method": self.method
+        }
+
+
+@dataclass
 class PaperMetadata:
     """
     Complete paper metadata matching ae.paper.v1 schema EXACTLY.
     
     Required fields: schema, paper_id, title, authors, year, source, files
-    Optional fields: doi, venue, publisher, url, triage, rights, notes
+    Optional fields: doi, venue, publisher, url, abstract, apa_citation,
+                     classification, triage, rights, notes
     """
     # Required
     paper_id: str
@@ -150,6 +174,9 @@ class PaperMetadata:
     venue: Optional[str] = None
     publisher: Optional[str] = None
     url: Optional[str] = None
+    abstract: Optional[str] = None
+    apa_citation: Optional[str] = None
+    classification: Optional[Classification] = None
     triage: Optional[Triage] = None
     rights: Optional[Rights] = None
     notes: Optional[Notes] = None
@@ -166,11 +193,18 @@ class PaperMetadata:
             "venue": self.venue,
             "publisher": self.publisher,
             "url": self.url,
+            "abstract": self.abstract,
+            "apa_citation": self.apa_citation,
             "source": self.source.to_dict(),
             "files": self.files.to_dict(),
         }
         
         # Add optional objects only if present
+        if self.classification:
+            d["classification"] = self.classification.to_dict()
+        else:
+            d["classification"] = None
+
         if self.triage:
             d["triage"] = self.triage.to_dict()
         else:
@@ -419,6 +453,19 @@ class JobBundleBuilder:
             else:
                 paper_id = f"sha256:{pdf_sha256[:12]}"
         
+        # Build optional Classification (added 2026-05-29)
+        classification = None
+        if paper_record.get('atlas_article_type') or paper_record.get('article_type'):
+            classification = Classification(
+                article_type=paper_record.get('atlas_article_type') or paper_record.get('article_type', 'unknown'),
+                article_type_confidence=float(paper_record.get('atlas_article_type_confidence', 0.0) or 0.0),
+                v7_lane=paper_record.get('v7_lane'),
+                primary_topic=paper_record.get('atlas_primary_topic') or paper_record.get('primary_topic'),
+                domain_relevance=paper_record.get('domain_relevance'),
+                classified_at=paper_record.get('classified_at'),
+                method=paper_record.get('classification_method'),
+            )
+        
         return PaperMetadata(
             paper_id=paper_id,
             doi=paper_record.get('doi'),
@@ -428,6 +475,9 @@ class JobBundleBuilder:
             venue=paper_record.get('venue'),
             publisher=paper_record.get('publisher'),
             url=paper_record.get('url'),
+            abstract=paper_record.get('abstract'),
+            apa_citation=paper_record.get('apa_citation'),
+            classification=classification,
             source=source,
             triage=triage,
             files=files,
