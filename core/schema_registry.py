@@ -74,6 +74,15 @@ def _migration_add_ae_corpus_dedupe_fields(conn: sqlite3.Connection) -> None:
         _add_column_if_missing(conn, "papers", column_name, ddl_fragment)
 
 
+def _migration_add_doi_pdf_ingestion_fields(conn: sqlite3.Connection) -> None:
+    for column_name, ddl_fragment in (
+        ("citation", "citation TEXT"),
+        ("article_type", "article_type TEXT"),
+        ("topic", "topic TEXT"),
+    ):
+        _add_column_if_missing(conn, "papers", column_name, ddl_fragment)
+
+
 SCHEMA_MIGRATIONS: tuple[SchemaMigration, ...] = (
     SchemaMigration(
         version=3,
@@ -94,6 +103,11 @@ SCHEMA_MIGRATIONS: tuple[SchemaMigration, ...] = (
         version=6,
         description="Add AE corpus dedupe persistence fields to papers",
         apply=_migration_add_ae_corpus_dedupe_fields,
+    ),
+    SchemaMigration(
+        version=7,
+        description="Add DOI/PDF ingestion metadata fields to papers",
+        apply=_migration_add_doi_pdf_ingestion_fields,
     ),
 )
 

@@ -39,6 +39,9 @@ def get_schema_sql() -> str:
         venue TEXT,
         publisher TEXT,
         abstract TEXT,
+        citation TEXT,
+        article_type TEXT,
+        topic TEXT,
         url TEXT,
         
         -- Ingestion tracking
