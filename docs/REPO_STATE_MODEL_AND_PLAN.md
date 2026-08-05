@@ -3,8 +3,8 @@
 **THE DOCUMENT A NEW AI READS FIRST.**
 
 **Generated-state header — do not hand-edit; `scripts/refresh_state_model.py` rewrites these.**
-- `STATE_AS_OF: 2026-08-03T21:38Z`
-- `HEAD: 9649d6c`
+- `STATE_AS_OF: 2026-08-05T06:16Z`
+- `HEAD: 10f0e83`
 - `STALE_AFTER_DAYS: 7`
 - `VERIFIED_BY: scripts/refresh_state_model.py`
 
