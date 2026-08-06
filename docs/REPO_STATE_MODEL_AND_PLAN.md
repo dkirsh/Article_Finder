@@ -2,11 +2,23 @@
 
 **THE DOCUMENT A NEW AI READS FIRST.**
 
-**Generated-state header — do not hand-edit; `scripts/refresh_state_model.py` rewrites these.**
+**Generated-state header — the refresher rewrites `STATE_AS_OF`/`HEAD`; the JUDGED pair is set by a
+person after re-reading §1–4/§7 (the refresher preserves it verbatim).**
 - `STATE_AS_OF: 2026-08-05T06:16Z`
 - `HEAD: 10f0e83`
 - `STALE_AFTER_DAYS: 7`
+- `JUDGED_REVIEWED: 2026-08-06`
+- `JUDGED_REVIEW_INTERVAL_DAYS: 90`
 - `VERIFIED_BY: scripts/refresh_state_model.py`
+
+> **Judged re-review 2026-08-06 (evidence in the session log):** every §1–4/§7 claim was re-verified
+> against the repo by execution. Corrections applied in this pass: §7.7 git history (17→21 commits,
+> now current to 2026-08-04), §7.4 (the "`atlas_shared` is imported here" claim was FALSE — zero
+> import statements exist; it is a stated preference in `AGENTS.md`), the 529 MB figure (actual
+> 516 MB) in four places, §7.1/§7.5 file counts (128 `.py` / 19 test files), the §1 contract count,
+> and — the substantive addition — §1/§4 now record the **inbound uncontracted coupling**: Article_Eater
+> hardcodes this repo's absolute path in ≥8 scripts and reads `data/article_finder.db` and
+> `data/pdfs/` directly, bypassing `eater_interface/` and every `AF_AE_*` contract.
 
 ---
 
@@ -26,11 +38,20 @@ literature."* In practice it does four things that are harder than they sound:
   proxy (`zotero_export/`, `docs/ZOTERO_UCSD_SETUP.md`)
 - **Hand off** to Article_Eater under signed contracts (`eater_interface/`, `contracts/AF_AE_*`)
 
-**The handoff is the part to respect.** This is not an ad-hoc export. `contracts/` holds four
-authority documents governing the AF→AE boundary — corpus dedupe, handoff, result ingestion, and
-shared intake classification — plus a machine-readable success-conditions file. That is unusually
-disciplined for a data-acquisition tool, and it exists because a duplicate or misclassified paper
-crossing that boundary corrupts the corpus identity that every downstream ID depends on.
+**The handoff is the part to respect.** This is not an ad-hoc export. `contracts/` holds three
+`AF_AE_*` authority documents governing the AF→AE boundary — corpus dedupe, handoff, and result
+ingestion — plus a machine-readable dedupe success-conditions JSON; shared intake classification has
+its own `AF_`-prefixed authority with its own success-conditions file. That is unusually disciplined
+for a data-acquisition tool, and it exists because a duplicate or misclassified paper crossing that
+boundary corrupts the corpus identity that every downstream ID depends on.
+
+**But the contracted door is not the only door — and the other one is ungoverned.** Article_Eater
+also reads this repository **directly**: ≥8 AE scripts hardcode
+`/Users/davidusa/REPOS/Article_Finder_v3_2_3` (e.g. AE's `scripts/triage_papers_keywords.py:24`) and
+consume `data/article_finder.db` and `data/pdfs/` without passing through `eater_interface/` or any
+`AF_AE_*` contract. AF declares no interface of its own; AE's cross-repo matrix marks AE-AF-002/003
+"active / 100%" on `ae.claim.v2`/`ae.rule.v2` while this repo carries **v1 schemas only**. The
+contracted path is real; the traffic is on the uncontracted one.
 
 **Where it sits:**
 
@@ -41,7 +62,7 @@ crossing that boundary corrupts the corpus identity that every downstream ID dep
    ARTICLE_FINDER  ─── find → triage → acquire → dedupe ───┐
    (this repo)                                             │  contracts/AF_AE_*
         │                                                  │  schemas/ae.*.v1.schema.json
-        │  529 MB corpus DB                                ▼
+        │  516 MB corpus DB                                ▼
         └──────────────────────────────────────▶  ARTICLE_EATER / ATLAS
                                                    extraction → claims → web of belief
                                                           │
@@ -69,7 +90,7 @@ crossing that boundary corrupts the corpus identity that every downstream ID dep
    DEDUPE           core/ae_corpus_dedupe.py          one work, one identity
         │           governed by contracts/AF_AE_CORPUS_DEDUPE_AUTHORITY_2026-05-10.md
         ▼
-   CORPUS DB        data/article_finder.db  (529 MB)  ← §7.2, and NOT articles.db
+   CORPUS DB        data/article_finder.db  (516 MB)  ← §7.2, and NOT articles.db
         │
         ▼
    HANDOFF          eater_interface/                  cross the boundary to Article_Eater
@@ -108,7 +129,8 @@ identities. A larger corpus is not a better one.
 
 | Path | What |
 |---|---|
-| `data/article_finder.db` | **the corpus — 529 MB.** The live store |
+| `data/article_finder.db` | **the corpus — 516 MB.** The live store |
+| `data/pdfs/` | **638 entries — Article_Eater's actual read surface** (reached by AE's hardcoded paths, §1) |
 | `articles.db` (repo root) | **0 bytes** — see §7.2 |
 | `data/article_finder.pre_integrity_repair_2026-05-10.db` | 38 MB pre-repair snapshot — do not delete (RULE 0) |
 | `contracts/` | the AF↔AE authority documents + `ports.json` |
@@ -116,7 +138,7 @@ identities. A larger corpus is not a better one.
 | `eater_interface/` | the handoff implementation |
 | `config/` | venue allowlists, outcome + environment lookups, taxonomy |
 | `core/`, `search/`, `triage/`, `ingest/`, `knowledge/`, `utils/`, `cli/`, `ui/`, `ops/` | the working code |
-| `venv/`, 4 root `.zip` files, `new_claude_files_to_chase_articles/` | **not source — §7.1** |
+| `venv/`, 5 root `.zip` files, `new_claude_files_to_chase_articles/` | **not source — §7.1** |
 
 ---
 
@@ -126,8 +148,8 @@ identities. A larger corpus is not a better one.
 |---|---|
 | Version | **directory and README say 3.2.3; `VERSION` says 3.2.4** — §7.9 |
 | Repo size | **6.0 GB** — dominated by data, PDFs, `venv/` and zips (§7.1) |
-| Python | **127** `.py` · **20** test files — BOUNDARY: `venv/`, `.git`, `__pycache__` excluded |
-| Git | **17 commits**; last `9649d6c` 2026-06-19 *"Make pre-commit conformance hook executable"* |
+| Python | **128** `.py` · **19** test files — BOUNDARY: `venv/`, `.git`, `__pycache__` excluded |
+| Git | **21 commits**; last `81a61f5` 2026-08-04 *"docs: refresh state model header metadata"* |
 | Remote | `github.com/dkirsh/Article_Finder_v3_2_3.git` |
 | Corpus DB | `data/article_finder.db` **516 MB, 13 tables**, no `-wal` |
 | `articles.db` | **0 bytes, no `-wal`** → genuinely zero-length, not WAL blindness (§7.2) |
@@ -172,29 +194,34 @@ unmeasured, therefore potentially unique. Retire nothing without containment pro
 
 **7.1 — 6.0 GB, and almost none of it is source.** `venv/`, the PDF corpus, `data/*.db`, four root
 zips, `new_claude_files_to_chase_articles/` and its zip. Any repo-wide grep or file count that does
-not state its exclusions is unusable — the corrected figures are 126 `.py` and 20 tests. (This is not
+not state its exclusions is unusable — the corrected figures are 128 `.py` and 19 test files. (This is not
 hypothetical: in the paired `Outcome_Contractor`, a first pass that walked `venv/` reported 643
 TypeScript files where the real number is 3, and drew a false conclusion about what that repo *is*.)
 
 **7.2 — There are two databases and the obvious-looking one is empty.** `articles.db` sits at the
-repo root at **0 bytes**; the real corpus is `data/article_finder.db` at **529 MB**. A newcomer
+repo root at **0 bytes**; the real corpus is `data/article_finder.db` at **516 MB**. A newcomer
 resolving "the articles database" by name picks the wrong one. **Check the size and the table
 contents, not the filename** — and note that a 0-byte SQLite file can also be WAL-mode with its
 content in a `-wal` sidecar, so check for the sidecar before concluding "empty" either
 (corpus CASE-019). *(The same two-files-one-plausible-name trap exists in Article_Eater with
 `web_persistence_v7.db`.)*
 
-**7.3 — `contracts/ports.json` is the source of truth for ports**, per the README's second line.
-Hard-coding a port anywhere else will work until it doesn't.
+**7.3 — `contracts/ports.json` is the source of truth for ports**, per the README (line 3).
+Hard-coding a port anywhere else will work until it doesn't. And note
+`contracts/ports.json.bak_20260102_113731` sits beside it — the two-files-one-plausible-name trap of
+§7.2, reproduced inside the ports authority itself. The `.bak` is not the source of truth.
 
 **7.4 — Outcome vocabulary is defined in three places.** `Outcome_Contractor` is the declared
 canonical authority for human-side terms; this repo also has `utils/outcome_resolver.py`,
-`config/outcome_taxonomy.yaml` and `config/outcome_lookup.json`; and `atlas_shared` is imported here
-too. Three definitions of the same vocabulary is exactly the divergence a controlled vocabulary
-exists to prevent. §6-A.
+`config/outcome_taxonomy.yaml` and `config/outcome_lookup.json`. (*Corrected 2026-08-06: an earlier
+version of this trap said "`atlas_shared` is imported here too" — that is FALSE. Zero
+`import atlas_shared` statements exist in any AF `.py`; the 43 grep hits are a stated preference in
+`AGENTS.md:16-21` and one migration-function name. The triplication claim stands on the three local
+definition sites alone.*) Three definitions of the same vocabulary is exactly the divergence a
+controlled vocabulary exists to prevent. §6-A.
 
 **7.5 — A second, independent article-finding pipeline exists in `Outcome_Contractor/article_finder/`**
-— 39 Python modules against this repo's 126, with a measured filename overlap of **2**. They are not
+— 39 Python modules against this repo's 128 files (112 unique basenames), with a measured filename overlap of **2**. They are not
 copies and not a fork; they are two implementations of one job, which is harder to reconcile than a
 duplicate because there is no shared history to diff. §6-B.
 
@@ -202,9 +229,11 @@ duplicate because there is no shared history to diff. §6-B.
 apply cleanly and the evidence was left in the tree — worth reading before assuming the working tree
 is what someone intended.
 
-**7.7 — Last commit is 2026-06-19, and there are only 17 commits.** The git history is not a
-development record; like `Outcome_Contractor`, this repo's reasoning lives in `contracts/` and
-`docs/`, not in `git log`.
+**7.7 — The git history is thin (21 commits) but no longer dormant.** *(Corrected 2026-08-06: this
+trap previously said "17 commits, last 2026-06-19" — four substantive commits have landed since,
+through `81a61f5` 2026-08-04, including the armed repo-root-wipe hook fix and the prevention check.)*
+The earlier judgement softens accordingly: the deep reasoning still lives in `contracts/` and
+`docs/`, but recent git history *is* now a real development record and should be read.
 
 **7.8 — `AF_v3_2_3_for Claude.zip`** — a snapshot prepared for an agent, with a space in the
 filename. Unmeasured, so under RULE 0 it is potentially unique. Do not tidy it away.
@@ -234,7 +263,9 @@ before touching anything that crosses to Article_Eater** · `contracts/ports.jso
 
 ## 9. The companion human introduction
 
-`docs/INTRODUCTION_FOR_NEWCOMERS.md`: why finding the papers is a research problem and not a
+**OWED — this file does not exist yet.** *(Corrected 2026-08-06: this section previously described
+`docs/INTRODUCTION_FOR_NEWCOMERS.md` as though present; it has never been written here.)* When
+written, it should cover: why finding the papers is a research problem and not a
 plumbing problem — that a literature search which returns what is easy to reach produces a corpus
 biased toward open access and toward whatever the search engine ranks well, and that PRISMA's
 discipline of recording *why each paper was excluded* is what makes the resulting corpus arguable

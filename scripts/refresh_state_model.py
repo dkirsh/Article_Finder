@@ -16,9 +16,11 @@ THE MEASUREMENTS THAT EXIST TO CATCH A SPECIFIC LIE:
 
   2. THE OUTCOME-VOCABULARY TRIPLICATION. Outcome_Contractor is the declared canonical authority for
      human-side terms, and this repo ALSO carries utils/outcome_resolver.py plus
-     config/outcome_taxonomy.yaml, and imports atlas_shared. Three definitions of one vocabulary is
-     the exact divergence a controlled vocabulary exists to prevent. Their presence is re-checked so
-     section 7.4 retires itself when the reconciliation lands.
+     config/outcome_taxonomy.yaml and config/outcome_lookup.json. (Corrected 2026-08-06: this
+     docstring previously said the repo "imports atlas_shared" -- FALSE; zero such import statements
+     exist. AGENTS.md merely states a preference for using it.) Three local definitions of one
+     vocabulary is the exact divergence a controlled vocabulary exists to prevent. Their presence is
+     re-checked so section 7.4 retires itself when the reconciliation lands.
 
   3. THE AF->AE CONTRACT SURFACE. Four AF_AE_* authority documents govern the handoff to
      Article_Eater. If one disappears or is renamed, section 2's chain and section 6-C's plan are
