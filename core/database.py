@@ -12,6 +12,11 @@ from typing import Optional, List, Dict, Any
 from contextlib import contextmanager
 
 from core.ae_corpus_dedupe import build_paper_dedupe_fields
+from core.contract_fsm_runtime import (
+    ContractFSMViolation,
+    enforce_transition,
+    transition_targets,
+)
 from core.schema_registry import apply_pending_schema_migrations
 
 # Default database path
@@ -341,19 +346,7 @@ def get_schema_sql() -> str:
 
 
 # Status state machine
-STATUS_TRANSITIONS = {
-    'candidate': ['pending_scorer', 'rejected', 'downloaded', 'queued_for_eater'],
-    'pending_scorer': ['candidate', 'rejected', 'downloaded', 'queued_for_eater'],
-    'rejected': [],  # Terminal
-    'downloaded': ['queued_for_eater', 'rejected'],
-    'queued_for_eater': ['sent_to_eater', 'rejected'],
-    'sent_to_eater': ['eater_running'],
-    'eater_running': ['processed_success', 'processed_partial', 'processed_fail'],
-    'processed_success': ['needs_human_review'],
-    'processed_partial': ['needs_human_review', 'queued_for_eater'],
-    'processed_fail': ['queued_for_eater', 'rejected'],
-    'needs_human_review': ['processed_success', 'rejected', 'queued_for_eater'],
-}
+STATUS_TRANSITIONS = transition_targets("paper_status")
 
 
 class Database:
@@ -466,10 +459,25 @@ class Database:
         Sets ae_job_path AND ae_status together so 'pending' is truthful only with a
         resolvable job path (AF_AE_HANDOFF_AUTHORITY), letting AF later verify/repair AE state.
         """
+        paper = self.get_paper(paper_id)
+        if not paper:
+            return False
+        if ae_status != 'pending':
+            raise ContractFSMViolation(
+                "set_ae_job may only record the pending handoff state"
+            )
+        job_path = Path(ae_job_path).expanduser().resolve()
+        current_state = paper.get('ae_status') or 'unbuilt'
+        next_state = enforce_transition(
+            "ae_handoff",
+            current_state,
+            "record_job",
+            guards={"job_path_exists": job_path.is_dir()},
+        )
         with self.connection() as conn:
             cur = conn.execute(
                 "UPDATE papers SET ae_job_path = ?, ae_status = ?, updated_at = ? WHERE paper_id = ?",
-                (str(ae_job_path), ae_status, utc_now_iso(), paper_id),
+                (str(job_path), next_state, utc_now_iso(), paper_id),
             )
             return cur.rowcount > 0
 
@@ -481,17 +489,14 @@ class Database:
         
         current_status = paper.get('status', 'candidate')
         
-        # Validate transition
-        if new_status not in STATUS_TRANSITIONS.get(current_status, []):
-            raise ValueError(
-                f"Invalid status transition: {current_status} -> {new_status}. "
-                f"Valid transitions: {STATUS_TRANSITIONS.get(current_status, [])}"
-            )
+        next_status = enforce_transition(
+            "paper_status", current_status, f"set:{new_status}"
+        )
         
         with self.connection() as conn:
             conn.execute(
                 "UPDATE papers SET status = ?, updated_at = ? WHERE paper_id = ?",
-                (new_status, utc_now_iso(), paper_id)
+                (next_status, utc_now_iso(), paper_id)
             )
         
         return True

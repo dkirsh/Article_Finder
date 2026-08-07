@@ -1,0 +1,63 @@
+{
+  "name": "af_paper_status",
+  "severity": "block",
+  "governs_contract": "contracts/AF_PAPER_STATUS_AUTHORITY_2026-08-07.md",
+  "governs_code": "core/database.py",
+  "states": [
+    "candidate",
+    "pending_scorer",
+    "rejected",
+    "downloaded",
+    "queued_for_eater",
+    "sent_to_eater",
+    "eater_running",
+    "processed_success",
+    "processed_partial",
+    "processed_fail",
+    "needs_human_review"
+  ],
+  "initial": "candidate",
+  "terminal": ["rejected"],
+  "transitions": [
+    {"from": "candidate", "on": "set:pending_scorer", "to": "pending_scorer"},
+    {"from": "candidate", "on": "set:rejected", "to": "rejected"},
+    {"from": "candidate", "on": "set:downloaded", "to": "downloaded"},
+    {"from": "candidate", "on": "set:queued_for_eater", "to": "queued_for_eater"},
+    {"from": "pending_scorer", "on": "set:candidate", "to": "candidate"},
+    {"from": "pending_scorer", "on": "set:rejected", "to": "rejected"},
+    {"from": "pending_scorer", "on": "set:downloaded", "to": "downloaded"},
+    {"from": "pending_scorer", "on": "set:queued_for_eater", "to": "queued_for_eater"},
+    {"from": "downloaded", "on": "set:queued_for_eater", "to": "queued_for_eater"},
+    {"from": "downloaded", "on": "set:rejected", "to": "rejected"},
+    {"from": "queued_for_eater", "on": "set:sent_to_eater", "to": "sent_to_eater"},
+    {"from": "queued_for_eater", "on": "set:rejected", "to": "rejected"},
+    {"from": "sent_to_eater", "on": "set:eater_running", "to": "eater_running"},
+    {"from": "eater_running", "on": "set:processed_success", "to": "processed_success"},
+    {"from": "eater_running", "on": "set:processed_partial", "to": "processed_partial"},
+    {"from": "eater_running", "on": "set:processed_fail", "to": "processed_fail"},
+    {"from": "processed_success", "on": "set:needs_human_review", "to": "needs_human_review"},
+    {"from": "processed_partial", "on": "set:needs_human_review", "to": "needs_human_review"},
+    {"from": "processed_partial", "on": "set:queued_for_eater", "to": "queued_for_eater"},
+    {"from": "processed_fail", "on": "set:queued_for_eater", "to": "queued_for_eater"},
+    {"from": "processed_fail", "on": "set:rejected", "to": "rejected"},
+    {"from": "needs_human_review", "on": "set:processed_success", "to": "processed_success"},
+    {"from": "needs_human_review", "on": "set:rejected", "to": "rejected"},
+    {"from": "needs_human_review", "on": "set:queued_for_eater", "to": "queued_for_eater"}
+  ],
+  "positive_control": {
+    "trace": [
+      {"on": "set:pending_scorer"},
+      {"on": "set:candidate"},
+      {"on": "set:downloaded"},
+      {"on": "set:queued_for_eater"}
+    ],
+    "expected_state": "queued_for_eater"
+  },
+  "negative_control": {
+    "trace": [
+      {"on": "set:rejected"},
+      {"on": "set:queued_for_eater"}
+    ],
+    "must_reject_at": 1
+  }
+}

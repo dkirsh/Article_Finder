@@ -45,3 +45,10 @@ In `papers`:
 - `cli/main.py doctor --deep`
 - `scripts/verify_af_semantic_integrity.py`
 - `scripts/repair_af_semantic_state.py`
+
+## Executable FSM Amendment (2026-08-07)
+
+The P1 declaration is `contracts/fsm/ae_handoff.fsm.json`. A write of
+`ae_status='pending'` is accepted only when the supplied job path resolves to an
+existing directory. The negative control attempts the same write with no valid
+path and must be rejected. The declaration remains subject to non-author review.
