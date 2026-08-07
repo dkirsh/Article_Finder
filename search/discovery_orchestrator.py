@@ -334,7 +334,7 @@ class DiscoveryOrchestrator:
             scorer.build_centroids()
             
             papers = self.db.search_papers(limit=10000)
-            unscored = [p for p in papers if not p.get('taxonomy_scores')]
+            unscored = [p for p in papers if p.get('triage_score') is None]
             
             stats.items_processed = len(unscored)
             
@@ -411,12 +411,12 @@ class DiscoveryOrchestrator:
                         'year': item.get('year'),
                         'abstract': item.get('abstract'),
                         'source': 'expansion',
-                        'triage_decision': 'needs_review',
-                        'discovery_metadata': {
-                            'discovered_from': item.get('discovered_from'),
-                            'discovery_type': item.get('discovery_type'),
-                            'relevance_score': item.get('relevance_score')
-                        }
+                        'triage_decision': 'review',
+                        'tags': [
+                            f"discovered_from:{item.get('discovered_from')}",
+                            f"discovery_type:{item.get('discovery_type')}",
+                            f"relevance_score:{item.get('relevance_score')}",
+                        ]
                     }
                     
                     self.db.add_paper(paper)

@@ -452,6 +452,19 @@ class Database:
                 return self._row_to_dict(row)
             return None
     
+    def set_ae_job(self, paper_id: str, ae_job_path: str, ae_status: str = 'pending') -> bool:
+        """Record the AE handoff bundle path + status after build-jobs.
+
+        Sets ae_job_path AND ae_status together so 'pending' is truthful only with a
+        resolvable job path (AF_AE_HANDOFF_AUTHORITY), letting AF later verify/repair AE state.
+        """
+        with self.connection() as conn:
+            cur = conn.execute(
+                "UPDATE papers SET ae_job_path = ?, ae_status = ?, updated_at = ? WHERE paper_id = ?",
+                (str(ae_job_path), ae_status, utc_now_iso(), paper_id),
+            )
+            return cur.rowcount > 0
+
     def update_paper_status(self, paper_id: str, new_status: str) -> bool:
         """Update paper status with state machine validation."""
         paper = self.get_paper(paper_id)
