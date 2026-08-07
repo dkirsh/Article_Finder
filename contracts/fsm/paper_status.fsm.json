@@ -4,6 +4,7 @@
   "governs_contract": "contracts/AF_PAPER_STATUS_AUTHORITY_2026-08-07.md",
   "governs_code": "core/database.py",
   "states": [
+    "unregistered",
     "candidate",
     "pending_scorer",
     "rejected",
@@ -16,9 +17,13 @@
     "processed_fail",
     "needs_human_review"
   ],
-  "initial": "candidate",
+  "initial": "unregistered",
   "terminal": ["rejected"],
   "transitions": [
+    {"from": "unregistered", "on": "register:candidate", "to": "candidate"},
+    {"from": "unregistered", "on": "register:pending_scorer", "to": "pending_scorer"},
+    {"from": "unregistered", "on": "register:rejected", "to": "rejected"},
+    {"from": "unregistered", "on": "register:downloaded", "to": "downloaded"},
     {"from": "candidate", "on": "set:pending_scorer", "to": "pending_scorer"},
     {"from": "candidate", "on": "set:rejected", "to": "rejected"},
     {"from": "candidate", "on": "set:downloaded", "to": "downloaded"},
@@ -46,6 +51,7 @@
   ],
   "positive_control": {
     "trace": [
+      {"on": "register:candidate"},
       {"on": "set:pending_scorer"},
       {"on": "set:candidate"},
       {"on": "set:downloaded"},
@@ -55,7 +61,7 @@
   },
   "negative_control": {
     "trace": [
-      {"on": "set:rejected"},
+      {"on": "register:rejected"},
       {"on": "set:queued_for_eater"}
     ],
     "must_reject_at": 1

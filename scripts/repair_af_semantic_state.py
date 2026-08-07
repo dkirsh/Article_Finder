@@ -50,6 +50,7 @@ def repair(db_path: Path = DB_PATH, *, repo_root: Path = REPO_ROOT) -> dict[str,
         "triage_needs_review_normalized": 0,
         "ae_pending_promoted_from_result": 0,
         "ae_stale_terminal_downgraded_to_pending": 0,
+        "ae_stale_terminal_cleared_unbuilt": 0,
     }
     now = _now_iso()
 
@@ -75,6 +76,8 @@ def repair(db_path: Path = DB_PATH, *, repo_root: Path = REPO_ROOT) -> dict[str,
     for row in rows:
         output_path = _resolve_path(row["ae_output_path"], repo_root)
         output_exists = bool(output_path and output_path.exists())
+        job_path = _resolve_path(row["ae_job_path"], repo_root)
+        job_exists = bool(job_path and job_path.is_dir())
         if row["ae_status"] == "pending" and output_exists:
             payload = _load_result(output_path)
             if payload:
@@ -103,14 +106,21 @@ def repair(db_path: Path = DB_PATH, *, repo_root: Path = REPO_ROOT) -> dict[str,
                 )
                 stats["ae_pending_promoted_from_result"] += 1
         elif row["ae_status"] in {"SUCCESS", "PARTIAL_SUCCESS", "FAIL"} and not output_exists:
+            repaired_status = "pending" if job_exists else None
+            repair_phrase = (
+                "pending"
+                if repaired_status == "pending"
+                else "unbuilt because neither output nor job bundle exists"
+            )
             note = _append_note(
                 row["human_notes"],
-                "Downgraded stale terminal ae_status to pending during AF semantic repair 2026-05-10.",
+                f"Downgraded stale terminal ae_status to {repair_phrase} "
+                "during AF semantic repair 2026-05-10.",
             )
             cur.execute(
                 """
                 UPDATE papers
-                SET ae_status = 'pending',
+                SET ae_status = ?,
                     ae_output_path = NULL,
                     ae_run_id = NULL,
                     ae_n_claims = NULL,
@@ -120,9 +130,12 @@ def repair(db_path: Path = DB_PATH, *, repo_root: Path = REPO_ROOT) -> dict[str,
                     updated_at = ?
                 WHERE paper_id = ?
                 """,
-                (note, now, row["paper_id"]),
+                (repaired_status, note, now, row["paper_id"]),
             )
-            stats["ae_stale_terminal_downgraded_to_pending"] += 1
+            if repaired_status == "pending":
+                stats["ae_stale_terminal_downgraded_to_pending"] += 1
+            else:
+                stats["ae_stale_terminal_cleared_unbuilt"] += 1
 
     con.commit()
     con.close()

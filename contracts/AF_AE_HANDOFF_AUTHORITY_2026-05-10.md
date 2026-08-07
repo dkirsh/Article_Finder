@@ -50,5 +50,9 @@ In `papers`:
 
 The P1 declaration is `contracts/fsm/ae_handoff.fsm.json`. A write of
 `ae_status='pending'` is accepted only when the supplied job path resolves to an
-existing directory. The negative control attempts the same write with no valid
-path and must be rejected. The declaration remains subject to non-author review.
+existing directory. A terminal AE result is accepted only from `pending` and
+only when its output bundle exists. The negative control attempts the pending
+write with no valid path and must be rejected. Administrative semantic repair
+may clear a substrate-inconsistent status; it may not manufacture `pending`
+without a surviving job bundle. The declaration remains subject to non-author
+review.

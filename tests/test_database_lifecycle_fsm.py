@@ -31,6 +31,12 @@ def test_database_rejects_readmission_after_rejection(db: Database) -> None:
         db.update_paper_status("p1", "queued_for_eater")
     assert db.get_paper("p1")["status"] == "rejected"
 
+    with pytest.raises(ContractFSMViolation):
+        db.add_paper(
+            {"paper_id": "p1", "title": "Paper", "status": "queued_for_eater"}
+        )
+    assert db.get_paper("p1")["status"] == "rejected"
+
 
 def test_database_rejects_triage_decision_as_status(db: Database) -> None:
     with pytest.raises(ContractFSMViolation):
@@ -50,3 +56,11 @@ def test_set_ae_job_requires_existing_bundle_directory(db: Database, tmp_path: P
     paper = db.get_paper("p1")
     assert paper["ae_status"] == "pending"
     assert paper["ae_job_path"] == str(bundle.resolve())
+
+
+def test_add_paper_cannot_manufacture_pending_without_job(db: Database) -> None:
+    with pytest.raises(ContractFSMViolation):
+        db.add_paper(
+            {"paper_id": "p1", "title": "Paper", "ae_status": "pending"}
+        )
+    assert db.get_paper("p1")["ae_status"] is None

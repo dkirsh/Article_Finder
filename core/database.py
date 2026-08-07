@@ -27,6 +27,15 @@ def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _repo_path(value: object) -> Path | None:
+    if not isinstance(value, (str, Path)) or not str(value).strip():
+        return None
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = Path(__file__).resolve().parents[1] / path
+    return path.resolve()
+
+
 def get_schema_sql() -> str:
     """Return the complete database schema."""
     return """
@@ -391,6 +400,7 @@ class Database:
     def add_paper(self, paper: Dict[str, Any]) -> str:
         """Add a paper to the database."""
         with self.connection() as conn:
+            conn.execute("BEGIN IMMEDIATE")
             # Generate paper_id if not provided
             if 'paper_id' not in paper:
                 if paper.get('doi'):
@@ -399,6 +409,52 @@ class Database:
                     import hashlib
                     title_hash = hashlib.sha256(paper['title'].encode()).hexdigest()[:12]
                     paper['paper_id'] = f"sha256:{title_hash}"
+
+            existing = conn.execute(
+                """SELECT status, ae_status, ae_job_path, ae_output_path
+                   FROM papers WHERE paper_id = ?""",
+                (paper['paper_id'],),
+            ).fetchone()
+            requested_status = str(paper.get('status') or 'candidate')
+            if existing is None:
+                paper['status'] = enforce_transition(
+                    "paper_status",
+                    "unregistered",
+                    f"register:{requested_status}",
+                )
+            elif 'status' in paper:
+                current_status = str(existing['status'] or 'candidate')
+                if requested_status != current_status:
+                    paper['status'] = enforce_transition(
+                        "paper_status",
+                        current_status,
+                        f"set:{requested_status}",
+                    )
+
+            if existing is not None and paper.get('ae_status') is not None:
+                current_ae_status = str(existing['ae_status'] or 'unbuilt')
+                requested_ae_status = str(paper['ae_status'])
+                if requested_ae_status != current_ae_status:
+                    if requested_ae_status == 'pending':
+                        job_path = _repo_path(
+                            paper.get('ae_job_path') or existing['ae_job_path']
+                        )
+                        paper['ae_status'] = enforce_transition(
+                            "ae_handoff",
+                            current_ae_status,
+                            "record_job",
+                            guards={"job_path_exists": bool(job_path and job_path.is_dir())},
+                        )
+                    else:
+                        output_path = _repo_path(
+                            paper.get('ae_output_path') or existing['ae_output_path']
+                        )
+                        paper['ae_status'] = enforce_transition(
+                            "ae_handoff",
+                            current_ae_status,
+                            f"record:{requested_ae_status}",
+                            guards={"output_path_exists": bool(output_path and output_path.is_dir())},
+                        )
             
             # Serialize JSON fields
             for field in ['authors', 'triage_reasons', 'ae_warnings', 'tags']:
@@ -459,22 +515,25 @@ class Database:
         Sets ae_job_path AND ae_status together so 'pending' is truthful only with a
         resolvable job path (AF_AE_HANDOFF_AUTHORITY), letting AF later verify/repair AE state.
         """
-        paper = self.get_paper(paper_id)
-        if not paper:
-            return False
         if ae_status != 'pending':
             raise ContractFSMViolation(
                 "set_ae_job may only record the pending handoff state"
             )
-        job_path = Path(ae_job_path).expanduser().resolve()
-        current_state = paper.get('ae_status') or 'unbuilt'
-        next_state = enforce_transition(
-            "ae_handoff",
-            current_state,
-            "record_job",
-            guards={"job_path_exists": job_path.is_dir()},
-        )
+        job_path = _repo_path(ae_job_path)
         with self.connection() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            paper = conn.execute(
+                "SELECT ae_status FROM papers WHERE paper_id = ?", (paper_id,)
+            ).fetchone()
+            if not paper:
+                return False
+            current_state = paper['ae_status'] or 'unbuilt'
+            next_state = enforce_transition(
+                "ae_handoff",
+                current_state,
+                "record_job",
+                guards={"job_path_exists": bool(job_path and job_path.is_dir())},
+            )
             cur = conn.execute(
                 "UPDATE papers SET ae_job_path = ?, ae_status = ?, updated_at = ? WHERE paper_id = ?",
                 (str(job_path), next_state, utc_now_iso(), paper_id),
@@ -483,17 +542,17 @@ class Database:
 
     def update_paper_status(self, paper_id: str, new_status: str) -> bool:
         """Update paper status with state machine validation."""
-        paper = self.get_paper(paper_id)
-        if not paper:
-            return False
-        
-        current_status = paper.get('status', 'candidate')
-        
-        next_status = enforce_transition(
-            "paper_status", current_status, f"set:{new_status}"
-        )
-        
         with self.connection() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            paper = conn.execute(
+                "SELECT status FROM papers WHERE paper_id = ?", (paper_id,)
+            ).fetchone()
+            if not paper:
+                return False
+            current_status = paper['status'] or 'candidate'
+            next_status = enforce_transition(
+                "paper_status", current_status, f"set:{new_status}"
+            )
             conn.execute(
                 "UPDATE papers SET status = ?, updated_at = ? WHERE paper_id = ?",
                 (next_status, utc_now_iso(), paper_id)

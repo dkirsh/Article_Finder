@@ -9,9 +9,10 @@ Tier: P1
 records a scoring decision (`send_to_eater`, `review`, or `reject`); it is not a
 paper-status state and must not be inserted into the status machine.
 
-The executable declaration is `contracts/fsm/paper_status.fsm.json`. The only
-runtime writer is `Database.update_paper_status`, which must reject every edge not
-declared there.
+The executable declaration is `contracts/fsm/paper_status.fsm.json`.
+`Database.update_paper_status` and every status-bearing `Database.add_paper`
+insert or upsert must reject an edge not declared there. Direct-SQL maintenance
+writers must run the same transition check before their update.
 
 ## Invariant
 
@@ -27,7 +28,7 @@ state. A human repair is a separate audited operation, not a lifecycle edge.
 
 ## Witnesses
 
-- Positive: `candidate -> pending_scorer -> candidate -> downloaded ->
+- Positive: `unregistered -> candidate -> pending_scorer -> candidate -> downloaded ->
   queued_for_eater` is accepted.
 - Negative: `rejected -> queued_for_eater` is rejected at the attempted edge.
 
