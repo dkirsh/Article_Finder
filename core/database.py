@@ -420,13 +420,21 @@ class Database:
                 )
             )
             
-            columns = ', '.join(paper.keys())
-            placeholders = ', '.join(['?' for _ in paper])
-            
-            conn.execute(
-                f"INSERT OR REPLACE INTO papers ({columns}) VALUES ({placeholders})",
-                list(paper.values())
-            )
+            cols = list(paper.keys())
+            columns = ', '.join(cols)
+            placeholders = ', '.join(['?' for _ in cols])
+            # Sparse merge-upsert (AF-F6): on an existing paper_id, update ONLY the
+            # columns present in `paper` -- never NULL out unspecified columns the way
+            # the old `INSERT OR REPLACE` did (it clobbered abstract/pdf_path/venue on a
+            # sparse re-add). A new paper_id is a plain INSERT.
+            update_cols = [c for c in cols if c != 'paper_id']
+            if update_cols:
+                set_clause = ', '.join(f"{c}=excluded.{c}" for c in update_cols)
+                sql = (f"INSERT INTO papers ({columns}) VALUES ({placeholders}) "
+                       f"ON CONFLICT(paper_id) DO UPDATE SET {set_clause}")
+            else:
+                sql = f"INSERT OR IGNORE INTO papers ({columns}) VALUES ({placeholders})"
+            conn.execute(sql, list(paper.values()))
             
             return paper['paper_id']
     
