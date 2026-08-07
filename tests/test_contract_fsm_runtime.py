@@ -57,7 +57,5 @@ def test_runtime_refuses_always_rejecting_declaration(monkeypatch, tmp_path) -> 
     path = tmp_path / "broken.fsm.json"
     path.write_text(json.dumps(spec), encoding="utf-8")
     monkeypatch.setattr(runtime, "FSM_ROOT", tmp_path)
-    runtime.load_fsm.cache_clear()
     with pytest.raises(ContractFSMViolation, match=r"positive[_ ]control"):
         runtime.load_fsm("broken")
-    runtime.load_fsm.cache_clear()

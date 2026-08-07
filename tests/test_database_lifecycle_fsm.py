@@ -64,3 +64,38 @@ def test_add_paper_cannot_manufacture_pending_without_job(db: Database) -> None:
             {"paper_id": "p1", "title": "Paper", "ae_status": "pending"}
         )
     assert db.get_paper("p1")["ae_status"] is None
+
+
+def test_new_paper_cannot_be_born_pending_or_terminal_without_evidence(
+    db: Database,
+) -> None:
+    for paper_id, ae_status in (("new-pending", "pending"), ("new-success", "SUCCESS")):
+        with pytest.raises(ContractFSMViolation):
+            db.add_paper(
+                {"paper_id": paper_id, "title": "Paper", "ae_status": ae_status}
+            )
+        assert db.get_paper(paper_id) is None
+
+
+def test_triage_decision_cannot_resurrect_rejected_lifecycle_row(
+    db: Database,
+) -> None:
+    assert db.update_paper_status("p1", "rejected") is True
+    with pytest.raises(ContractFSMViolation):
+        db.add_paper(
+            {
+                "paper_id": "p1",
+                "title": "Paper",
+                "triage_decision": "queued_for_eater",
+            }
+        )
+    with pytest.raises(ContractFSMViolation):
+        db.add_paper(
+            {
+                "paper_id": "p1",
+                "title": "Paper",
+                "triage_decision": "send_to_eater",
+            }
+        )
+    assert db.get_papers_by_status("queued_for_eater") == []
+    assert db.get_papers_by_status("send_to_eater") == []

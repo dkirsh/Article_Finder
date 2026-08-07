@@ -21,6 +21,7 @@ from core.schema_registry import apply_pending_schema_migrations
 
 # Default database path
 DEFAULT_DB_PATH = Path(__file__).parent.parent / "data" / "article_finder.db"
+ALLOWED_TRIAGE_DECISIONS = frozenset({"pending", "send_to_eater", "review", "reject"})
 
 
 def utc_now_iso() -> str:
@@ -411,7 +412,7 @@ class Database:
                     paper['paper_id'] = f"sha256:{title_hash}"
 
             existing = conn.execute(
-                """SELECT status, ae_status, ae_job_path, ae_output_path
+                """SELECT status, triage_decision, ae_status, ae_job_path, ae_output_path
                    FROM papers WHERE paper_id = ?""",
                 (paper['paper_id'],),
             ).fetchone()
@@ -431,13 +432,31 @@ class Database:
                         f"set:{requested_status}",
                     )
 
-            if existing is not None and paper.get('ae_status') is not None:
-                current_ae_status = str(existing['ae_status'] or 'unbuilt')
+            if paper.get('triage_decision') is not None:
+                requested_triage = str(paper['triage_decision'])
+                if requested_triage not in ALLOWED_TRIAGE_DECISIONS:
+                    raise ContractFSMViolation(
+                        f"undeclared triage_decision: {requested_triage}"
+                    )
+                effective_status = str(
+                    paper.get('status')
+                    or (existing['status'] if existing is not None else 'candidate')
+                )
+                if effective_status == 'rejected' and requested_triage != 'reject':
+                    raise ContractFSMViolation(
+                        "rejected paper cannot re-enter triage admission"
+                    )
+
+            if paper.get('ae_status') is not None:
+                current_ae_status = str(
+                    existing['ae_status'] if existing is not None and existing['ae_status'] else 'unbuilt'
+                )
                 requested_ae_status = str(paper['ae_status'])
                 if requested_ae_status != current_ae_status:
                     if requested_ae_status == 'pending':
                         job_path = _repo_path(
-                            paper.get('ae_job_path') or existing['ae_job_path']
+                            paper.get('ae_job_path')
+                            or (existing['ae_job_path'] if existing is not None else None)
                         )
                         paper['ae_status'] = enforce_transition(
                             "ae_handoff",
@@ -447,7 +466,8 @@ class Database:
                         )
                     else:
                         output_path = _repo_path(
-                            paper.get('ae_output_path') or existing['ae_output_path']
+                            paper.get('ae_output_path')
+                            or (existing['ae_output_path'] if existing is not None else None)
                         )
                         paper['ae_status'] = enforce_transition(
                             "ae_handoff",
@@ -561,19 +581,28 @@ class Database:
         return True
     
     def get_papers_by_status(self, status: str, limit: int = 1000) -> List[Dict]:
-        """Get papers by status OR triage_decision field.
-        
-        This method checks both the 'status' field and 'triage_decision' field
-        for backwards compatibility with code that uses either convention.
+        """Get rows from exactly one state domain.
+
+        Triage decisions and lifecycle states are deliberately not aliases. A
+        rejected lifecycle row is never returned as triage work.
         """
         with self.connection() as conn:
-            rows = conn.execute(
-                """SELECT * FROM papers 
-                   WHERE status = ? OR triage_decision = ?
-                   ORDER BY updated_at DESC
-                   LIMIT ?""",
-                (status, status, limit)
-            ).fetchall()
+            if status in ALLOWED_TRIAGE_DECISIONS:
+                rows = conn.execute(
+                    """SELECT * FROM papers
+                       WHERE triage_decision = ? AND status != 'rejected'
+                       ORDER BY updated_at DESC
+                       LIMIT ?""",
+                    (status, limit),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    """SELECT * FROM papers
+                       WHERE status = ?
+                       ORDER BY updated_at DESC
+                       LIMIT ?""",
+                    (status, limit),
+                ).fetchall()
             
             return [self._row_to_dict(row) for row in rows]
     

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -12,6 +13,10 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DB_PATH = REPO_ROOT / "data" / "article_finder.db"
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from core.contract_fsm_runtime import enforce_transition  # noqa: E402
 
 
 def _now_iso() -> str:
@@ -83,6 +88,12 @@ def repair(db_path: Path = DB_PATH, *, repo_root: Path = REPO_ROOT) -> dict[str,
             if payload:
                 summary = payload.get("summary") or {}
                 quality = payload.get("quality") or {}
+                repaired_status = enforce_transition(
+                    "ae_handoff",
+                    "pending",
+                    f"record:{payload.get('status')}",
+                    guards={"output_path_exists": output_exists},
+                )
                 cur.execute(
                     """
                     UPDATE papers
@@ -95,7 +106,7 @@ def repair(db_path: Path = DB_PATH, *, repo_root: Path = REPO_ROOT) -> dict[str,
                     WHERE paper_id = ?
                     """,
                     (
-                        payload.get("status"),
+                        repaired_status,
                         payload.get("run_id"),
                         summary.get("n_claims"),
                         summary.get("n_rules"),
@@ -106,7 +117,18 @@ def repair(db_path: Path = DB_PATH, *, repo_root: Path = REPO_ROOT) -> dict[str,
                 )
                 stats["ae_pending_promoted_from_result"] += 1
         elif row["ae_status"] in {"SUCCESS", "PARTIAL_SUCCESS", "FAIL"} and not output_exists:
-            repaired_status = "pending" if job_exists else None
+            if job_exists:
+                repaired_state = enforce_transition(
+                    "ae_handoff",
+                    row["ae_status"],
+                    "record_job",
+                    guards={"job_path_exists": True},
+                )
+            else:
+                repaired_state = enforce_transition(
+                    "ae_handoff", row["ae_status"], "invalidate_evidence"
+                )
+            repaired_status = None if repaired_state == "unbuilt" else repaired_state
             repair_phrase = (
                 "pending"
                 if repaired_status == "pending"

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from functools import lru_cache
 from pathlib import Path
 from typing import Mapping
 
@@ -17,7 +16,6 @@ class ContractFSMViolation(ValueError):
     """Product-facing form of a fail-closed FSM rejection."""
 
 
-@lru_cache(maxsize=None)
 def load_fsm(name: str):
     path = FSM_ROOT / f"{name}.fsm.json"
     try:

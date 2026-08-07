@@ -1,19 +1,25 @@
 {
   "name": "af_ae_handoff",
   "severity": "block",
+  "lifecycle": "cyclic",
   "governs_contract": "contracts/AF_AE_HANDOFF_AUTHORITY_2026-05-10.md",
   "governs_code": "core/database.py",
   "states": ["unbuilt", "pending", "SUCCESS", "PARTIAL_SUCCESS", "FAIL"],
   "initial": "unbuilt",
-  "terminal": ["SUCCESS"],
+  "terminal": [],
   "transitions": [
     {"from": "unbuilt", "on": "record_job", "guard": "job_path_exists", "to": "pending"},
     {"from": "pending", "on": "record_job", "guard": "job_path_exists", "to": "pending"},
     {"from": "FAIL", "on": "record_job", "guard": "job_path_exists", "to": "pending"},
     {"from": "PARTIAL_SUCCESS", "on": "record_job", "guard": "job_path_exists", "to": "pending"},
+    {"from": "SUCCESS", "on": "record_job", "guard": "job_path_exists", "to": "pending"},
     {"from": "pending", "on": "record:SUCCESS", "guard": "output_path_exists", "to": "SUCCESS"},
     {"from": "pending", "on": "record:PARTIAL_SUCCESS", "guard": "output_path_exists", "to": "PARTIAL_SUCCESS"},
-    {"from": "pending", "on": "record:FAIL", "guard": "output_path_exists", "to": "FAIL"}
+    {"from": "pending", "on": "record:FAIL", "guard": "output_path_exists", "to": "FAIL"},
+    {"from": "pending", "on": "invalidate_evidence", "to": "unbuilt"},
+    {"from": "SUCCESS", "on": "invalidate_evidence", "to": "unbuilt"},
+    {"from": "PARTIAL_SUCCESS", "on": "invalidate_evidence", "to": "unbuilt"},
+    {"from": "FAIL", "on": "invalidate_evidence", "to": "unbuilt"}
   ],
   "positive_control": {
     "trace": [{"on": "record_job", "guards": {"job_path_exists": true}}],

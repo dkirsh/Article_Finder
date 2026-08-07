@@ -53,6 +53,8 @@ The P1 declaration is `contracts/fsm/ae_handoff.fsm.json`. A write of
 existing directory. A terminal AE result is accepted only from `pending` and
 only when its output bundle exists. The negative control attempts the pending
 write with no valid path and must be rejected. Administrative semantic repair
-may clear a substrate-inconsistent status; it may not manufacture `pending`
-without a surviving job bundle. The declaration remains subject to non-author
-review.
+uses the declared `invalidate_evidence` edge to clear a substrate-inconsistent
+status, or `record_job` to recover `pending` when the job bundle still exists;
+it may not manufacture `pending` without that bundle. The handoff lifecycle is
+cyclic because an evidence-backed result may later be invalidated and rerun. The
+declaration remains subject to non-author review.

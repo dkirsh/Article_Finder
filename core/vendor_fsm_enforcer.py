@@ -115,6 +115,24 @@ class FSM:
 
 def validate_structure(spec: Mapping[str, Any]) -> None:
     _require(isinstance(spec, Mapping), "FSM spec must be an object")
+    _require(
+        set(spec).issubset(
+            {
+                "name",
+                "severity",
+                "lifecycle",
+                "governs_contract",
+                "governs_code",
+                "states",
+                "initial",
+                "terminal",
+                "transitions",
+                "positive_control",
+                "negative_control",
+            }
+        ),
+        "FSM spec has unknown top-level keys",
+    )
     _require(_is_nonempty_string(spec.get("name")), "name must be non-empty")
     _require(
         spec.get("severity") in {"block", "warn"},
@@ -153,6 +171,10 @@ def validate_structure(spec: Mapping[str, Any]) -> None:
     grouped: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
     for index, transition in enumerate(transitions):
         _require(isinstance(transition, Mapping), f"transition {index} is not an object")
+        _require(
+            set(transition).issubset({"from", "on", "to", "guard"}),
+            f"transition {index} has unknown keys",
+        )
         _require(transition.get("from") in states, f"transition {index} has unknown from")
         _require(transition.get("to") in states, f"transition {index} has unknown to")
         _require(_is_nonempty_string(transition.get("on")), f"transition {index} has invalid event")
@@ -214,6 +236,14 @@ def validate_structure(spec: Mapping[str, Any]) -> None:
     for control_name in ("positive_control", "negative_control"):
         control = spec.get(control_name)
         _require(isinstance(control, Mapping), f"{control_name} is required")
+        allowed_control_keys = {"trace", "_comment"}
+        allowed_control_keys.add(
+            "expected_state" if control_name == "positive_control" else "must_reject_at"
+        )
+        _require(
+            set(control).issubset(allowed_control_keys),
+            f"{control_name} has unknown keys",
+        )
         trace = control.get("trace")
         _require(
             isinstance(trace, list) and bool(trace),
