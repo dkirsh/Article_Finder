@@ -954,10 +954,12 @@ class Database:
     
     def get_papers_by_triage_status(self, status: str, limit: int = 100) -> List[Dict]:
         """Get papers with a specific triage decision status."""
+        if status not in ALLOWED_TRIAGE_DECISIONS:
+            raise ContractFSMViolation(f"undeclared triage_decision: {status}")
         with self.connection() as conn:
             rows = conn.execute(
                 """SELECT * FROM papers 
-                   WHERE triage_decision = ?
+                   WHERE triage_decision = ? AND status != 'rejected'
                    ORDER BY updated_at DESC
                    LIMIT ?""",
                 (status, limit)

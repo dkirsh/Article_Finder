@@ -99,3 +99,9 @@ def test_triage_decision_cannot_resurrect_rejected_lifecycle_row(
         )
     assert db.get_papers_by_status("queued_for_eater") == []
     assert db.get_papers_by_status("send_to_eater") == []
+
+    with db.connection() as conn:
+        conn.execute(
+            "UPDATE papers SET triage_decision = 'send_to_eater' WHERE paper_id = 'p1'"
+        )
+    assert db.get_papers_by_triage_status("send_to_eater") == []
