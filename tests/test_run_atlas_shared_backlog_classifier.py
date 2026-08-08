@@ -7,8 +7,14 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from core.database import Database
-from scripts.run_atlas_shared_backlog_classifier import run_backlog
+from scripts.run_atlas_shared_backlog_classifier import (
+    apply_update,
+    build_update_fields,
+    run_backlog,
+)
 
 
 class _StubResult:
@@ -129,3 +135,39 @@ def test_runner_script_help_executes() -> None:
     )
     assert proc.returncode == 0
     assert "Run Atlas Shared backlog classification" in proc.stdout
+
+
+def test_reclassification_cannot_reject_already_sent_paper() -> None:
+    fields = build_update_fields(
+        {"paper_id": "p1", "status": "sent_to_eater"},
+        {
+            "article_type": {},
+            "intake_result": {
+                "intake_decision": "reject_clear_false_positive",
+                "reasons": ["late classifier disagreement"],
+            },
+            "question_summary": {},
+        },
+        bank=SimpleNamespace(version="v-test", source_path="test"),
+        classified_at="2026-08-07T00:00:00+00:00",
+    )
+    assert fields["triage_decision"] == "reject"
+    assert fields["status"] == "sent_to_eater"
+
+
+def test_atlas_raw_writer_cannot_retriage_rejected_paper(tmp_path: Path) -> None:
+    conn = sqlite3.connect(tmp_path / "atlas.db")
+    conn.execute(
+        "CREATE TABLE papers (paper_id TEXT PRIMARY KEY, status TEXT, triage_decision TEXT)"
+    )
+    conn.execute("INSERT INTO papers VALUES ('p1', 'rejected', 'reject')")
+    with pytest.raises(ValueError, match="cannot re-enter"):
+        apply_update(
+            conn,
+            "p1",
+            {"status": "rejected", "triage_decision": "send_to_eater"},
+        )
+    assert conn.execute(
+        "SELECT status, triage_decision FROM papers WHERE paper_id = 'p1'"
+    ).fetchone() == ("rejected", "reject")
+    conn.close()
