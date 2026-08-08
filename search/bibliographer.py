@@ -1222,6 +1222,53 @@ class Bibliographer:
         title_norm = ''.join(c for c in title.lower() if c.isalnum())[:60]
         year = paper.get('year', 'unknown')
         return f"title:{title_norm}:{year}"
+
+    def _persist_reject(
+        self,
+        paper: Dict,
+        cell_id: str,
+        *,
+        score: float,
+        exclusion_reason: str,
+        scorer_reasons: Optional[List[str]] = None,
+    ) -> str:
+        """Persist a scientific exclusion before reporting it as rejected.
+
+        This is deliberately fail-closed: a failed write propagates to the cell
+        runner, so the bibliographer cannot count an exclusion that has no PRISMA
+        record. Sparse merge-upsert semantics preserve richer fields already held
+        for the same paper.
+        """
+        if isinstance(scorer_reasons, str):
+            raw_reasons = [scorer_reasons]
+        else:
+            raw_reasons = scorer_reasons or []
+        reasons = [str(reason) for reason in raw_reasons if str(reason).strip()]
+        if exclusion_reason not in reasons:
+            reasons.append(exclusion_reason)
+
+        paper_data = {
+            'paper_id': paper.get('paper_id'),
+            'title': paper.get('title'),
+            'authors': paper.get('authors', []),
+            'year': paper.get('year'),
+            'venue': paper.get('journal') or paper.get('venue'),
+            'doi': paper.get('doi'),
+            'abstract': paper.get('abstract'),
+            'url': paper.get('pdf_url') or paper.get('url'),
+            'source': f"bibliographer:{cell_id}",
+            'ingest_method': 'bibliographer',
+            'status': 'rejected',
+            'triage_score': score,
+            'triage_decision': 'reject',
+            'triage_reasons': reasons,
+        }
+        paper_data = {key: value for key, value in paper_data.items() if value is not None}
+        paper_id = self.db.add_paper(paper_data)
+
+        if paper.get('doi'):
+            self._existing_dois.add(paper['doi'].lower())
+        return paper_id
     
     def _evaluate_and_import(self, paper: Dict, cell_id: str) -> str:
         """
@@ -1239,6 +1286,7 @@ class Bibliographer:
         # Score against taxonomy
         score = 0.0  # Default if scorer unavailable
         triage_decision = 'pending'
+        triage_reasons: List[str] = []
         defer_reason = None  # Track if we need to defer instead of reject
 
         if self.scorer:
@@ -1246,10 +1294,7 @@ class Bibliographer:
                 result = self.scorer.score_paper(paper)
                 score = result.get('triage_score', 0.0)
                 triage_decision = result.get('triage_decision', 'pending')
-
-                # Reject if scorer says reject
-                if triage_decision == 'reject':
-                    return 'rejected'
+                triage_reasons = result.get('triage_reasons') or []
             except ValueError as e:
                 logger.warning(f"Scorer not initialized (no centroids?): {e}")
                 defer_reason = 'scorer_not_initialized'
@@ -1285,10 +1330,31 @@ class Bibliographer:
 
                 return 'deferred'
             except Exception as e:
-                logger.debug(f"Deferred import failed: {e}")
-                return 'rejected'
+                logger.error(f"Deferred import failed: {e}")
+                raise RuntimeError("bibliographer could not persist deferred paper") from e
+
+        # Persistence is outside the scorer exception boundary: a database
+        # failure is not a scoring failure and must stop the cell, not be
+        # counted as a scientific exclusion.
+        if triage_decision == 'reject':
+            self._persist_reject(
+                paper,
+                cell_id,
+                score=score,
+                exclusion_reason='bibliographer:scorer_reject',
+                scorer_reasons=triage_reasons,
+            )
+            return 'rejected'
 
         if score < self.threshold:
+            self._persist_reject(
+                paper,
+                cell_id,
+                score=score,
+                exclusion_reason=(
+                    f"bibliographer:below_threshold:{score:.6g}<{self.threshold:.6g}"
+                ),
+            )
             return 'rejected'
         
         # Import to database
@@ -1321,8 +1387,8 @@ class Bibliographer:
             return 'imported'
             
         except Exception as e:
-            logger.debug(f"Import failed: {e}")
-            return 'rejected'
+            logger.error(f"Import failed: {e}")
+            raise RuntimeError("bibliographer could not persist admitted paper") from e
     
     def get_status(self) -> Dict[str, Any]:
         """Get current bibliographer status."""
