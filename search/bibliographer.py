@@ -290,7 +290,14 @@ class SemanticScholarSearcher:
     BASE_URL = "https://api.semanticscholar.org/graph/v1"
     
     def __init__(self, api_key: str = None):
-        self.api_key = api_key or os.environ.get('SEMANTIC_SCHOLAR_API_KEY')
+        if api_key is None:
+            from config.loader import get
+
+            api_key = (
+                os.environ.get('SEMANTIC_SCHOLAR_API_KEY')
+                or get('apis.semantic_scholar.api_key')
+            )
+        self.api_key = api_key or None
         self.session = requests.Session()
         self.session.headers['User-Agent'] = 'ArticleFinder/3.2'
         if self.api_key:
