@@ -16,7 +16,7 @@ answers the prior question: *what is this for, and why is it built the way it is
 - `STALE_AFTER_DAYS: 30`
 
 > **Where this sits in the whole system.** Article Finder is the **front door that feeds the evidence
-> engine** — one organ of the larger enterprise described in [`../../SYSTEM_OVERVIEW.md`](../../SYSTEM_OVERVIEW.md)
+> engine** — one organ of the larger enterprise described in [`../../atlas_shared/docs/SYSTEM_OVERVIEW.md`](../../atlas_shared/docs/SYSTEM_OVERVIEW.md)
 > ("The Fourth Code"). Its job is the disciplined discovery and acquisition of the articles that
 > Article_Eater then reads and turns into graded, defeasible belief. Everything downstream — the claim
 > extraction, the web of belief, the Bayesian network, the payload students eventually read — operates
@@ -209,7 +209,7 @@ traffic before they have anything to work on.
 - [`../contracts/AF_AE_HANDOFF_AUTHORITY_2026-05-10.md`](../contracts/AF_AE_HANDOFF_AUTHORITY_2026-05-10.md)
   — read before touching anything that crosses to Article_Eater.
 - [`USER_GUIDE.md`](USER_GUIDE.md) and [`ZOTERO_UCSD_SETUP.md`](ZOTERO_UCSD_SETUP.md) — how to actually run it.
-- [`../../SYSTEM_OVERVIEW.md`](../../SYSTEM_OVERVIEW.md) — "The Fourth Code": how this front door fits with
+- [`../../atlas_shared/docs/SYSTEM_OVERVIEW.md`](../../atlas_shared/docs/SYSTEM_OVERVIEW.md) — "The Fourth Code": how this front door fits with
   the evidence engine, the space-reader, and the experiment side as one system.
 
 ## Provenance
