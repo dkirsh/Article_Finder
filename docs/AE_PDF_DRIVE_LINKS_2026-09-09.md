@@ -36,6 +36,17 @@ Whole-corpus fetch for a machine with rclone configured:
 
     rclone copy "gdrive:AE_Canonical_PDF_Corpus/current_release" <dest>
 
-Fuller documentation: `data/DB_REGISTRY.md` §PDF Corpus and
-`docs/coordination/CANONICAL_ARTIFACT_LOCATION_REGISTRY_2026-06-14.md` (PDF binaries
-row), both in the AE recovery repo.
+## Database snapshots on Drive
+
+The git-excluded databases themselves (this repo's `article_finder.db` and the five
+AE truth-surface DBs) have dated, checksummed snapshots at
+`gdrive:ATLAS_DB_Snapshots/<YYYY-MM-DD>/` (first: 2026-09-09; `LATEST.txt` at the
+folder root names the newest). Each folder carries a `manifest.json` with per-file
+sha256. These are read-only reference copies made with `sqlite3 .backup`; the
+single-writer homes stay on David's Mac — never write to a downloaded copy.
+
+    rclone copy "gdrive:ATLAS_DB_Snapshots/2026-09-09" <dest>
+
+Fuller documentation: `data/DB_REGISTRY.md` §PDF Corpus and §Off-machine DB
+snapshots, and `docs/coordination/CANONICAL_ARTIFACT_LOCATION_REGISTRY_2026-06-14.md`
+(PDF binaries row), all in the AE recovery repo.
