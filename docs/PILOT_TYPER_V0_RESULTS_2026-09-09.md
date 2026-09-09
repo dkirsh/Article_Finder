@@ -20,7 +20,12 @@ citation-context matches discounted, abstention allowed.
 
 ## Headline result
 
-Scored against David's corrected gold on the 14 kept papers:
+*(Updated after David's second-round rulings, later on 2026-09-09.)* Both of the
+pilot's receipted challenges were upheld: David ruled PDF-0154 quantitative and
+PDF-0461 narrative_review — the labels the pilot had assigned. Against his final
+gold, the pilot agrees on **14 of 14 kept papers, zero unknowns**.
+
+As first scored, against the pre-ruling corrected gold:
 
 - **12 of 14 agree** at the family level; **zero unknowns**.
 - The two disagreements are not typer failures on their face — both are **receipted
