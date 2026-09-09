@@ -74,13 +74,19 @@ const store={
 async function init(){
   const d=await (await fetch("tasks.json")).json();
   BATCH=(d.created||"?")+":field"; TASKS=d.tasks;
+  // restore from the server's on-disk autosave (survives any browser/window/port)
+  window.DURABLE=false;
+  try{
+    const r=await fetch("saved");
+    if(r.ok){
+      const saved=await r.json(); window.DURABLE=true;
+      for(const pid in saved){ if(!store.get(pid)) store.set(pid,saved[pid]); }
+    }
+  }catch(e){}
   const ruled=TASKS.filter(t=>store.get(t.paper_id)).length;
-  if(ruled===0)
-    alert("No saved rulings found at this address ("+location.host+").\n\n"+
-          "First session here? Ignore this and start ruling.\n\n"+
-          "But if you HAVE ruled papers before: rulings are stored per address "+
-          "(host AND port). Reopen the page at the exact URL you used then - "+
-          "nothing is deleted, it is waiting under the other address.");
+  if(!window.DURABLE)
+    alert("WARNING: static server - rulings will only live in this browser.\n"+
+          "Serve with  python3 hitl_serve.py  instead so every keystroke is saved to disk.");
   idx=TASKS.findIndex(t=>!store.get(t.paper_id)); if(idx<0) idx=0;
   show();
 }
@@ -125,7 +131,11 @@ function rule(field){
              note:document.getElementById("note").value,
              batch:BATCH, saved_at:new Date().toISOString()};
   store.set(t.paper_id,rec); lastRuled.push(t.paper_id);
-  document.getElementById("saved").textContent=`saved ${t.paper_id} = ${field}`;
+  fetch("save",{method:"POST",body:JSON.stringify(rec)})
+    .then(r=>{document.getElementById("saved").textContent=
+      (r.ok?"ON DISK: ":"browser only (!): ")+`${t.paper_id} = ${field}`;})
+    .catch(()=>{document.getElementById("saved").textContent=
+      `browser only (!): ${t.paper_id} = ${field}`;});
   next();
 }
 function next(){ if(idx<TASKS.length-1){idx++; show();} else show(); }
