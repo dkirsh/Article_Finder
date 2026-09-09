@@ -32,6 +32,20 @@ The current classifier's own title_abstract prediction agreed in both cases.
   17 lighting conditions (7 illuminance × 7 CCT combinations), emotional valence,
   arousal, and adjustment-behavior measures.
 
+## Second-round rulings (David, later on 2026-09-09, after the pilot typer's receipted challenges)
+
+- **PDF-0154**: "clearly quantitative" — gold `qualitative` → **empirical_research**
+  (quantitative). FINAL.
+- **PDF-0461**: after reading the full abstract, gold `qualitative` →
+  **narrative_review**. FINAL. David's reasoning, kept as a rubric criterion for the
+  v1 typer: the paper is partly theoretical in flavor "but it offers only pointers
+  and associations not any theory" — the `theoretical` label requires that a paper
+  construct or defend a theory; associative synthesis without one is a review.
+
+Final tally: the gold-20 yielded **four confirmed wrong type labels** (PDF-0404,
+PDF-0446, PDF-0154, PDF-0461) plus six field-based removals — half the set defective
+in one way or the other.
+
 ## The surviving 14-paper set
 
 PDF-0040, PDF-0062, PDF-0071, PDF-0108, PDF-0154, PDF-0196, PDF-0404*, PDF-0446*,
