@@ -94,8 +94,11 @@ async function show(){
   renderRail();
   const j=store.get(t.paper_id);
   document.getElementById("ptitle").textContent=`${t.paper_id} — ${t.title||"(untitled)"}`;
+  const bib=[t.venue, t.year, (t.authors&&t.authors.length?t.authors.slice(0,3).join(", ")+(t.authors.length>3?" et al.":""):null)]
+             .filter(Boolean).join(" · ");
   document.getElementById("meta").textContent=
-    (t.cluster&&t.cluster.length>1?`cluster of ${t.cluster.length} (one ruling covers all) · `:"")
+    (bib?bib+"  |  ":"(no year/journal resolved)  |  ")
+    +(t.cluster&&t.cluster.length>1?`cluster of ${t.cluster.length} (one ruling covers all) · `:"")
     +(j?`ruled: ${j.field}`:"unruled");
   document.getElementById("abstract").textContent=t.abstract||"";
   document.getElementById("escalate").checked=!!(j&&j.escalate);
