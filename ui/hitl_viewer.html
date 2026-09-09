@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HITL Paper Judgment</title>
+<style>
+  :root { --ink:#1a1a1a; --ground:#fbfaf8; --panel:#ffffff; --line:#d8d4cc;
+          --accent:#7a5c2e; --mark:#fff3cd; --human-mark:#d4edda; --danger:#8a2b2b; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.55 -apple-system, "Segoe UI", sans-serif;
+         color:var(--ink); background:var(--ground); height:100vh; display:flex; }
+  #tasks { width:230px; min-width:230px; border-right:1px solid var(--line);
+           overflow-y:auto; background:var(--panel); padding:10px; }
+  #tasks h2 { font-size:14px; margin:4px 0 10px; }
+  .task { padding:6px 8px; border-radius:6px; cursor:pointer; font-size:13px; margin-bottom:2px; }
+  .task:hover { background:#f0ede7; }
+  .task.active { background:#ece5d8; font-weight:600; }
+  .task .st { float:right; font-size:11px; }
+  .done .st::after { content:"✓"; color:#2f6b3a; }
+  .escalated .st::after { content:"⚑"; color:var(--danger); }
+  #doc { flex:1; overflow-y:auto; padding:26px 34px; background:var(--ground); }
+  #doc h1 { font-size:18px; margin-top:0; }
+  #doctext { white-space:pre-wrap; word-wrap:break-word; max-width:78ch; }
+  mark.machine { background:var(--mark); }
+  mark.human { background:var(--human-mark); }
+  #form { width:320px; min-width:320px; border-left:1px solid var(--line);
+          background:var(--panel); overflow-y:auto; padding:14px; }
+  #form h2 { font-size:14px; margin:2px 0 8px; }
+  fieldset { border:1px solid var(--line); border-radius:8px; margin:0 0 10px; padding:8px 10px; }
+  legend { font-size:12px; font-weight:600; letter-spacing:.03em; }
+  label { display:block; font-size:13px; margin:2px 0; cursor:pointer; }
+  textarea { width:100%; min-height:60px; font:13px/1.4 inherit; border:1px solid var(--line);
+             border-radius:6px; padding:6px; }
+  button { font:13px inherit; padding:7px 12px; border:1px solid var(--line); border-radius:7px;
+           background:#f4f1ea; cursor:pointer; margin:3px 3px 3px 0; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  #passages { font-size:12px; }
+  #passages li { margin-bottom:5px; }
+  #passages button { padding:1px 6px; font-size:11px; }
+  .esc { color:var(--danger); font-weight:600; }
+  #saveinfo { font-size:11px; color:#666; margin-top:6px; }
+</style>
+</head>
+<body>
+<nav id="tasks"><h2>Papers</h2><div id="tasklist">loading…</div></nav>
+
+<main id="doc">
+  <h1 id="doctitle">Select a paper</h1>
+  <div id="doctext"></div>
+</main>
+
+<aside id="form">
+  <h2 id="formtitle">Judgment</h2>
+
+  <fieldset><legend>METHOD — how was the knowledge produced?</legend>
+    <label><input type="radio" name="method" value="empirical_quant"> empirical – quantitative</label>
+    <label><input type="radio" name="method" value="empirical_qual"> empirical – qualitative</label>
+    <label><input type="radio" name="method" value="mixed"> mixed methods</label>
+    <label><input type="radio" name="method" value="review_narrative"> narrative review</label>
+    <label><input type="radio" name="method" value="review_systematic"> systematic review</label>
+    <label><input type="radio" name="method" value="meta_analysis"> meta-analysis</label>
+    <label><input type="radio" name="method" value="theoretical"> theoretical (builds/defends a theory — pointers &amp; associations alone are a review)</label>
+    <label><input type="radio" name="method" value="unsure"> unsure — explain in notes</label>
+  </fieldset>
+
+  <fieldset><legend>FORM — what kind of document?</legend>
+    <label><input type="radio" name="form" value="journal_article" checked> journal article</label>
+    <label><input type="radio" name="form" value="commentary"> commentary / response</label>
+    <label><input type="radio" name="form" value="book_chapter"> book chapter</label>
+    <label><input type="radio" name="form" value="edited_collection"> edited collection</label>
+    <label><input type="radio" name="form" value="other"> other — note it</label>
+  </fieldset>
+
+  <fieldset><legend>FIELD — does it belong in our corpus?</legend>
+    <label><input type="radio" name="field" value="in_field"> in field</label>
+    <label><input type="radio" name="field" value="borderline"> borderline</label>
+    <label><input type="radio" name="field" value="out_of_field"> out of field</label>
+  </fieldset>
+
+  <fieldset><legend>Decisive passages (select text in the paper, then mark)</legend>
+    <button id="markbtn">Mark selected passage as decisive</button>
+    <ol id="passages"></ol>
+  </fieldset>
+
+  <fieldset><legend>Escalation</legend>
+    <label class="esc"><input type="checkbox" id="escalate"> David should also evaluate this decision</label>
+  </fieldset>
+
+  <fieldset><legend>Notes</legend><textarea id="notes"></textarea></fieldset>
+
+  <button class="primary" id="savebtn">Save judgment</button>
+  <button id="exportbtn">Export all judgments (JSON)</button>
+  <div id="saveinfo"></div>
+</aside>
+
+<script>
+let BATCH = null, TASKS = [], CURRENT = null;
+
+const store = {
+  key: pid => `hitl:${BATCH}:${pid}`,
+  get(pid){ try { return JSON.parse(localStorage.getItem(this.key(pid))) || null; } catch(e){ return null; } },
+  set(pid, v){ try { localStorage.setItem(this.key(pid), JSON.stringify(v)); } catch(e){ alert("Could not save locally: " + e); } },
+};
+
+async function init(){
+  const res = await fetch("tasks.json");
+  const data = await res.json();
+  BATCH = data.created + ":" + (data.mode || "blind");
+  TASKS = data.tasks; window.MODE = data.mode || "blind";
+  renderList();
+}
+
+function renderList(){
+  const el = document.getElementById("tasklist"); el.innerHTML = "";
+  let done = 0;
+  for (const t of TASKS){
+    const j = store.get(t.paper_id);
+    const d = document.createElement("div");
+    d.className = "task" + (j ? " done" : "") + (j && j.escalate ? " escalated" : "")
+                + (CURRENT && CURRENT.paper_id === t.paper_id ? " active" : "");
+    d.innerHTML = `${t.paper_id}<span class="st"></span>`;
+    d.title = t.title; d.onclick = () => open(t);
+    el.appendChild(d);
+    if (j) done++;
+  }
+  document.querySelector("#tasks h2").textContent = `Papers (${done}/${TASKS.length})`;
+}
+
+async function open(t){
+  CURRENT = t;
+  document.getElementById("doctitle").textContent = `${t.paper_id} — ${t.title}`;
+  document.getElementById("formtitle").textContent = `Judgment — ${t.paper_id}`;
+  const txt = await (await fetch(t.text_file)).text();
+  const pane = document.getElementById("doctext");
+  pane.textContent = txt;
+  // assisted mode only: highlight machine receipts (never present in blind batches)
+  if (window.MODE === "assisted" && t.machine_receipts){
+    let html = pane.innerHTML;
+    for (const r of t.machine_receipts){
+      const frag = r.slice(0, 40).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      html = html.replace(new RegExp(frag), m => `<mark class="machine">${m}</mark>`);
+    }
+    pane.innerHTML = html;
+  }
+  loadForm(store.get(t.paper_id));
+  renderList();
+  pane.parentElement.scrollTop = 0;
+}
+
+function loadForm(j){
+  for (const grp of ["method","form","field"]){
+    document.querySelectorAll(`input[name=${grp}]`).forEach(i => i.checked = false);
+    if (grp === "form" && !(j && j.form)) document.querySelector('input[name=form][value=journal_article]').checked = true;
+    if (j && j[grp]) { const el = document.querySelector(`input[name=${grp}][value=${j[grp]}]`); if (el) el.checked = true; }
+  }
+  document.getElementById("escalate").checked = !!(j && j.escalate);
+  document.getElementById("notes").value = (j && j.notes) || "";
+  window.passages = (j && j.decisive_passages) || [];
+  renderPassages();
+  document.getElementById("saveinfo").textContent = j ? `saved ${j.saved_at}` : "not yet saved";
+}
+
+function renderPassages(){
+  const ol = document.getElementById("passages"); ol.innerHTML = "";
+  window.passages.forEach((p, i) => {
+    const li = document.createElement("li");
+    li.innerHTML = `“${p.text.slice(0,120)}${p.text.length>120?"…":""}” <button data-i="${i}">✕</button>`;
+    li.querySelector("button").onclick = () => { window.passages.splice(i,1); renderPassages(); };
+    ol.appendChild(li);
+  });
+}
+
+document.getElementById("markbtn").onclick = () => {
+  const sel = window.getSelection();
+  const text = sel ? sel.toString().trim() : "";
+  if (!text) { alert("Select the decisive text in the paper first, then click Mark."); return; }
+  const full = document.getElementById("doctext").textContent;
+  window.passages.push({ text, char_offset: full.indexOf(text) });
+  renderPassages(); sel.removeAllRanges();
+};
+
+document.getElementById("savebtn").onclick = () => {
+  if (!CURRENT) return;
+  const val = grp => { const el = document.querySelector(`input[name=${grp}]:checked`); return el ? el.value : null; };
+  if (!val("method")) { alert("Choose a METHOD judgment (or 'unsure') before saving."); return; }
+  store.set(CURRENT.paper_id, {
+    paper_id: CURRENT.paper_id, method: val("method"), form: val("form"), field: val("field"),
+    escalate: document.getElementById("escalate").checked,
+    notes: document.getElementById("notes").value,
+    decisive_passages: window.passages,
+    batch: BATCH, saved_at: new Date().toISOString(),
+  });
+  renderList();
+  document.getElementById("saveinfo").textContent = "saved just now";
+};
+
+document.getElementById("exportbtn").onclick = () => {
+  const out = { schema: "hitl_judgments.v1", batch: BATCH,
+                exported_at: new Date().toISOString(),
+                judgments: TASKS.map(t => store.get(t.paper_id)).filter(Boolean) };
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], {type: "application/json"}));
+  a.download = `hitl_judgments_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+};
+
+init();
+</script>
+</body>
+</html>
