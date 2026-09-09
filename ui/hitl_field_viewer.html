@@ -75,11 +75,12 @@ async function init(){
   const d=await (await fetch("tasks.json")).json();
   BATCH=(d.created||"?")+":field"; TASKS=d.tasks;
   const ruled=TASKS.filter(t=>store.get(t.paper_id)).length;
-  if(ruled===0 && location.hostname!=="localhost")
-    alert("No saved rulings found at this address ("+location.host+").\n"+
-          "Rulings are stored PER ADDRESS: if you ruled papers before, reopen the page "+
-          "at the exact same URL you used then (usually http://localhost:8766/...). "+
-          "Nothing is deleted - it is waiting under the other address.");
+  if(ruled===0)
+    alert("No saved rulings found at this address ("+location.host+").\n\n"+
+          "First session here? Ignore this and start ruling.\n\n"+
+          "But if you HAVE ruled papers before: rulings are stored per address "+
+          "(host AND port). Reopen the page at the exact URL you used then - "+
+          "nothing is deleted, it is waiting under the other address.");
   idx=TASKS.findIndex(t=>!store.get(t.paper_id)); if(idx<0) idx=0;
   show();
 }
