@@ -51,9 +51,14 @@ the definition the panel set.
   flagged out_of_field — a live disagreement that should calibrate the threshold.
 - 265 abstentions (15%) are honest OPENs, not errors — thin OCR, collection
   volumes, silent texts; they sit in HARD for the LLM/human layers.
-- 1,000 papers currently lack a resolved title in the output (the classification
-  is text-based and unaffected, but hand review wants titles — the join to
-  `pdf_corpus_inventory` is the known fix).
+- Titles: after three backfill passes (lifecycle tables, Article_Finder match,
+  first-heading extraction from the OCR text — the last marked "[from text]"),
+  1,756 of 1,760 output rows carry a title; 4 have none from any source.
+  Classification was text-based throughout and unaffected. Related, at David's
+  direction: the drive release catalogue's metadata gaps are now measured
+  (title 1,599/1,760; doi and authors 839; apa_citation 244) and an enrichment
+  request with the working source recipe is on the AE taskboard for codex-ae's
+  next release cut.
 - The blind-50 protocol is untouched: sealed verdicts stayed sealed; this run
   wrote only to its own directory.
 
