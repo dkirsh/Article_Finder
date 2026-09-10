@@ -40,6 +40,13 @@ discarded while stopping them from masquerading as direct CNfA evidence."
 Note: David's 2026-09-09 borderline rulings predate this bucket — some were forced
 choices and are being re-keyed via the viewer's revision rail (key P).
 
+**The methodology bucket (David Kirsh, 2026-09-10):** a second adjacent-evidence
+bucket for papers not directly in CNfA but related, whose METHODS are of interest to
+the platform — instruments, designs, analyses we may want to borrow. Neither
+discarded nor counted as direct evidence. Field-admission outcomes are therefore
+SIX: in_field / borderline / pure_neuroscience / pure_psychology / methodology /
+out_of_field. Viewer key: M.
+
 ## Provenance for back-flow
 
 AE outputs that re-enter AF (extraction-derived types, statistics-presence

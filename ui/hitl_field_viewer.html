@@ -18,6 +18,7 @@
   .dot.in_field{background:#2f8f4e}.dot.out_of_field{background:#c0392b}
   .dot.borderline{background:#d4a017}.dot.pure_neuroscience{background:#1f9bb0}
   .dot.pure_psychology{background:#8e6bbf}
+  .dot.methodology{background:#b06a3f}
   #col { flex:1; display:flex; flex-direction:column; min-width:0; }
   header { background:var(--panel); border-bottom:1px solid var(--line); padding:10px 22px; }
   header .row { display:flex; gap:14px; align-items:baseline; flex-wrap:wrap; }
@@ -53,6 +54,7 @@
     <button class="out"   onclick="rule('out_of_field')"><b>O</b>ut of field</button>
     <button class="neuro" onclick="rule('pure_neuroscience')"><b>N</b>euro (pure)</button>
     <button style="background:#e8dff5" onclick="rule('pure_psychology')"><b>P</b>sych (pure)</button>
+    <button style="background:#f3e3d3" onclick="rule('methodology')"><b>M</b>ethodology</button>
     <label id="esc"><input type="checkbox" id="escalate"> flag for later (E)</label>
     <input id="note" placeholder="optional note (kept with the ruling)">
   </div>
@@ -153,6 +155,7 @@ document.addEventListener("keydown",e=>{
   if(k==="i")rule("in_field"); else if(k==="b")rule("borderline");
   else if(k==="o")rule("out_of_field"); else if(k==="n")rule("pure_neuroscience");
   else if(k==="p")rule("pure_psychology");
+  else if(k==="m")rule("methodology");
   else if(k==="e"){const c=document.getElementById("escalate");c.checked=!c.checked;}
   else if(k==="arrowright")next(); else if(k==="arrowleft")prev();
   else if(k==="u")undo();
