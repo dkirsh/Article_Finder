@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Title-Repair Review</title>
+<style>
+  :root { --ink:#1a1a1a; --ground:#fbfaf8; --panel:#fff; --line:#d8d4cc; --accent:#7a5c2e; }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--ink);
+       background:var(--ground);height:100vh;display:flex}
+  #rail{width:210px;min-width:210px;border-right:1px solid var(--line);overflow-y:auto;
+        background:var(--panel);padding:8px;font-size:12px}
+  .rt{padding:3px 6px;border-radius:5px;cursor:pointer;display:flex;gap:6px;align-items:center}
+  .rt:hover{background:#f0ede7}.rt.active{background:#ece5d8;font-weight:600}
+  .dot{width:9px;height:9px;border-radius:50%;background:#ccc;flex:none}
+  .dot.in_field{background:#2f8f4e}.dot.out_of_field{background:#c0392b}
+  .dot.borderline{background:#d4a017}.dot.pure_neuroscience{background:#1f9bb0}
+  .dot.pure_psychology{background:#8e6bbf}.dot.methodology{background:#b06a3f}
+  #col{flex:1;display:flex;flex-direction:column;min-width:0}
+  header{background:var(--panel);border-bottom:1px solid var(--line);padding:12px 22px}
+  #wrong{font-size:14px;color:#8a2b2b;text-decoration:line-through}
+  #wrong::before{content:"title you saw:  ";text-decoration:none;display:inline-block;
+                 font-size:11px;color:#8a2b2b;letter-spacing:.04em}
+  #right{font-size:18px;font-weight:650;margin-top:4px}
+  #apa{font-size:12.5px;color:#444;margin-top:6px;font-style:italic}
+  #abstract{max-width:95ch;font-size:14px;color:#333;margin-top:8px}
+  #prior{margin-top:8px;font-size:13px}
+  #prior b{padding:2px 8px;border-radius:6px;background:#ece5d8}
+  #keys{display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap}
+  #keys button{font:14px inherit;padding:8px 14px;border:1px solid var(--line);
+               border-radius:8px;cursor:pointer;background:#f4f1ea}
+  #keys button b{text-decoration:underline}
+  #keys .in{background:#d4edda}.out{background:#f8d7da}.bord{background:#fff3cd}
+  #keys .neuro{background:#e0ffff}.psy{background:#e8dff5}.meth{background:#f3e3d3}
+  #keys .keep{background:var(--accent);color:#fff;border-color:var(--accent)}
+  #doc{flex:1;overflow-y:auto;padding:16px 26px}
+  #doctext{white-space:pre-wrap;max-width:95ch;font-size:14px;color:#222}
+  footer{background:var(--panel);border-top:1px solid var(--line);padding:6px 22px;
+         font-size:12px;color:#555;display:flex;gap:16px;align-items:center}
+  footer button{font:12px inherit;padding:4px 10px;border:1px solid var(--line);
+                border-radius:6px;cursor:pointer;background:#f4f1ea}
+</style>
+</head>
+<body>
+<nav id="rail"><h2 style="font-size:12px">Review (click to revisit)</h2><div id="raillist"></div></nav>
+<div id="col">
+<header>
+  <div id="wrong"></div>
+  <div id="right">loading…</div>
+  <div id="apa"></div>
+  <div id="abstract"></div>
+  <div id="prior">Your ruling under the old header: <b id="priorlbl">?</b></div>
+  <div id="keys">
+    <button class="keep" onclick="keep()"><b>K</b>eep my ruling</button>
+    <button class="in" onclick="rule('in_field')"><b>I</b>n</button>
+    <button class="bord" onclick="rule('borderline')"><b>B</b>orderline</button>
+    <button class="out" onclick="rule('out_of_field')"><b>O</b>ut</button>
+    <button class="neuro" onclick="rule('pure_neuroscience')"><b>N</b>euro</button>
+    <button class="psy" onclick="rule('pure_psychology')"><b>P</b>sych</button>
+    <button class="meth" onclick="rule('methodology')"><b>M</b>ethodology</button>
+  </div>
+</header>
+<main id="doc"><div id="doctext"></div></main>
+<footer>
+  <span id="progress"></span>
+  <span>K keeps · I/B/O/N/P/M re-rules · Shift+key sets secondary · ←/→ move</span>
+  <button onclick="exportAll()">Export review (JSON)</button>
+  <span id="saved"></span>
+</footer>
+</div>
+<script>
+let BATCH=null,TASKS=[],idx=0,lastRuled=[];
+const store={key:p=>`hitlR:${BATCH}:${p}`,
+  get(p){try{return JSON.parse(localStorage.getItem(this.key(p)))||null}catch(e){return null}},
+  set(p,v){try{localStorage.setItem(this.key(p),JSON.stringify(v))}catch(e){}}};
+async function init(){
+  const d=await (await fetch("tasks.json")).json();
+  BATCH=d.created; TASKS=d.tasks;
+  try{const r=await fetch("saved");
+    if(r.ok){const s=await r.json();for(const p in s){if(!store.get(p))store.set(p,s[p]);}}}catch(e){}
+  idx=TASKS.findIndex(t=>!store.get(t.paper_id)); if(idx<0)idx=0;
+  show();
+}
+function renderRail(){
+  const el=document.getElementById("raillist");el.innerHTML="";
+  TASKS.forEach((t,i)=>{const j=store.get(t.paper_id);
+    const d=document.createElement("div");
+    d.className="rt"+(i===idx?" active":"");
+    d.innerHTML=`<span class="dot ${j?j.field:""}"></span>${t.paper_id}${j&&j.kept?" ✓":""}`;
+    d.title=t.title; d.onclick=()=>{idx=i;show();}; el.appendChild(d);});
+  document.getElementById("progress").textContent=
+    `${TASKS.filter(t=>store.get(t.paper_id)).length}/${TASKS.length} reviewed`;
+}
+async function show(){
+  const t=TASKS[idx]; if(!t)return; renderRail();
+  document.getElementById("wrong").textContent=t.wrong_title||"(header title unknown/unchanged)";
+  document.getElementById("wrong").style.display=t.wrong_title?"":"none";
+  document.getElementById("right").textContent=`${t.paper_id} — ${t.title}`;
+  document.getElementById("apa").textContent=t.apa||"(no verified APA yet)";
+  document.getElementById("abstract").textContent=t.abstract||"(no trusted abstract — judge from the text below)";
+  document.getElementById("priorlbl").textContent=t.prior_field+(t.prior_secondary?` + ${t.prior_secondary}`:"");
+  const pane=document.getElementById("doctext"); pane.textContent="(loading text…)";
+  try{pane.textContent=await (await fetch(t.text_file)).text();}catch(e){pane.textContent="(text unavailable)";}
+  pane.parentElement.scrollTop=0;
+}
+function save(rec){
+  store.set(rec.paper_id,rec); lastRuled.push(rec.paper_id);
+  fetch("save",{method:"POST",body:JSON.stringify(rec)})
+    .then(r=>{document.getElementById("saved").textContent=
+      (r.ok?"ON DISK: ":"browser only (!): ")+`${rec.paper_id} = ${rec.field}${rec.kept?" (kept)":""}`;})
+    .catch(()=>{document.getElementById("saved").textContent="browser only (!)";});
+  if(idx<TASKS.length-1){idx++;show();} else show();
+}
+function keep(){
+  const t=TASKS[idx]; if(!t)return;
+  save({paper_id:t.paper_id, field:t.prior_field, field_secondary:t.prior_secondary||null,
+        kept:true, cluster:t.cluster, batch:BATCH, review:"title_repair",
+        saved_at:new Date().toISOString()});
+}
+function rule(field){
+  const t=TASKS[idx]; if(!t)return;
+  save({paper_id:t.paper_id, field, kept:false, prior_field:t.prior_field,
+        cluster:t.cluster, batch:BATCH, review:"title_repair",
+        saved_at:new Date().toISOString()});
+}
+function setSecondary(f2){
+  const pid=lastRuled[lastRuled.length-1]; if(!pid)return;
+  const rec=store.get(pid); if(!rec)return;
+  rec.field_secondary=f2; rec.saved_at=new Date().toISOString(); store.set(pid,rec);
+  fetch("save",{method:"POST",body:JSON.stringify(rec)}).catch(()=>{});
+  document.getElementById("saved").textContent=`${pid} = (${rec.field} + ${f2})`;
+}
+document.addEventListener("keydown",e=>{
+  const k=e.key.toLowerCase();
+  const SEC={i:"in_field",b:"borderline",o:"out_of_field",n:"pure_neuroscience",p:"pure_psychology",m:"methodology"};
+  if(e.shiftKey&&SEC[k]){setSecondary(SEC[k]);return;}
+  if(k==="k")keep();
+  else if(SEC[k])rule(SEC[k]);
+  else if(k==="arrowright"&&idx<TASKS.length-1){idx++;show();}
+  else if(k==="arrowleft"&&idx>0){idx--;show();}
+});
+function exportAll(){
+  const out={schema:"hitl_title_review.v1",batch:BATCH,exported_at:new Date().toISOString(),
+    judgments:TASKS.map(t=>store.get(t.paper_id)).filter(Boolean)};
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:"application/json"}));
+  a.download=`title_review_${new Date().toISOString().slice(0,10)}.json`; a.click();
+}
+init();
+</script>
+</body>
+</html>
