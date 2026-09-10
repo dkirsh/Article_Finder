@@ -17,6 +17,11 @@
 | T7 | **KA leg audit**: record what Knowledge_Atlas consumes and from where in the canonical registries. | 2026-09-09 | Third pipeline leg currently undocumented here |
 | T8 | **Gold-registry write-back** of the four corrected gold-20 labels (receipted, AE lane), and typer-v1 labels only after the blind-50 κ gate. | 2026-09-09 | Validation before write-back |
 
+| T11 | **Bib rejoin, properly**: re-parse the Zotero BibTeX export with a real parser (bibtexparser), and accept a join ONLY where its title agrees with the gold-registry or text title (the 2026-09-09 naive join misattached 43% and is quarantined). | 2026-09-10 | David caught wrong titles in HITL |
+| T12 | **APA + abstract completion on clean provenance**: refetch the 511 SUSPECT-flagged APAs from catalogue/validated DOIs; derive DOIs for the ~700 DOI-less papers via OpenAlex matched on TRUSTED titles (backoff/resume); same route for missing abstracts. | 2026-09-10 | David: "APA is essential" |
+| T13 | **Dedup execution (extends T2)**: assign canonical id per sha-cluster, write supersessions in AE + duplicate_of in AF, then a referential-integrity sweep so no surface references an absent or superseded id. | 2026-09-10 | David: "prune the pdfs correctly... make sure no errors arise" |
+| T14 | **Dyadic field labels downstream**: field_secondary now flows from the viewer; add the column to field_rulings_human in both DBs and propagate on next merge. | 2026-09-10 | David's (primary+secondary) vector design |
+
 ## In Progress
 
 | ID | Task | Started | Notes |
