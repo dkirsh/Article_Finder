@@ -128,6 +128,16 @@ async function show(){
   catch(e){ pane.textContent="(text unavailable)"; }
   pane.parentElement.scrollTop=0;
 }
+function setSecondary(field2){
+  const pid=lastRuled[lastRuled.length-1]; if(!pid){alert("Rule a paper first, then Shift+key adds its secondary label.");return;}
+  const rec=store.get(pid); if(!rec) return;
+  rec.field_secondary=field2; rec.saved_at=new Date().toISOString();
+  store.set(pid,rec);
+  fetch("save",{method:"POST",body:JSON.stringify(rec)})
+    .then(r=>{document.getElementById("saved").textContent=
+      (r.ok?"ON DISK: ":"browser only (!): ")+`${pid} = (${rec.field} + ${field2})`;})
+    .catch(()=>{});
+}
 function rule(field){
   const t=TASKS[idx]; if(!t) return;
   const rec={paper_id:t.paper_id, field, cluster:t.cluster||[t.paper_id],
@@ -152,6 +162,8 @@ function undo(){
 document.addEventListener("keydown",e=>{
   if(e.target.id==="note") return;
   const k=e.key.toLowerCase();
+  const SEC={i:"in_field",b:"borderline",o:"out_of_field",n:"pure_neuroscience",p:"pure_psychology",m:"methodology"};
+  if(e.shiftKey && SEC[k]){ setSecondary(SEC[k]); return; }
   if(k==="i")rule("in_field"); else if(k==="b")rule("borderline");
   else if(k==="o")rule("out_of_field"); else if(k==="n")rule("pure_neuroscience");
   else if(k==="p")rule("pure_psychology");
