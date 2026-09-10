@@ -23,13 +23,22 @@ carries provenance saying which system produced it, with what version, when.
 |---|---|---|---|
 | 1 | **Dedup** | content-hash (sha256) + DOI + normalized-title match against everything already held | `dedup_status`, `duplicate_of`, `dedup_basis` |
 | 2 | **Metadata completeness** | title/authors/year/DOI resolved (local sources first, then OpenAlex/S2 by DOI or gated title-match); a paper failing this goes to repair, not forward | `metadata_status`, per-field `*_source` |
-| 3 | **Field admission (in vs out of CNfA)** | the panel-reviewed env-vs-neuro density identifier plus, eventually, the LLM judge; four outcomes: in_field / borderline / pure_neuroscience / out_of_field | `field_bucket`, `field_version`, receipts |
+| 3 | **Field admission (in vs out of CNfA)** | the panel-reviewed density identifier plus, eventually, the LLM judge; FIVE outcomes: in_field / borderline / pure_neuroscience / **pure_psychology** / out_of_field | `field_bucket`, `field_version`, receipts |
 | 4 | **CNfA topic assignment** | which specific topic(s) within the field (acoustic, lighting, biophilia, wayfinding, ...) — the topic-bank machinery | `atlas_primary_topic` etc., version-stamped |
 | 5 | **Typing, both axes** | method (empirical_quant/qual/mixed/reviews/meta/theoretical — theory REQUIRED for `theoretical`, per DK) and form (article/commentary/chapter/collection/thesis) | `method`, `form`, `typer_version`, tier, receipts |
 | 6 | **Hand-off** | only papers passing 1–5 with tier CLEAN/GREY (or HARD after HITL) are packaged for AE | `ae_handoff_at`, bundle ref |
 
 Every stage writes a version stamp and receipts, because the 2026-09 audit showed
 that unstamped classification is unqueryable a season later.
+
+**The pure_psychology bucket (David Kirsh, 2026-09-10, verbatim and binding):**
+"pure_psychology is neither out_of_field nor borderline. It is an adjacent-evidence
+bucket for studies of human cognition, emotion, behaviour, or clinical outcomes that
+lack a substantive built, spatial, environmental, or ambient exposure. This
+distinction prevents useful psychological theory and measurement papers from being
+discarded while stopping them from masquerading as direct CNfA evidence."
+Note: David's 2026-09-09 borderline rulings predate this bucket — some were forced
+choices and are being re-keyed via the viewer's revision rail (key P).
 
 ## Provenance for back-flow
 
