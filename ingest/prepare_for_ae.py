@@ -137,12 +137,10 @@ def prepare_papers_for_ae(
                 stats['bundled'] += 1
                 stats['bundles'].append(str(bundle_path))
 
-                # Update paper status in database
-                with db.connection() as conn:
-                    conn.execute(
-                        "UPDATE papers SET ae_job_path = ?, ae_status = 'pending' WHERE paper_id = ?",
-                        (str(bundle_path), paper_id)
-                    )
+                # Persist through the P1 handoff gate; raw SQL can manufacture a
+                # pending state after a bundle has disappeared.
+                if not db.set_ae_job(paper_id, bundle_path):
+                    raise RuntimeError(f"paper disappeared before AE handoff: {paper_id}")
             else:
                 stats['errors'] += 1
 

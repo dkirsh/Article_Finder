@@ -41,3 +41,8 @@ if echo "$staged_added" | grep -qiE '\.db$'; then
   exit 1
 fi
 echo "artifact conformance: OK"
+
+python3 /Users/davidusa/REPOS/_control_worktrees/codex-fsm-governance-clean/governance/check_contract_fsms.py \
+  --repo "$(git rev-parse --show-toplevel)" \
+  --repo-key Article_Finder_v3_2_3 \
+  --registry /Users/davidusa/REPOS/_control_worktrees/codex-fsm-governance-clean/governance/contract_fsm_registry.json

@@ -16,6 +16,7 @@ from core.database import Database
 from triage.embeddings import EmbeddingService, get_embedding_service
 from triage.taxonomy_loader import CentroidBuilder
 from config.loader import get
+from triage.protection import venue_protected_reasons
 
 
 class HierarchicalScorer:
@@ -113,9 +114,18 @@ class HierarchicalScorer:
             triage_decision = 'review'
         else:
             triage_decision = 'reject'
-        
+
+        # Never auto-reject protected venues (HBE / neuroscience allowlists) --
+        # AGENTS.md / docs/PRODUCTION_RUN.md "never auto-reject" policy. Downgrade
+        # to human review and record the reason instead of silently dropping.
+        protection = venue_protected_reasons(paper.get('venue'))
+        if triage_decision == 'reject' and protection:
+            triage_decision = 'review'
+
         # Extract reasons (top node names)
         triage_reasons = []
+        if protection:
+            triage_reasons.append("protected:" + ",".join(protection))
         for node_id, score in top_nodes[:5]:
             node = self.db.get_node(node_id)
             if node:

@@ -1286,6 +1286,7 @@ def cmd_build_jobs(args):
         
         try:
             bundle_path = builder.build_bundle(paper, Path(pdf_path))
+            db.set_ae_job(paper['paper_id'], bundle_path)
             built += 1
             if args.verbose:
                 print(f"  Built: {bundle_path}")

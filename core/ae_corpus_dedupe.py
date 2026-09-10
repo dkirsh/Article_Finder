@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sqlite3
 from dataclasses import dataclass
@@ -10,7 +11,8 @@ from typing import Any, Mapping
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_AE_REPO = ROOT.parent / "Article_Eater_PostQuinean_v1_recovery"
+_AE_REPO_ENV = os.environ.get("AF_AE_REPO")
+DEFAULT_AE_REPO = Path(_AE_REPO_ENV).expanduser() if _AE_REPO_ENV else ROOT.parent / "Article_Eater_PostQuinean_v1_recovery"
 DEFAULT_AE_REGISTRY_DB = DEFAULT_AE_REPO / "data" / "pipeline_registry_unified.db"
 DEFAULT_AE_LIFECYCLE_DB = DEFAULT_AE_REPO / "data" / "article_eater_lifecycle.db"
 DEFAULT_AE_PAPERS_ROOT = DEFAULT_AE_REPO / "data" / "papers"
@@ -69,40 +71,72 @@ def _canonical_paper_ids(papers_root: Path) -> set[str]:
     return canonical_ids
 
 
+def _connect_ro(db: Path) -> "sqlite3.Connection | None":
+    """Open a READ-ONLY connection, or return None if the DB is absent/unopenable.
+
+    Uses the SQLite ``mode=ro`` URI so a missing file is NEVER created (avoids
+    seeding an empty decoy DB into the AE data dir) and a missing/renamed AE repo
+    degrades to "no match" instead of crashing the ingestion hot-path.
+    """
+    try:
+        if not db.exists():
+            return None
+        return sqlite3.connect(f"file:{db.as_posix()}?mode=ro", uri=True)
+    except sqlite3.Error:
+        return None
+
+
 def _superseded_ids(lifecycle_db: Path) -> set[str]:
-    con = sqlite3.connect(lifecycle_db)
-    cur = con.cursor()
-    cur.execute(
-        """
-        SELECT superseded_paper_id
-        FROM paper_supersessions
-        WHERE superseded_paper_id IS NOT NULL AND TRIM(superseded_paper_id) != ''
-        """
-    )
-    rows = {str(row[0]).strip() for row in cur.fetchall() if str(row[0]).strip()}
-    con.close()
-    return rows
+    con = _connect_ro(lifecycle_db)
+    if con is None:
+        return set()
+    try:
+        cur = con.cursor()
+        cur.execute(
+            """
+            SELECT superseded_paper_id
+            FROM paper_supersessions
+            WHERE superseded_paper_id IS NOT NULL AND TRIM(superseded_paper_id) != ''
+            """
+        )
+        return {str(row[0]).strip() for row in cur.fetchall() if str(row[0]).strip()}
+    except sqlite3.Error:
+        return set()
+    finally:
+        con.close()
 
 
 def _registry_rows(registry_db: Path) -> dict[str, dict[str, Any]]:
-    con = sqlite3.connect(registry_db)
-    con.row_factory = sqlite3.Row
-    rows = con.execute("SELECT paper_id, title, year, doi FROM papers").fetchall()
-    con.close()
-    return {str(row["paper_id"]).strip(): dict(row) for row in rows}
+    con = _connect_ro(registry_db)
+    if con is None:
+        return {}
+    try:
+        con.row_factory = sqlite3.Row
+        rows = con.execute("SELECT paper_id, title, year, doi FROM papers").fetchall()
+        return {str(row["paper_id"]).strip(): dict(row) for row in rows}
+    except sqlite3.Error:
+        return {}
+    finally:
+        con.close()
 
 
 def _lifecycle_title_rows(lifecycle_db: Path) -> dict[str, dict[str, Any]]:
-    con = sqlite3.connect(lifecycle_db)
-    con.row_factory = sqlite3.Row
-    rows = con.execute(
-        """
-        SELECT paper_id, title_authoritative AS title, publication_year AS year, doi
-        FROM paper_metadata
-        """
-    ).fetchall()
-    con.close()
-    return {str(row["paper_id"]).strip(): dict(row) for row in rows}
+    con = _connect_ro(lifecycle_db)
+    if con is None:
+        return {}
+    try:
+        con.row_factory = sqlite3.Row
+        rows = con.execute(
+            """
+            SELECT paper_id, title_authoritative AS title, publication_year AS year, doi
+            FROM paper_metadata
+            """
+        ).fetchall()
+        return {str(row["paper_id"]).strip(): dict(row) for row in rows}
+    except sqlite3.Error:
+        return {}
+    finally:
+        con.close()
 
 
 def _cache_key(registry_db: Path, lifecycle_db: Path, papers_root: Path) -> tuple[str, str, str, int, int, int]:

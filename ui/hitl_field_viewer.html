@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CNfA In/Out Judgment</title>
+<style>
+  :root { --ink:#1a1a1a; --ground:#fbfaf8; --panel:#fff; --line:#d8d4cc; --accent:#7a5c2e; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.5 -apple-system,"Segoe UI",sans-serif; color:var(--ink);
+         background:var(--ground); height:100vh; display:flex; }
+  #rail { width:210px; min-width:210px; border-right:1px solid var(--line); overflow-y:auto;
+          background:var(--panel); padding:8px; font-size:12px; }
+  #rail h2 { font-size:12px; margin:2px 0 8px; }
+  .rt { padding:3px 6px; border-radius:5px; cursor:pointer; display:flex; gap:6px; align-items:center; }
+  .rt:hover { background:#f0ede7; } .rt.active { background:#ece5d8; font-weight:600; }
+  .dot { width:9px; height:9px; border-radius:50%; background:#ccc; flex:none; }
+  .dot.in_field{background:#2f8f4e}.dot.out_of_field{background:#c0392b}
+  .dot.borderline{background:#d4a017}.dot.pure_neuroscience{background:#1f9bb0}
+  .dot.pure_psychology{background:#8e6bbf}
+  #col { flex:1; display:flex; flex-direction:column; min-width:0; }
+  header { background:var(--panel); border-bottom:1px solid var(--line); padding:10px 22px; }
+  header .row { display:flex; gap:14px; align-items:baseline; flex-wrap:wrap; }
+  #ptitle { font-size:17px; font-weight:650; }
+  #meta { font-size:12px; color:#666; }
+  #abstract { max-width:95ch; font-size:14px; color:#333; margin-top:6px; }
+  #keys { display:flex; gap:8px; margin-top:8px; align-items:center; }
+  #keys button { font:14px inherit; padding:8px 16px; border:1px solid var(--line);
+                 border-radius:8px; cursor:pointer; background:#f4f1ea; }
+  #keys button b { text-decoration:underline; }
+  #keys .in { background:#d4edda; } #keys .out { background:#f8d7da; }
+  #keys .bord { background:#fff3cd; } #keys .neuro { background:#e0ffff; }
+  #note { flex:1; min-width:160px; font:13px inherit; border:1px solid var(--line);
+          border-radius:7px; padding:6px; }
+  #doc { flex:1; overflow-y:auto; padding:18px 26px; }
+  #doctext { white-space:pre-wrap; max-width:95ch; font-size:14px; color:#222; }
+  footer { background:var(--panel); border-top:1px solid var(--line); padding:6px 22px;
+           font-size:12px; color:#555; display:flex; gap:18px; align-items:center; }
+  footer button { font:12px inherit; padding:4px 10px; border:1px solid var(--line);
+                  border-radius:6px; cursor:pointer; background:#f4f1ea; }
+  #esc { color:#8a2b2b; }
+</style>
+</head>
+<body>
+<nav id="rail"><h2>Rulings (click to revise)</h2><div id="raillist"></div></nav>
+<div id="col">
+<header>
+  <div class="row"><span id="ptitle">loading…</span><span id="meta"></span></div>
+  <div id="abstract"></div>
+  <div id="keys">
+    <button class="in"    onclick="rule('in_field')"><b>I</b>n field</button>
+    <button class="bord"  onclick="rule('borderline')"><b>B</b>orderline</button>
+    <button class="out"   onclick="rule('out_of_field')"><b>O</b>ut of field</button>
+    <button class="neuro" onclick="rule('pure_neuroscience')"><b>N</b>euro (pure)</button>
+    <button style="background:#e8dff5" onclick="rule('pure_psychology')"><b>P</b>sych (pure)</button>
+    <label id="esc"><input type="checkbox" id="escalate"> flag for later (E)</label>
+    <input id="note" placeholder="optional note (kept with the ruling)">
+  </div>
+</header>
+<main id="doc"><div id="doctext"></div></main>
+<footer>
+  <span id="progress"></span>
+  <span>keys: I / B / O / N rule &amp; advance · E toggles flag · ←/→ move · U undo last</span>
+  <button onclick="exportAll()">Export judgments (JSON)</button>
+  <span id="saved"></span>
+</footer>
+</div>
+
+<script>
+let BATCH=null, TASKS=[], idx=0, lastRuled=[];
+const store={
+  key:pid=>`hitlF:${BATCH}:${pid}`,
+  get(pid){try{return JSON.parse(localStorage.getItem(this.key(pid)))||null}catch(e){return null}},
+  set(pid,v){try{localStorage.setItem(this.key(pid),JSON.stringify(v))}catch(e){alert("save failed: "+e)}},
+};
+async function init(){
+  const d=await (await fetch("tasks.json")).json();
+  BATCH=(d.created||"?")+":field"; TASKS=d.tasks;
+  // restore from the server's on-disk autosave (survives any browser/window/port)
+  window.DURABLE=false;
+  try{
+    const r=await fetch("saved");
+    if(r.ok){
+      const saved=await r.json(); window.DURABLE=true;
+      for(const pid in saved){ if(!store.get(pid)) store.set(pid,saved[pid]); }
+    }
+  }catch(e){}
+  const ruled=TASKS.filter(t=>store.get(t.paper_id)).length;
+  if(!window.DURABLE)
+    alert("WARNING: static server - rulings will only live in this browser.\n"+
+          "Serve with  python3 hitl_serve.py  instead so every keystroke is saved to disk.");
+  idx=TASKS.findIndex(t=>!store.get(t.paper_id)); if(idx<0) idx=0;
+  show();
+}
+function renderRail(){
+  const el=document.getElementById("raillist"); el.innerHTML="";
+  TASKS.forEach((t,i)=>{
+    const j=store.get(t.paper_id);
+    const d=document.createElement("div");
+    d.className="rt"+(i===idx?" active":"");
+    d.innerHTML=`<span class="dot ${j?j.field:""}"></span>${t.paper_id}`;
+    d.title=(t.title||"")+(j?` — ruled ${j.field}`:" — unruled");
+    d.onclick=()=>{idx=i; show();};
+    el.appendChild(d);
+  });
+}
+async function show(){
+  const t=TASKS[idx]; if(!t) return;
+  renderRail();
+  const j=store.get(t.paper_id);
+  document.getElementById("ptitle").textContent=`${t.paper_id} — ${t.title||"(untitled)"}`;
+  const bib=[t.venue, t.year, (t.authors&&t.authors.length?t.authors.slice(0,3).join(", ")+(t.authors.length>3?" et al.":""):null)]
+             .filter(Boolean).join(" · ");
+  document.getElementById("meta").textContent=
+    (bib?bib+"  |  ":"(no year/journal resolved)  |  ")
+    +(t.cluster&&t.cluster.length>1?`cluster of ${t.cluster.length} (one ruling covers all) · `:"")
+    +(j?`ruled: ${j.field}`:"unruled");
+  document.getElementById("abstract").textContent=t.abstract||"";
+  document.getElementById("escalate").checked=!!(j&&j.escalate);
+  document.getElementById("note").value=(j&&j.note)||"";
+  document.getElementById("progress").textContent=
+    `${TASKS.filter(x=>store.get(x.paper_id)).length}/${TASKS.length} ruled · paper ${idx+1}`;
+  const pane=document.getElementById("doctext");
+  pane.textContent="(loading text…)";
+  try{ pane.textContent=await (await fetch(t.text_file)).text(); }
+  catch(e){ pane.textContent="(text unavailable)"; }
+  pane.parentElement.scrollTop=0;
+}
+function rule(field){
+  const t=TASKS[idx]; if(!t) return;
+  const rec={paper_id:t.paper_id, field, cluster:t.cluster||[t.paper_id],
+             escalate:document.getElementById("escalate").checked,
+             note:document.getElementById("note").value,
+             batch:BATCH, saved_at:new Date().toISOString()};
+  store.set(t.paper_id,rec); lastRuled.push(t.paper_id);
+  fetch("save",{method:"POST",body:JSON.stringify(rec)})
+    .then(r=>{document.getElementById("saved").textContent=
+      (r.ok?"ON DISK: ":"browser only (!): ")+`${t.paper_id} = ${field}`;})
+    .catch(()=>{document.getElementById("saved").textContent=
+      `browser only (!): ${t.paper_id} = ${field}`;});
+  next();
+}
+function next(){ if(idx<TASKS.length-1){idx++; show();} else show(); }
+function prev(){ if(idx>0){idx--; show();} }
+function undo(){
+  const pid=lastRuled.pop(); if(!pid) return;
+  localStorage.removeItem(store.key(pid));
+  idx=TASKS.findIndex(t=>t.paper_id===pid); show();
+}
+document.addEventListener("keydown",e=>{
+  if(e.target.id==="note") return;
+  const k=e.key.toLowerCase();
+  if(k==="i")rule("in_field"); else if(k==="b")rule("borderline");
+  else if(k==="o")rule("out_of_field"); else if(k==="n")rule("pure_neuroscience");
+  else if(k==="p")rule("pure_psychology");
+  else if(k==="e"){const c=document.getElementById("escalate");c.checked=!c.checked;}
+  else if(k==="arrowright")next(); else if(k==="arrowleft")prev();
+  else if(k==="u")undo();
+});
+function exportAll(){
+  const out={schema:"hitl_field_judgments.v1", batch:BATCH,
+    exported_at:new Date().toISOString(),
+    judgments:TASKS.map(t=>store.get(t.paper_id)).filter(Boolean)};
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:"application/json"}));
+  a.download=`cnfa_field_judgments_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+init();
+</script>
+</body>
+</html>

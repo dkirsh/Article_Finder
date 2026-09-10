@@ -45,3 +45,16 @@ In `papers`:
 - `cli/main.py doctor --deep`
 - `scripts/verify_af_semantic_integrity.py`
 - `scripts/repair_af_semantic_state.py`
+
+## Executable FSM Amendment (2026-08-07)
+
+The P1 declaration is `contracts/fsm/ae_handoff.fsm.json`. A write of
+`ae_status='pending'` is accepted only when the supplied job path resolves to an
+existing directory. A terminal AE result is accepted only from `pending` and
+only when its output bundle exists. The negative control attempts the pending
+write with no valid path and must be rejected. Administrative semantic repair
+uses the declared `invalidate_evidence` edge to clear a substrate-inconsistent
+status, or `record_job` to recover `pending` when the job bundle still exists;
+it may not manufacture `pending` without that bundle. The handoff lifecycle is
+cyclic because an evidence-backed result may later be invalidated and rerun. The
+declaration remains subject to non-author review.

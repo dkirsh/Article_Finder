@@ -26,7 +26,8 @@ for path in ATLAS_SHARED_SRC_CANDIDATES:
 from atlas_shared.classifier_system import AdaptiveClassifierSubsystem, ClassificationEvidence
 from atlas_shared.topic_bank import TopicConstitutionBank, load_topic_constitution_bank
 
-from core.database import Database
+from core.contract_fsm_runtime import enforce_transition
+from core.database import ALLOWED_TRIAGE_DECISIONS, Database, STATUS_TRANSITIONS
 
 
 DEFAULT_DB_PATH = REPO_ROOT / "data" / "article_finder.db"
@@ -110,7 +111,7 @@ def build_update_fields(
     topic_decision = _coarse_topic_decision(payload)
     current_status = str(paper.get("status") or "candidate")
     new_status = current_status
-    if triage_decision == "reject":
+    if triage_decision == "reject" and "rejected" in STATUS_TRANSITIONS.get(current_status, []):
         new_status = "rejected"
     elif current_status == "pending_scorer" and triage_decision in {"send_to_eater", "review"}:
         new_status = "candidate"
@@ -161,6 +162,26 @@ def build_update_fields(
 
 
 def apply_update(conn: sqlite3.Connection, paper_id: str, fields: dict[str, Any]) -> None:
+    row = conn.execute(
+        "SELECT status, triage_decision FROM papers WHERE paper_id = ?", (paper_id,)
+    ).fetchone()
+    if row is None:
+        raise ValueError(f"paper not found: {paper_id}")
+    current_status = str(row[0] or "candidate")
+    if "status" in fields:
+        requested_status = str(fields["status"])
+        if requested_status != current_status:
+            fields = dict(fields)
+            fields["status"] = enforce_transition(
+                "paper_status", current_status, f"set:{requested_status}"
+            )
+    effective_status = str(fields.get("status") or current_status)
+    if "triage_decision" in fields:
+        requested_triage = str(fields["triage_decision"])
+        if requested_triage not in ALLOWED_TRIAGE_DECISIONS:
+            raise ValueError(f"undeclared triage_decision: {requested_triage}")
+        if effective_status == "rejected" and requested_triage != "reject":
+            raise ValueError("rejected paper cannot re-enter triage admission")
     assignments = ", ".join(f"{key} = ?" for key in fields)
     values = list(fields.values()) + [paper_id]
     conn.execute(f"UPDATE papers SET {assignments} WHERE paper_id = ?", values)
