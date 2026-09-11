@@ -53,7 +53,39 @@ def select(db, tag, source, include_done):
         return [dict(zip(cols, r)) for r in cur.fetchall()]
 
 
-def _install_polite_fetch(dl, email):
+def _oa_locations(dl, doi):
+    """Every OA location Unpaywall holds, repositories first, publishers after."""
+    data = dl.unpaywall.get_paper(doi) or {}
+    locs = []
+    best = data.get("best_oa_location")
+    if best:
+        locs.append(best)
+    for loc in data.get("oa_locations") or []:
+        if loc not in locs:
+            locs.append(loc)
+    # repository copies are served without a publisher session; try them first
+    locs.sort(key=lambda l: 0 if (l or {}).get("host_type") == "repository" else 1)
+    return data, locs
+
+
+def _show_urls(dl, papers):
+    """Print what Unpaywall offers for each paper. No fetching, no writes."""
+    for i, p in enumerate(papers, 1):
+        data, locs = _oa_locations(dl, p["doi"])
+        oa = data.get("oa_status")
+        print(f"\n[{i}/{len(papers)}] {p['doi']}   is_oa={data.get('is_oa')} oa_status={oa}")
+        if not locs:
+            print("      (no OA locations recorded)")
+            continue
+        for loc in locs:
+            host = (loc.get("url") or loc.get("url_for_pdf") or "").split("/")[2:3]
+            print(f"      host_type={str(loc.get('host_type')):<12} host={host[0] if host else '?':<34} "
+                  f"version={loc.get('version')}")
+            print(f"         url_for_pdf: {loc.get('url_for_pdf')}")
+    return 0
+
+
+def _install_polite_fetch(dl, email, try_all=False):
     """
     Replace the PDF fetch with one that identifies itself properly.
 
@@ -83,31 +115,48 @@ def _install_polite_fetch(dl, email):
         if paper.get("pdf_path") and _Path(paper["pdf_path"]).exists():
             return {"success": True, "path": paper["pdf_path"], "cached": True}
 
-        url = dl.unpaywall.get_pdf_url(paper["doi"])
-        if not url:
+        if try_all:
+            _, locs = _oa_locations(dl, paper["doi"])
+            urls = [(l.get("host_type"), l.get("url_for_pdf")) for l in locs if l.get("url_for_pdf")]
+        else:
+            u = dl.unpaywall.get_pdf_url(paper["doi"])
+            urls = [(None, u)] if u else []
+        if not urls:
             return {"success": False, "error": "No open access PDF found"}
-        try:
+
+        attempts = []
+        for host_type, url in urls:
+            try:
+                req = urllib.request.Request(url, headers={
+                    "User-Agent": ua,
+                    "Accept": "application/pdf,*/*",
+                })
+                with urllib.request.urlopen(req, timeout=120) as resp:
+                    data = resp.read()
+                if not data.startswith(b"%PDF"):
+                    attempts.append(f"{host_type or '?'}:not-a-pdf")
+                    continue
+            except urllib.error.HTTPError as e:
+                attempts.append(f"{host_type or '?'}:HTTP {e.code}")
+                continue
+            except Exception as e:
+                attempts.append(f"{host_type or '?'}:{type(e).__name__}")
+                continue
+
             safe = paper["doi"].replace("/", "_").replace(":", "_")
             out = dl.pdf_dir / f"{safe}.pdf"
-            req = urllib.request.Request(url, headers={
-                "User-Agent": ua,
-                "Accept": "application/pdf,*/*",
-            })
-            with urllib.request.urlopen(req, timeout=120) as resp:
-                data = resp.read()
-            if not data.startswith(b"%PDF"):
-                return {"success": False, "error": "Downloaded file is not a PDF"}
             out.write_bytes(data)
             paper["pdf_path"] = str(out)
             paper["pdf_sha256"] = hashlib.sha256(data).hexdigest()
             paper["pdf_bytes"] = len(data)
             paper["updated_at"] = datetime.utcnow().isoformat()
             dl.db.add_paper(paper)
-            return {"success": True, "path": str(out), "size": len(data)}
-        except urllib.error.HTTPError as e:
-            return {"success": False, "error": f"HTTP {e.code}"}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+            return {"success": True, "path": str(out), "size": len(data),
+                    "won_with": host_type or "publisher", "attempts": attempts}
+
+        # every location refused; report what each one did
+        return {"success": False, "error": "; ".join(attempts) or "No open access PDF found",
+                "attempts": attempts}
 
     dl.download_pdf = download_pdf
 
@@ -122,6 +171,17 @@ def main():
                     help="also attempt papers that already record a pdf_path")
     ap.add_argument("--dry-run", action="store_true",
                     help="list what would be attempted and exit; no network, no writes")
+    ap.add_argument("--show-urls", action="store_true",
+                    help=("ask Unpaywall for every open-access location it holds and print them "
+                          "with host and host_type. Fetches no PDFs and writes nothing. Use this "
+                          "to see WHICH copy the downloader is choosing before changing how it "
+                          "chooses."))
+    ap.add_argument("--try-all-locations", action="store_true",
+                    help=("try every open-access location Unpaywall lists, repositories before "
+                          "publishers, instead of only the first one. pdf_downloader.get_pdf_url "
+                          "returns a single URL -- best_oa_location's url_for_pdf -- and one 403 "
+                          "there ends the attempt even when a repository copy is listed below it. "
+                          "Implies --polite-agent."))
     ap.add_argument("--polite-agent", action="store_true",
                     help=("fetch the PDF with a descriptive User-Agent carrying a contact address, "
                           "instead of ingest/pdf_downloader.py's bare 'ArticleFinder/3.0'. Several "
@@ -159,8 +219,11 @@ def main():
     from ingest.pdf_downloader import PDFDownloader
     dl = PDFDownloader(db, email=email)
 
-    if args.polite_agent:
-        _install_polite_fetch(dl, email)
+    if args.show_urls:
+        return _show_urls(dl, with_doi)
+
+    if args.polite_agent or args.try_all_locations:
+        _install_polite_fetch(dl, email, try_all=args.try_all_locations)
 
     # Classify on the exact strings ingest/pdf_downloader.py returns, not on a
     # substring guess. The first version of this matched "not" in the error text,
