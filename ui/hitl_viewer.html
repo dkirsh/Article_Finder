@@ -198,7 +198,8 @@ document.getElementById("markbtn").onclick = () => {
 document.getElementById("savebtn").onclick = () => {
   if (!CURRENT) return;
   const val = grp => { const el = document.querySelector(`input[name=${grp}]:checked`); return el ? el.value : null; };
-  if (!val("method")) { alert("Choose a METHOD judgment (or 'unsure') before saving."); return; }
+  const offTopic = document.getElementById("notcnfa").checked;
+  if (!offTopic && !val("method")) { alert("Choose a METHOD judgment (or 'unsure') before saving."); return; }
   const rec = {
     paper_id: CURRENT.paper_id, method: val("method"), form: val("form"), field: val("field"),
     not_cnfa_topic: document.getElementById("notcnfa").checked,
