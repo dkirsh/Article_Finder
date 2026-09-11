@@ -50,16 +50,17 @@ results = dict(done)
 for i, (pid, title, trust) in enumerate(todo):
     if pid in results: continue
     q = re.sub(r"^\[from text\]\s*", "", title)[:130]
-    raw = get("https://api.openalex.org/works?search=" + urllib.parse.quote(q)
-              + f"&per-page=1&select=doi,title&mailto={MAILTO}")
+    raw = get("https://api.crossref.org/works?rows=1&query.bibliographic="
+              + urllib.parse.quote(q) + f"&mailto={MAILTO}")
     rec = {"doi": None, "apa": None, "score": None}
     if raw:
         try:
-            hits = json.loads(raw).get("results", [])
-            if hits and hits[0].get("doi"):
-                sc = jac(q, hits[0].get("title"))
+            hits = json.loads(raw).get("message", {}).get("items", [])
+            if hits and hits[0].get("DOI"):
+                ht = " ".join(hits[0].get("title") or [""])
+                sc = jac(q, ht)
                 if sc >= 0.6:
-                    doi = hits[0]["doi"].replace("https://doi.org/", "")
+                    doi = hits[0]["DOI"]
                     apa = get("https://doi.org/" + urllib.parse.quote(doi),
                               accept="text/x-bibliography; style=apa")
                     if apa:
@@ -70,7 +71,7 @@ for i, (pid, title, trust) in enumerate(todo):
     results[pid] = rec
     got += bool(rec["apa"]); miss += (not rec["apa"])
     CKPT.write_text(json.dumps(results))
-    time.sleep(1.2)
+    time.sleep(1.0)   # Crossref polite pool tolerates this comfortably
     if (i + 1) % 50 == 0: print(f"  {i+1}/{len(todo)} clean_apa={got} miss={miss}")
 
 ok = {p: r for p, r in results.items() if r.get("apa")}
