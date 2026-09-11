@@ -84,6 +84,23 @@ outrank machine values.
    eventually typer-v1 labels that clear the blind-50 κ gate, land in the gold
    registry as receipted amendments — after, never before, validation.
 
+## HITL economics — sequential stopping per field (David's ruling, 2026-09-11)
+
+Human review budgets are NOT fixed per task; they emerge from a stop rule applied
+per field. For each extracted/classified field: verify items sequentially; after
+each, compute a confidence bound (Wilson) on the field's error rate; STOP when
+the bound clears the field's release threshold, releasing the field to
+spot-audit. Low-variance fields (subject N, year) clear in ~3-5 checks;
+high-variance semantic fields (IV/DV, effect direction, findings) take ~10-15 —
+David's numbers, derived rather than assumed. A disagreement re-opens the budget
+AND retargets selection toward similar cases (the VOI scheduler's surprise
+term). Second lever: run two independent extraction routes; auto-accept
+agreement, route ONLY disagreements to humans. Three distinct sample sizes must
+never be conflated: teaching a rubric (per-field, small), certifying an error
+rate before registry write-back (statistical, ~50 for ±10%), and the abstention
+queue of a weak mechanical layer (an engineering debt the judge absorbs, not a
+human budget).
+
 ## Boundaries
 
 This spec records the target architecture and repairs; it does not claim the
