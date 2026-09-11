@@ -53,6 +53,65 @@ def select(db, tag, source, include_done):
         return [dict(zip(cols, r)) for r in cur.fetchall()]
 
 
+def _install_polite_fetch(dl, email):
+    """
+    Replace the PDF fetch with one that identifies itself properly.
+
+    ingest/pdf_downloader.py sends `User-Agent: ArticleFinder/3.0` for both the
+    Unpaywall lookup and the PDF fetch. The lookup is fine. The fetch is not:
+    PNAS, MDPI, AIP and Taylor & Francis answer that string with HTTP 403 even
+    for articles they publish as gold open access, so papers that DO have a free
+    copy come back looking closed. A descriptive agent with a contact address is
+    what Crossref, OpenAlex and Unpaywall all ask callers to send.
+
+    Everything else is left alone: Unpaywall still decides whether a free copy
+    exists, the file lands in the same directory under the same name, the same
+    %PDF check runs, and the record is written through the same db.add_paper.
+    """
+    import hashlib
+    import urllib.request
+    from datetime import datetime
+    from pathlib import Path as _Path
+
+    ua = f"ArticleFinder/3.2.3 (+https://github.com/dkirsh/Article_Finder; mailto:{email})"
+    original = dl.download_pdf
+
+    def download_pdf(paper_id):
+        paper = dl.db.get_paper(paper_id)
+        if not paper or not paper.get("doi"):
+            return original(paper_id)
+        if paper.get("pdf_path") and _Path(paper["pdf_path"]).exists():
+            return {"success": True, "path": paper["pdf_path"], "cached": True}
+
+        url = dl.unpaywall.get_pdf_url(paper["doi"])
+        if not url:
+            return {"success": False, "error": "No open access PDF found"}
+        try:
+            safe = paper["doi"].replace("/", "_").replace(":", "_")
+            out = dl.pdf_dir / f"{safe}.pdf"
+            req = urllib.request.Request(url, headers={
+                "User-Agent": ua,
+                "Accept": "application/pdf,*/*",
+            })
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                data = resp.read()
+            if not data.startswith(b"%PDF"):
+                return {"success": False, "error": "Downloaded file is not a PDF"}
+            out.write_bytes(data)
+            paper["pdf_path"] = str(out)
+            paper["pdf_sha256"] = hashlib.sha256(data).hexdigest()
+            paper["pdf_bytes"] = len(data)
+            paper["updated_at"] = datetime.utcnow().isoformat()
+            dl.db.add_paper(paper)
+            return {"success": True, "path": str(out), "size": len(data)}
+        except urllib.error.HTTPError as e:
+            return {"success": False, "error": f"HTTP {e.code}"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    dl.download_pdf = download_pdf
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tag", help="substring match against the papers.tags column")
@@ -63,6 +122,12 @@ def main():
                     help="also attempt papers that already record a pdf_path")
     ap.add_argument("--dry-run", action="store_true",
                     help="list what would be attempted and exit; no network, no writes")
+    ap.add_argument("--polite-agent", action="store_true",
+                    help=("fetch the PDF with a descriptive User-Agent carrying a contact address, "
+                          "instead of ingest/pdf_downloader.py's bare 'ArticleFinder/3.0'. Several "
+                          "publishers -- PNAS, MDPI, AIP, Taylor & Francis -- return HTTP 403 to the "
+                          "bare string even for gold open-access articles. Unpaywall is still what "
+                          "decides whether a free copy exists; this only changes how it is fetched."))
     args = ap.parse_args()
 
     db = Database(get("paths.database", "data/article_finder.db"))
@@ -93,6 +158,9 @@ def main():
 
     from ingest.pdf_downloader import PDFDownloader
     dl = PDFDownloader(db, email=email)
+
+    if args.polite_agent:
+        _install_polite_fetch(dl, email)
 
     # Classify on the exact strings ingest/pdf_downloader.py returns, not on a
     # substring guess. The first version of this matched "not" in the error text,
