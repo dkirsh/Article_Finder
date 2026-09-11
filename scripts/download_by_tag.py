@@ -94,30 +94,58 @@ def main():
     from ingest.pdf_downloader import PDFDownloader
     dl = PDFDownloader(db, email=email)
 
-    got, missing, failed = [], [], []
+    # Classify on the exact strings ingest/pdf_downloader.py returns, not on a
+    # substring guess. The first version of this matched "not" in the error text,
+    # which put 'No open access PDF found' (the ordinary closed-paper result) into
+    # FAILED and 'Downloaded file is not a PDF' (a served paywall page, which IS a
+    # problem) into "no OA copy" -- exactly backwards, and it made a correct run of
+    # 34 closed papers read as 34 failures.
+    def classify(r):
+        if r.get("success"):
+            return "cached" if r.get("cached") else "downloaded"
+        e = str(r.get("error", ""))
+        if e == "No open access PDF found":
+            return "closed"          # Unpaywall knows it; there is no free copy
+        if e == "Downloaded file is not a PDF":
+            return "not_a_pdf"       # an OA URL existed and served HTML
+        if e == "No DOI":
+            return "no_doi"
+        if e.startswith("HTTP "):
+            return "http_error"
+        if e == "Paper not found":
+            return "no_record"
+        return "other"
+
+    LABEL = {"downloaded": "downloaded", "cached": "already had it",
+             "closed": "closed, no OA copy", "not_a_pdf": "OA URL served a non-PDF",
+             "no_doi": "no DOI", "http_error": "HTTP error",
+             "no_record": "no DB record", "other": "unclassified"}
+
+    buckets = {k: [] for k in LABEL}
     for i, p in enumerate(with_doi, 1):
         r = dl.download_pdf(p["paper_id"])
-        if r.get("success"):
-            got.append((p, r))
-            mark = "cached" if r.get("cached") else "downloaded"
-        elif "not" in str(r.get("error", "")).lower() or r.get("no_oa"):
-            missing.append((p, r)); mark = "no OA copy"
-        else:
-            failed.append((p, r)); mark = f"FAILED: {r.get('error')}"
-        print(f"[{i}/{len(with_doi)}] {mark:<28} {p['doi']}")
+        k = classify(r)
+        buckets[k].append((p, r))
+        detail = "" if k in ("downloaded", "cached", "closed") else f"  <- {r.get('error')}"
+        print(f"[{i}/{len(with_doi)}] {LABEL[k]:<26} {p['doi']}{detail}")
 
     print(f"\n=== {args.tag or args.source} ===")
-    print(f"have PDF now : {len(got)}")
-    print(f"no OA copy   : {len(missing)}")
-    print(f"failed       : {len(failed)}")
-    if missing:
-        print("\nroute these through Zotero / UCSD library "
-              "(`python3 cli/main.py zotero export --format ris`):")
-        for p, _ in missing:
+    for k in ("downloaded", "cached", "closed", "not_a_pdf", "http_error", "no_doi", "no_record", "other"):
+        if buckets[k]:
+            print(f"{LABEL[k]:<26} {len(buckets[k])}")
+
+    if buckets["closed"]:
+        print("\nCLOSED -- no open-access copy exists. These are the Zotero / UCSD library set")
+        print("(`python3 cli/main.py zotero export --format ris`). This is an expected outcome,")
+        print("not an error:")
+        for p, _ in buckets["closed"]:
             print(f"   {p['doi']:<42} {(p['title'] or '')[:55]}")
-    if failed:
-        print("\nfailures worth reading rather than retrying:")
-        for p, r in failed:
+
+    problems = buckets["not_a_pdf"] + buckets["http_error"] + buckets["other"] + buckets["no_record"]
+    if problems:
+        print("\nWORTH READING rather than retrying -- Unpaywall offered a copy and fetching it")
+        print("did not produce an article:")
+        for p, r in problems:
             print(f"   {p['doi']:<42} {r.get('error')}")
     return 0
 

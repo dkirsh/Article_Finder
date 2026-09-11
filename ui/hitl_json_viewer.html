@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metadata Record Editor</title>
+<style>
+  :root{--ink:#1a1a1a;--ground:#fbfaf8;--panel:#fff;--line:#d8d4cc;--accent:#7a5c2e}
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--ink);
+       background:var(--ground);height:100vh;display:flex}
+  #rail{width:200px;min-width:200px;border-right:1px solid var(--line);overflow-y:auto;
+        background:var(--panel);padding:8px;font-size:12px}
+  .rt{padding:3px 6px;border-radius:5px;cursor:pointer;display:flex;gap:6px;align-items:center}
+  .rt:hover{background:#f0ede7}.rt.active{background:#ece5d8;font-weight:600}
+  .dot{width:9px;height:9px;border-radius:50%;background:#ccc;flex:none}
+  .dot.accepted{background:#2f8f4e}.dot.edited{background:#d4a017}
+  #col{flex:1;display:flex;flex-direction:column;min-width:0}
+  header{background:var(--panel);border-bottom:1px solid var(--line);padding:10px 20px;
+         max-height:62vh;overflow-y:auto}
+  h1{font-size:16px;margin:0 0 8px}
+  .frow{display:flex;gap:8px;margin-bottom:6px;align-items:flex-start}
+  .frow label{width:70px;min-width:70px;font-size:12px;color:#555;padding-top:6px}
+  .frow .chip{font-size:10px;padding:2px 6px;border-radius:8px;background:#eee;color:#555;
+              white-space:nowrap;margin-top:7px}
+  .chip.good{background:#d4edda;color:#205c2f}.chip.warn{background:#fff3cd;color:#6b5310}
+  .chip.bad{background:#f8d7da;color:#7a2330}
+  .frow input,.frow textarea{flex:1;font:13.5px/1.4 inherit;border:1px solid var(--line);
+    border-radius:6px;padding:6px;background:#fffefb}
+  .frow textarea{min-height:74px}
+  .frow .changed{border-color:#d4a017;background:#fffaf0}
+  #btns{display:flex;gap:8px;margin-top:8px;align-items:center}
+  #btns button{font:13.5px inherit;padding:7px 14px;border:1px solid var(--line);
+               border-radius:8px;cursor:pointer;background:#f4f1ea}
+  #btns .ok{background:#d4edda}#btns .save{background:var(--accent);color:#fff;border-color:var(--accent)}
+  #doc{flex:1;overflow-y:auto;padding:14px 22px;border-top:2px solid var(--line)}
+  #doctext{white-space:pre-wrap;max-width:95ch;font-size:13.5px;color:#222}
+  footer{background:var(--panel);border-top:1px solid var(--line);padding:6px 20px;
+         font-size:12px;color:#555;display:flex;gap:14px;align-items:center}
+  footer button{font:12px inherit;padding:4px 10px;border:1px solid var(--line);
+                border-radius:6px;cursor:pointer;background:#f4f1ea}
+</style>
+</head>
+<body>
+<nav id="rail"><h2 style="font-size:12px">Records</h2><div id="raillist"></div></nav>
+<div id="col">
+<header>
+  <h1 id="pid">loading…</h1>
+  <div class="frow"><label>Title</label><span class="chip" id="c_title"></span><input id="f_title"></div>
+  <div class="frow"><label>Authors</label><span class="chip" id="c_authors"></span><input id="f_authors" placeholder="Last, F.; Last, F."></div>
+  <div class="frow"><label>Year</label><span class="chip" id="c_year"></span><input id="f_year" style="max-width:110px">
+       <label style="width:52px">Venue</label><input id="f_venue"></div>
+  <div class="frow"><label>DOI</label><span class="chip" id="c_doi"></span><input id="f_doi"></div>
+  <div class="frow"><label>APA</label><span class="chip" id="c_apa"></span><textarea id="f_apa" style="min-height:44px"></textarea></div>
+  <div class="frow"><label>Abstract</label><span class="chip" id="c_abstract"></span><textarea id="f_abstract"></textarea></div>
+  <div id="btns">
+    <button class="ok" onclick="accept()"><b><u>A</u></b>ccept record as correct</button>
+    <button class="save" onclick="saveRec(false)"><b><u>S</u></b>ave my edits</button>
+    <label style="font-size:12px"><input type="checkbox" id="flag"> needs deeper repair (flag)</label>
+    <span id="saved" style="font-size:12px;color:#555"></span>
+  </div>
+</header>
+<main id="doc"><div id="doctext"></div></main>
+<footer>
+  <span id="progress"></span>
+  <span>A accept · S save edits · ⌘/Ctrl+←/→ move (plain arrows work in the list) · fields verify against the text below</span>
+  <button onclick="exportAll()">Export corrections (JSON)</button>
+</footer>
+</div>
+<script>
+let BATCH=null,TASKS=[],idx=0;
+const FIELDS=["title","authors","year","venue","doi","apa","abstract"];
+const store={key:p=>`hitlJ:${BATCH}:${p}`,
+  get(p){try{return JSON.parse(localStorage.getItem(this.key(p)))||null}catch(e){return null}},
+  set(p,v){try{localStorage.setItem(this.key(p),JSON.stringify(v))}catch(e){}}};
+async function init(){
+  const d=await (await fetch("tasks.json")).json();
+  BATCH=d.created;TASKS=d.tasks;
+  try{const r=await fetch("saved");
+    if(r.ok){const s=await r.json();for(const p in s){if(!store.get(p))store.set(p,s[p]);}}}catch(e){}
+  idx=TASKS.findIndex(t=>!store.get(t.paper_id));if(idx<0)idx=0;
+  show();
+}
+function chip(id,txt,cls){const e=document.getElementById(id);
+  e.textContent=txt||"—";e.className="chip "+(cls||"");}
+function renderRail(){
+  const el=document.getElementById("raillist");el.innerHTML="";
+  TASKS.forEach((t,i)=>{const j=store.get(t.paper_id);
+    const d=document.createElement("div");
+    d.className="rt"+(i===idx?" active":"");
+    d.innerHTML=`<span class="dot ${j?(j.accepted?"accepted":"edited"):""}"></span>${t.paper_id}`;
+    d.title=t.fields.title||""; d.onclick=()=>{idx=i;show();}; el.appendChild(d);});
+  document.getElementById("progress").textContent=
+    `${TASKS.filter(t=>store.get(t.paper_id)).length}/${TASKS.length} reviewed · record ${idx+1}`;
+}
+async function show(){
+  const t=TASKS[idx];if(!t)return;renderRail();
+  const j=store.get(t.paper_id);
+  const vals=j&&j.fields?{...t.fields,...j.fields}:t.fields;
+  document.getElementById("pid").textContent=t.paper_id+(j?(j.accepted?"  ✓ accepted":"  ✎ edited"):"");
+  for(const f of FIELDS){
+    const el=document.getElementById("f_"+f);
+    el.value=(f==="authors"&&Array.isArray(vals[f]))?vals[f].join("; "):(vals[f]??"");
+    el.classList.remove("changed");
+    el.oninput=()=>el.classList.add("changed");
+  }
+  chip("c_title",t.prov.title_trust, t.prov.title_trust&&t.prov.title_trust.includes("human")?"good":
+       (t.prov.title_trust==="gold_registry"||t.prov.title_trust==="validated")?"good":"warn");
+  chip("c_authors",t.prov.source);
+  chip("c_year",vals.year?"":"missing",vals.year?"":"bad");
+  chip("c_doi",vals.doi?"has DOI":"no DOI",vals.doi?"good":"warn");
+  chip("c_apa",t.prov.apa_status,t.prov.apa_status==="verified"?"good":t.prov.apa_status==="suspect"?"bad":"warn");
+  chip("c_abstract",t.prov.abstract_quality||"missing",
+       ["clean","repaired_publisher","s2_doi","s2_title"].includes(t.prov.abstract_quality)?"good":
+       t.prov.abstract_quality==="repaired_mechanical"?"warn":"bad");
+  document.getElementById("flag").checked=!!(j&&j.flag);
+  document.getElementById("saved").textContent=j?("saved "+(j.saved_at||"").slice(0,19)):"";
+  const pane=document.getElementById("doctext");pane.textContent="(loading text…)";
+  try{pane.textContent=await (await fetch(t.text_file)).text();}catch(e){pane.textContent="(text unavailable)";}
+  pane.parentElement.scrollTop=0;
+}
+function collect(){
+  const out={};
+  for(const f of FIELDS){
+    let v=document.getElementById("f_"+f).value.trim();
+    if(f==="authors")v=v?v.split(";").map(s=>s.trim()).filter(Boolean):[];
+    if(f==="year")v=v?parseInt(v)||v:null;
+    out[f]=v===""?null:v;
+  }
+  return out;
+}
+function saveRec(accepted){
+  const t=TASKS[idx];if(!t)return;
+  const rec={paper_id:t.paper_id,fields:collect(),accepted:accepted,
+             flag:document.getElementById("flag").checked,
+             batch:BATCH,provenance:"human_david_json_review",
+             saved_at:new Date().toISOString()};
+  store.set(t.paper_id,rec);
+  fetch("save",{method:"POST",body:JSON.stringify(rec)})
+    .then(r=>{document.getElementById("saved").textContent=
+      (r.ok?"ON DISK ":"browser only (!) ")+(accepted?"(accepted)":"(edited)");})
+    .catch(()=>{document.getElementById("saved").textContent="browser only (!)";});
+  if(idx<TASKS.length-1){idx++;show();}else show();
+}
+function accept(){saveRec(true);}
+document.addEventListener("keydown",e=>{
+  const tag=(e.target.tagName||"").toLowerCase();
+  const editing=tag==="input"||tag==="textarea";
+  const k=e.key.toLowerCase();
+  if((e.metaKey||e.ctrlKey)&&e.key==="ArrowRight"&&idx<TASKS.length-1){idx++;show();return;}
+  if((e.metaKey||e.ctrlKey)&&e.key==="ArrowLeft"&&idx>0){idx--;show();return;}
+  if(editing)return;
+  if(k==="a")accept();else if(k==="s")saveRec(false);
+  else if(e.key==="ArrowRight"&&idx<TASKS.length-1){idx++;show();}
+  else if(e.key==="ArrowLeft"&&idx>0){idx--;show();}
+});
+function exportAll(){
+  const out={schema:"hitl_json_fields.v1",batch:BATCH,exported_at:new Date().toISOString(),
+    records:TASKS.map(t=>store.get(t.paper_id)).filter(Boolean)};
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:"application/json"}));
+  a.download=`json_field_corrections_${new Date().toISOString().slice(0,10)}.json`;a.click();
+}
+init();
+</script>
+</body>
+</html>
