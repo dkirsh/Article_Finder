@@ -101,6 +101,56 @@ rate before registry write-back (statistical, ~50 for ±10%), and the abstention
 queue of a weak mechanical layer (an engineering debt the judge absorbs, not a
 human budget).
 
+## Ambiguity routing and conjecture adjudication (David's proposal, 2026-09-11; literature-checked)
+
+Three additions to the HITL economics above, each grounded in an established
+literature — we are not first, and the prior work adds guardrails.
+
+**1. Ambiguity is a routing signal, not a failure.** When a field (e.g.
+direction of effect) cannot be determined because the source language is odd,
+badly written, or syntactically ambiguous, that item is a high-value human
+touchpoint. The uncertainty literature distinguishes two causes that must be
+routed differently: *source ambiguity* (aleatoric — the text itself
+underdetermines the answer; irreducible by a better model) and *model
+uncertainty* (epistemic — the model lacks skill or context; reducible).
+Operationalization with our dual-route design: both routes uncertain but
+proposing DIFFERENT readings → source ambiguity, route to human WITH the
+competing readings shown; one route confident, other abstaining → model
+uncertainty, first try context expansion / the stronger judge, humans only if
+that fails. Each routed item carries `ambiguity_type` so the two queues are
+separately measurable.
+
+**2. Conjecture + evidence adjudication (the new viewer mode).** For routed
+items the machine presents 2–3 candidate values, each with its quoted
+span(s) and a one-line reason; the human picks one, or rejects all and
+supplies the value. Judging presented evidence is faster than re-deriving
+from the paper (verification asymmetry; the rationale literature further
+shows span-marking is often a better use of annotator time than more
+labels). Rules, from the literature's failure modes:
+- *Warrant, not relevance:* the prompt to the human is "does this span
+  WARRANT this reading," never "is this span related" — topical relevance
+  without warrant is the known failure of citation-style verification.
+- *Anchoring guardrail:* presented conjectures bias humans toward
+  acceptance. Adjudication mode is for production throughput ONLY — never
+  for blind validation batches (the κ gate stays blind), and ~10–15% of
+  adjudicated items are re-judged blind as a standing acceptance-bias audit.
+- *Reject-all is a disagreement:* it re-opens the field's sequential-stop
+  budget and feeds the VOI surprise term, same as any human–machine
+  disagreement.
+- The full paper stays scrollable beneath the conjectures (the one rule
+  about context); spans are anchors, not boundaries.
+
+**3. Context expansion learned from humans.** Sometimes local text is
+ambiguous but a larger window resolves it. Every adjudication logs whether
+the human ruled from the offered spans or scrolled beyond them, and which
+passage they finally marked (`context_expansion` event: field, offered
+spans, used span, section, distance). Aggregated per field, these events
+become expansion policies (e.g. direction-of-effect routinely needs the
+stats sentence PLUS its results paragraph PLUS the matching discussion
+paragraph). This mirrors the "sufficient context" lens from the RAG
+literature: classify each failure as evidence-insufficient (expand the
+window) vs evidence-unused (fix the model) before spending human time.
+
 ## Boundaries
 
 This spec records the target architecture and repairs; it does not claim the

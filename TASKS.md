@@ -21,6 +21,7 @@
 | T12 | **APA + abstract completion on clean provenance**: refetch the 511 SUSPECT-flagged APAs from catalogue/validated DOIs; derive DOIs for the ~700 DOI-less papers via OpenAlex matched on TRUSTED titles (backoff/resume); same route for missing abstracts. | 2026-09-10 | David: "APA is essential" |
 | T13 | **Dedup execution (extends T2)**: assign canonical id per sha-cluster, write supersessions in AE + duplicate_of in AF, then a referential-integrity sweep so no surface references an absent or superseded id. | 2026-09-10 | David: "prune the pdfs correctly... make sure no errors arise" |
 | T14 | **Dyadic field labels downstream**: field_secondary now flows from the viewer; add the column to field_rulings_human in both DBs and propagate on next merge. | 2026-09-10 | David's (primary+secondary) vector design |
+| T15 | **Conjecture-adjudication HITL mode**: extractor emits 2–3 candidate values + spans + reasons on ambiguity-routed items (`ambiguity_type` source vs model per dual-route pattern); viewer mode with 1/2/3/X keys, warrant-not-relevance prompt, context_expansion logging; 10–15% blind re-judge as acceptance-bias audit; never used for κ-gate batches. | 2026-09-11 | David's proposal, literature-checked; spec §ambiguity routing |
 
 ## In Progress
 
