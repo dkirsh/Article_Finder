@@ -1,0 +1,223 @@
+"use strict";
+
+/* R3 efficient queue logic — supersedes the R2 queue_logic.js at pack-build time.
+ * Adds, on top of the R2 expansion logic (kept verbatim below):
+ *   - a per-stratum sequential stop rule (one-sided 80% Wilson upper bound on the
+ *     observed extraction-error rate; thresholds per stratum class), and
+ *   - route-B disagreement-first ordering read from review_data.efficient_queue
+ *     (rank integers only; no route-B values ship in the pack), and
+ *   - seeded audit retention: a released stratum keeps a deterministic ~15% of its
+ *     remaining items in the required queue as a standing spot-audit; any error
+ *     there raises the bound and re-opens the stratum automatically.
+ * Pure functions only; node-testable (see scripts/test_kappa_r3_queue_logic.js).
+ * David Kirsh's budget intuition (3-5 checks for mechanical fields, 10-15 for
+ * semantic ones) calibrates to the one-sided 80% bound; the stricter 95%/n~50
+ * certification belongs to registry write-back, not this triage instrument. */
+
+(function exposeQueueLogic(root, factory) {
+  const api = factory();
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  root.AEHITLQueueLogic = api;
+})(globalThis, function buildQueueLogic() {
+
+  /* ---------- R2 logic, unchanged ---------- */
+
+  function responseTriggersExpansion(response) {
+    return Boolean(response) && (
+      response.confidence <= 2 ||
+      response.context_sufficient === false ||
+      [
+        "substantively_correct_needs_wording",
+        "incorrect",
+        "source_does_not_answer",
+        "cannot_decide",
+      ].includes(response.verdict)
+    );
+  }
+
+  function activeStrataFromResponses(items, responses) {
+    const itemById = new Map(items.map((item) => [item.item_id, item]));
+    return [...new Set(
+      Object.entries(responses)
+        .filter(([itemId, response]) => {
+          const item = itemById.get(itemId);
+          return item && ["core", "reliability"].includes(item.phase) &&
+            responseTriggersExpansion(response);
+        })
+        .map(([itemId]) => itemById.get(itemId).stratum)
+    )].sort();
+  }
+
+  /* ---------- R3 additions ---------- */
+
+  const DEFAULT_STOP_CONFIG = {
+    z_one_sided_80: 0.8416,
+    audit_fraction: 0.15,
+    audit_minimum: 1,
+    // Fail-fast (the symmetric release): when the Wilson LOWER bound on a
+    // stratum's error rate clears this, the field is certified BROKEN — its
+    // remedy is re-extraction, not more human confirmations. Skipping the
+    // rest of a condemned stratum saves the reviewer exactly as much as
+    // skipping a settled one.
+    fail_threshold: 0.35,
+    classes: {
+      mechanical: {threshold: 0.15, min_n: 4,
+        strata: ["apa_citation", "article_type", "sample_n", "p_value", "effect_size"]},
+      semantic: {threshold: 0.10, min_n: 7,
+        strata: ["main_conclusion", "independent_variables", "dependent_variables",
+          "construct_pair", "direction", "stimulus_description",
+          "methods_surface_summary", "measurement_inventory"]},
+    },
+  };
+
+  // An extraction the human had to correct, or that claimed a value the paper
+  // does not establish, counts as an error. cannot_decide is neither success
+  // nor error: it routes to expansion and stays out of the bound's n.
+  function isErrorVerdict(verdict) {
+    return ["incorrect", "source_does_not_answer",
+      "substantively_correct_needs_wording"].includes(verdict);
+  }
+
+  function wilsonUpperBound(errors, n, z) {
+    if (n <= 0) return 1;
+    const p = errors / n;
+    const z2 = z * z;
+    const centre = p + z2 / (2 * n);
+    const spread = z * Math.sqrt((p * (1 - p)) / n + z2 / (4 * n * n));
+    return (centre + spread) / (1 + z2 / n);
+  }
+
+  function wilsonLowerBound(errors, n, z) {
+    if (n <= 0) return 0;
+    const p = errors / n;
+    const z2 = z * z;
+    const centre = p + z2 / (2 * n);
+    const spread = z * Math.sqrt((p * (1 - p)) / n + z2 / (4 * n * n));
+    return Math.max(0, (centre - spread) / (1 + z2 / n));
+  }
+
+  function stratumClass(stratum, config) {
+    for (const [name, cls] of Object.entries(config.classes)) {
+      if (cls.strata.includes(stratum)) return {name, ...cls};
+    }
+    return {name: "semantic", ...config.classes.semantic};
+  }
+
+  // Per-stratum stop state from evaluation responses only (demo items never count).
+  function strataStopState(items, responses, config) {
+    const state = {};
+    for (const item of items) {
+      if (item.evaluation_role !== "human_kappa_evaluation") continue;
+      if (!["core", "reliability"].includes(item.phase)) continue;
+      const s = state[item.stratum] = state[item.stratum] ||
+        {n: 0, errors: 0, undecided: 0, total_items: 0};
+      s.total_items += 1;
+      const response = responses[item.item_id];
+      if (!response) continue;
+      if (response.verdict === "cannot_decide") { s.undecided += 1; continue; }
+      s.n += 1;
+      if (isErrorVerdict(response.verdict)) s.errors += 1;
+    }
+    for (const [stratum, s] of Object.entries(state)) {
+      const cls = stratumClass(stratum, config);
+      s.class = cls.name;
+      s.threshold = cls.threshold;
+      s.fail_threshold = (config.fail_threshold === undefined) ? 0.35 : config.fail_threshold;
+      s.upper_bound = wilsonUpperBound(s.errors, s.n, config.z_one_sided_80);
+      s.lower_bound = wilsonLowerBound(s.errors, s.n, config.z_one_sided_80);
+      s.released = s.n >= cls.min_n && s.upper_bound <= cls.threshold;
+      s.condemned = s.n >= cls.min_n && s.lower_bound >= s.fail_threshold;
+      s.settled = s.released || s.condemned;
+    }
+    return state;
+  }
+
+  // Deterministic per-item audit selection so the queue is stable across
+  // rebuilds: an item is an audit keeper iff hash(seed, item_id) mod 1000
+  // falls under audit_fraction. No RNG state, no ordering dependence.
+  function hashString(text) {
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < text.length; i += 1) {
+      h ^= text.charCodeAt(i);
+      h = Math.imul(h, 16777619) >>> 0;
+    }
+    return h;
+  }
+
+  function isAuditKeeper(itemId, seed, fraction) {
+    return (hashString(`${seed}:${itemId}`) % 1000) < Math.round(fraction * 1000);
+  }
+
+  /* The R3 queue.
+   * Papers are visited whole (reading a paper is the expensive act), ordered by
+   * route-B disagreement mass; within a paper, items run disagreement-first.
+   * Demo papers stay first, always fully required (they are training).
+   * A released stratum's unanswered items drop to optional EXCEPT its audit
+   * keepers (plus at least audit_minimum of them, by rank, when the hash keeps
+   * none). Answered items always remain in the queue. Falls back to the R2
+   * ordering when review_data carries no efficient_queue block. */
+  function efficientQueue(data, responses) {
+    const items = data.items;
+    const eq = data.efficient_queue;
+    const activeStrata = new Set(activeStrataFromResponses(items, responses));
+    const base = items.filter((item) => ["core", "reliability"].includes(item.phase));
+    const extensions = items.filter(
+      (item) => item.phase === "extension" && activeStrata.has(item.stratum)
+    );
+    if (!eq) {
+      const paperOrder = [...new Set(items.map((item) => item.paper_id))];
+      return {
+        queue: [...base, ...extensions].sort((a, b) =>
+          (paperOrder.indexOf(a.paper_id) - paperOrder.indexOf(b.paper_id)) ||
+          (a.priority - b.priority)).map((item) => item.item_id),
+        stopState: null, skipped: [],
+      };
+    }
+    const config = eq.stop_rule || DEFAULT_STOP_CONFIG;
+    const stopState = strataStopState(items, responses, config);
+    const rank = eq.item_rank || {};
+    const paperPos = new Map((eq.paper_order || []).map((pid, i) => [pid, i]));
+    const pos = (item) => {
+      const paper = paperPos.has(item.paper_id) ? paperPos.get(item.paper_id) : 999;
+      const within = rank[item.item_id] !== undefined ? rank[item.item_id] : 999;
+      return paper * 1000 + within;
+    };
+    const required = [];
+    const skipped = [];
+    for (const item of [...base, ...extensions]) {
+      const answered = Boolean(responses[item.item_id]);
+      const demo = item.evaluation_role !== "human_kappa_evaluation";
+      const settled = stopState[item.stratum] && stopState[item.stratum].settled;
+      if (answered || demo || !settled) { required.push(item); continue; }
+      if (isAuditKeeper(item.item_id, eq.seed || "r3", config.audit_fraction)) {
+        item._audit = true; required.push(item);
+      } else {
+        skipped.push(item);
+      }
+    }
+    // Guarantee audit_minimum unanswered keepers per released stratum.
+    const minimum = (config.audit_minimum === undefined) ? 1 : config.audit_minimum;
+    for (const [stratum, s] of Object.entries(stopState)) {
+      if (!s.settled) continue;
+      const kept = required.filter((i) => i._audit && i.stratum === stratum).length;
+      if (kept >= minimum) continue;
+      const candidates = skipped.filter((i) => i.stratum === stratum)
+        .sort((a, b) => pos(a) - pos(b)).slice(0, minimum - kept);
+      for (const item of candidates) {
+        item._audit = true; required.push(item);
+        skipped.splice(skipped.indexOf(item), 1);
+      }
+    }
+    return {
+      queue: required.sort((a, b) => pos(a) - pos(b)).map((item) => item.item_id),
+      stopState,
+      skipped: skipped.map((item) => item.item_id),
+    };
+  }
+
+  return {
+    activeStrataFromResponses, responseTriggersExpansion,
+    isErrorVerdict, wilsonUpperBound, wilsonLowerBound, strataStopState,
+    efficientQueue, isAuditKeeper, DEFAULT_STOP_CONFIG,
+  };
+});

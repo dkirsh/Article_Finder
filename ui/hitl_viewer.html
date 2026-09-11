@@ -76,6 +76,8 @@
     <label><input type="radio" name="field" value="in_field"> in field</label>
     <label><input type="radio" name="field" value="borderline"> borderline</label>
     <label><input type="radio" name="field" value="out_of_field"> out of field</label>
+    <label style="margin-top:6px;border-top:1px solid var(--line);padding-top:6px">
+      <input type="checkbox" id="notcnfa"> <strong>not a CNfA topic</strong> (fast flag — usable with any ruling above)</label>
   </fieldset>
 
   <fieldset><legend>Decisive passages (select text in the paper, then mark)</legend>
@@ -166,6 +168,7 @@ function loadForm(j){
     if (grp === "form" && !(j && j.form)) document.querySelector('input[name=form][value=journal_article]').checked = true;
     if (j && j[grp]) { const el = document.querySelector(`input[name=${grp}][value=${j[grp]}]`); if (el) el.checked = true; }
   }
+  document.getElementById("notcnfa").checked = !!(j && j.not_cnfa_topic);
   document.getElementById("escalate").checked = !!(j && j.escalate);
   document.getElementById("notes").value = (j && j.notes) || "";
   window.passages = (j && j.decisive_passages) || [];
@@ -198,6 +201,7 @@ document.getElementById("savebtn").onclick = () => {
   if (!val("method")) { alert("Choose a METHOD judgment (or 'unsure') before saving."); return; }
   const rec = {
     paper_id: CURRENT.paper_id, method: val("method"), form: val("form"), field: val("field"),
+    not_cnfa_topic: document.getElementById("notcnfa").checked,
     escalate: document.getElementById("escalate").checked,
     notes: document.getElementById("notes").value,
     decisive_passages: window.passages,
