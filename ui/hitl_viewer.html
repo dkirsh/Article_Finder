@@ -155,13 +155,28 @@ function renderList(){
   document.querySelector("#tasks h2").textContent = `Papers (${done}/${TASKS.length})`;
 }
 
+// display-time cleanup of LaTeX/mathpix debris; the on-disk text is untouched
+function cleanForDisplay(t){
+  return t
+    .replace(/\\(?:begin|end)\{[a-zA-Z*]+\}/g, " ")
+    .replace(/\\(?:text|textbf|textit|mathrm|mathbf|mathit|emph|mbox)\{([^{}]*)\}/g, "$1")
+    .replace(/\\(?:label|ref|cite|footnote)\{[^{}]*\}/g, "")
+    .replace(/\\[\(\)\[\]]/g, "")
+    .replace(/\$\$/g, "")
+    .replace(/\\([%&_#$])/g, "$1")
+    .replace(/\\\\/g, "\n")
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, "[figure]")
+    .replace(/[ \t]{3,}/g, "  ");
+}
+
 async function open(t){
   CURRENT = t;
   document.getElementById("doctitle").textContent = `${t.paper_id} — ${t.title}`;
   document.getElementById("formtitle").textContent = `Judgment — ${t.paper_id}`;
   const txt = await (await fetch(t.text_file)).text();
   const pane = document.getElementById("doctext");
-  pane.textContent = txt;
+  pane.textContent = cleanForDisplay(txt);
   // assisted mode only: highlight machine receipts (never present in blind batches)
   if (window.MODE === "assisted" && t.machine_receipts){
     let html = pane.innerHTML;
