@@ -34,8 +34,11 @@ before forming your own.
 1. Get the working folder from David — either a shared Drive folder or a copy of
    `Article_Finder_v3_2_3/data/topic_comparison/<batch-name>/` containing
    `hitl_viewer.html`, `tasks.json`, and a `papers/` directory of text files.
-2. Open Terminal, `cd` into that folder, and run: `python3 -m http.server 8765`
-   (leave that window open while you work).
+2. Open Terminal, `cd` into that folder, and run: `python3 hitl_serve.py 8765`
+   (leave that window open while you work). This server saves every judgment to
+   a file on disk the moment you make it — the footer confirms with "ON DISK".
+   Never use a plain `python3 -m http.server`: the page will warn you loudly if
+   you do, because judgments would then live only inside one browser.
 3. In your browser, go to `http://localhost:8765/hitl_viewer.html`.
 4. You should see the paper list on the left with a progress count. Click any
    paper; its full text loads in the middle pane, the judgment form on the right.
