@@ -108,6 +108,18 @@ async function init(){
   const data = await res.json();
   BATCH = data.created + ":" + (data.mode || "blind");
   TASKS = data.tasks; window.MODE = data.mode || "blind";
+  // restore from the server's on-disk autosave (survives any browser/window)
+  window.DURABLE=false;
+  try{
+    const r=await fetch("saved");
+    if(r.ok){
+      const saved=await r.json(); window.DURABLE=true;
+      for(const pid in saved){ if(!store.get(pid)) store.set(pid,saved[pid]); }
+    }
+  }catch(e){}
+  if(!window.DURABLE)
+    alert("WARNING: static server - judgments would live only in this browser.\n"+
+          "Serve with  python3 hitl_serve.py  so every save lands on disk.");
   renderList();
 }
 
@@ -184,15 +196,19 @@ document.getElementById("savebtn").onclick = () => {
   if (!CURRENT) return;
   const val = grp => { const el = document.querySelector(`input[name=${grp}]:checked`); return el ? el.value : null; };
   if (!val("method")) { alert("Choose a METHOD judgment (or 'unsure') before saving."); return; }
-  store.set(CURRENT.paper_id, {
+  const rec = {
     paper_id: CURRENT.paper_id, method: val("method"), form: val("form"), field: val("field"),
     escalate: document.getElementById("escalate").checked,
     notes: document.getElementById("notes").value,
     decisive_passages: window.passages,
     batch: BATCH, saved_at: new Date().toISOString(),
-  });
+  };
+  store.set(CURRENT.paper_id, rec);
+  fetch("save",{method:"POST",body:JSON.stringify(rec)})
+    .then(r=>{document.getElementById("saveinfo").textContent =
+      r.ok ? "ON DISK just now" : "browser only (!)";})
+    .catch(()=>{document.getElementById("saveinfo").textContent="browser only (!)";});
   renderList();
-  document.getElementById("saveinfo").textContent = "saved just now";
 };
 
 document.getElementById("exportbtn").onclick = () => {
