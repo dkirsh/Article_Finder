@@ -196,7 +196,7 @@ document.getElementById("markbtn").onclick = () => {
 };
 
 document.getElementById("savebtn").onclick = () => {
-  if (!CURRENT) return;
+  if (!CURRENT) { alert("Click a paper in the left-hand list first, then judge and save."); return; }
   const val = grp => { const el = document.querySelector(`input[name=${grp}]:checked`); return el ? el.value : null; };
   const offTopic = document.getElementById("notcnfa").checked;
   if (!offTopic && !val("method")) { alert("Choose a METHOD judgment (or 'unsure') before saving."); return; }
@@ -214,6 +214,13 @@ document.getElementById("savebtn").onclick = () => {
       r.ok ? "ON DISK just now" : "browser only (!)";})
     .catch(()=>{document.getElementById("saveinfo").textContent="browser only (!)";});
   renderList();
+  // advance to the next paper without a judgment (wrapping); stay if all done
+  const start = TASKS.findIndex(t => t.paper_id === CURRENT.paper_id);
+  for (let i = 1; i <= TASKS.length; i += 1) {
+    const next = TASKS[(start + i) % TASKS.length];
+    if (!store.get(next.paper_id)) { open(next); return; }
+  }
+  document.getElementById("saveinfo").textContent += " — all papers judged; Export when ready";
 };
 
 document.getElementById("exportbtn").onclick = () => {
