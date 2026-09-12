@@ -192,6 +192,23 @@ function renderDoc(pane, raw){
   const mathBank = [];
   const masked = raw
     .replace(/<(script|style)[\s\S]*?<\/\1>/gi, "")
+    // structural LaTeX outside math delimiters -> markdown equivalents
+    .replace(/\\title\{\s*([\s\S]*?)\}/g, (_, x) => `# ${x.replace(/\s+/g, " ").trim()}\n`)
+    .replace(/\\author\{([\s\S]*?)\}\n/g, (_, x) => `**${x.replace(/\\\\/g, "; ").replace(/\s+/g, " ").trim()}**\n\n`)
+    .replace(/\\(?:section|subsection|subsubsection)\*?\{([^{}]*)\}/g, "\n## $1\n")
+    .replace(/\\begin\{abstract\}/g, "\n**Abstract.** ")
+    .replace(/\\end\{abstract\}/g, "\n")
+    // figure environments: keep the caption, drop the graphics plumbing
+    .replace(/\\caption\{([\s\S]*?)\}\n/g, "\n*Figure: $1*\n")
+    .replace(/\\(?:includegraphics|captionsetup)(?:\[[^\]]*\])?\{[^{}]*\}/g, "")
+    .replace(/\\begin\{(?:figure|center)\}(?:\[[^\]]*\])?|\\end\{(?:figure|center)\}|\\centering/g, "")
+    .replace(/0\.\d+\\textwidth|\\textwidth/g, "")
+    .replace(/\\footnotetext\{([\s\S]*?)\}/g, "\n> $1\n")
+    // KaTeX cannot typeset tabular; show those aligned as plain code instead
+    .replace(/\\begin\{tabular\}[\s\S]*?\\end\{tabular\}/g,
+      (m) => "\n```\n" + m.replace(/\\begin\{tabular\}\{[^}]*\}|\\end\{tabular\}|\\hline/g, "")
+        .replace(/\\\\/g, "\n").replace(/&/g, " | ").trim() + "\n```\n")
+    .replace(/\\begin\{(?:align\*?|equation\*?)\}([\s\S]*?)\\end\{(?:align\*?|equation\*?)\}/g, "$$$$$1$$$$")
     .replace(/\\\[([\s\S]*?)\\\]|\$\$([\s\S]*?)\$\$|\\\((.*?)\\\)/g,
       (m) => { mathBank.push(m); return `@@MATH${mathBank.length - 1}@@`; });
   let html = marked.parse(masked, {mangle: false, headerIds: false});
