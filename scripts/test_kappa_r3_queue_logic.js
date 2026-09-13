@@ -141,6 +141,24 @@ check("NEGATIVE: 2 errors in 10 neither releases nor condemns",
   check("drip loop terminates within item count", guard <= items.length);
 }
 
+// --- machine-resolved items are invisible to the human machinery ---
+{
+  const items = [...mkItems("apa_citation", 8), ...mkItems("direction", 6)];
+  const resolvedIds = items.slice(0, 5).map((i) => i.item_id); // 5 of 8 apa items
+  const data = {items, efficient_queue: {
+    seed: "t2", stop_rule: CFG, machine_resolved_items: resolvedIds,
+    paper_order: [...new Set(items.map((i) => i.paper_id))],
+    item_rank: Object.fromEntries(items.map((i, n) => [i.item_id, n])),
+  }};
+  const result = QL.efficientQueue(data, {});
+  const everywhere = new Set([...result.queue, ...result.skipped, ...result.audit]);
+  check("resolved items appear nowhere (queue/skipped/audit)",
+    resolvedIds.every((id) => !everywhere.has(id)));
+  const st = QL.strataStopState(items, {}, CFG, new Set(resolvedIds));
+  check("stop-rule counts exclude resolved items", st.apa_citation.total_items === 3);
+  check("unresolved apa items remain fully required", result.queue.length === 3 + 6);
+}
+
 // --- fallback without overlay reproduces R2 ordering ---
 {
   const items = [

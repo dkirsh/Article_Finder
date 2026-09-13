@@ -205,6 +205,17 @@ def main():
     (OUT / "START_REVIEW.command").chmod(0o755)
 
     review = json.loads((OUT / "review_data.json").read_text())
+    # Machine-resolved items (David's descope ruling 2026-09-13): injected from
+    # the adjudication receipt's id list, validated against pack item ids.
+    mr_path = R3_ASSETS / "machine_resolved_items.json"
+    if mr_path.is_file():
+        mr = json.loads(mr_path.read_text()).get("machine_resolved_items", [])
+        if not (isinstance(mr, list) and all(isinstance(x, str) for x in mr)):
+            fail("machine_resolved_items_malformed")
+        alien = set(mr) - item_ids
+        if alien: fail(f"machine_resolved_items_not_pack_items:{sorted(alien)[:5]}")
+        efficient_queue["machine_resolved_items"] = sorted(mr)
+
     # A1(b): the brief must not describe per-field verdict mechanics to the
     # person whose unanchored judgment is the measurement.
     efficient_queue["note"] = (

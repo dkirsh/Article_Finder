@@ -110,12 +110,15 @@
     return {name: "semantic", ...config.classes.semantic};
   }
 
-  // Per-stratum stop state from evaluation responses only (demo items never count).
-  function strataStopState(items, responses, config) {
+  // Per-stratum stop state from evaluation responses only (demo items never
+  // count; machine-resolved items are outside the human measurement entirely).
+  function strataStopState(items, responses, config, resolvedIds) {
+    const resolved = resolvedIds || new Set();
     const state = {};
     for (const item of items) {
       if (item.evaluation_role !== "human_kappa_evaluation") continue;
       if (!["core", "reliability"].includes(item.phase)) continue;
+      if (resolved.has(item.item_id)) continue;
       const s = state[item.stratum] = state[item.stratum] ||
         {n: 0, errors: 0, undecided: 0, total_items: 0};
       s.total_items += 1;
@@ -166,10 +169,12 @@
   function staticAuditSet(items, eq, config) {
     const minimum = (config.audit_minimum === undefined) ? 1 : config.audit_minimum;
     const rank = eq.item_rank || {};
+    const resolved = new Set(eq.machine_resolved_items || []);
     const byStratum = new Map();
     for (const item of items) {
       if (item.evaluation_role !== "human_kappa_evaluation") continue;
       if (!["core", "reliability"].includes(item.phase)) continue;
+      if (resolved.has(item.item_id)) continue;
       if (!byStratum.has(item.stratum)) byStratum.set(item.stratum, []);
       byStratum.get(item.stratum).push(item);
     }
@@ -216,7 +221,11 @@
       };
     }
     const config = eq.stop_rule || DEFAULT_STOP_CONFIG;
-    const stopState = strataStopState(items, responses, config);
+    // Machine-resolved items (David Kirsh descope ruling 2026-09-13: APA is a
+    // lookup problem) never reach the human: not queued, not skipped, not
+    // audited, and outside every stop-rule count.
+    const resolved = new Set(eq.machine_resolved_items || []);
+    const stopState = strataStopState(items, responses, config, resolved);
     const rank = eq.item_rank || {};
     const paperPos = new Map((eq.paper_order || []).map((pid, i) => [pid, i]));
     const pos = (item) => {
@@ -231,6 +240,7 @@
     const required = [];
     const skipped = [];
     for (const item of [...base, ...extensions]) {
+      if (resolved.has(item.item_id)) continue;
       const answered = Boolean(responses[item.item_id]);
       const demo = item.evaluation_role !== "human_kappa_evaluation";
       const settled = stopState[item.stratum] && stopState[item.stratum].settled;
