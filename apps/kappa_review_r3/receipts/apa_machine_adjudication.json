@@ -1,17 +1,13 @@
 {
  "schema": "kappa_r3_apa_machine_adjudication.v1",
- "generated_at": "2026-09-13T12:33:52+00:00",
+ "generated_at": "2026-09-13T12:54:45+00:00",
  "principle": "APA correctness is a lookup problem; human judgment is reserved for papers the pipeline cannot anchor to a DOI.",
  "items": [
   {
    "item_id": "PDF-0187-apa_citation",
    "paper_id": "PDF-0187",
-   "disposition": "machine_adjudicated",
-   "machine_verdict": "incorrect",
-   "corrected_value": "Xie, H., Chen, Q., Nespoli, C., & Riso, T. (2022). Understanding the Cognitive Immersion of Hospitality Architecture in Culture and Nature: Cultural Psychology and Neuroscience Views. Frontiers in Psychology, 13. https://doi.org/10.3389/fpsyg.2022.833819",
-   "reason": "candidate claimed no citation; DOI-anchored pipeline APA exists",
-   "adjudicator": "AF metadata pipeline (doi.org content negotiation / document front matter)",
-   "authority": "David Kirsh descope ruling, chat 2026-09-13"
+   "disposition": "human_review",
+   "reason": "pipeline APA lineage untrusted (source: QUARANTINED_bad_bib_join_2026-09-10+printed_doi+oa_title_mat)"
   },
   {
    "item_id": "PDF-0217-apa_citation",
@@ -22,12 +18,8 @@
   {
    "item_id": "PDF-0390-apa_citation",
    "paper_id": "PDF-0390",
-   "disposition": "machine_adjudicated",
-   "machine_verdict": "incorrect",
-   "corrected_value": "Jahncke, H., Hygge, S., Halin, N., Green, A. M., & Dimberg, K. (2011). Open-plan office noise: Cognitive performance and restoration. Journal of Environmental Psychology, 31(4), 373\u2013382. https://doi.org/10.1016/j.jenvp.2011.07.002",
-   "reason": "candidate claimed no citation; DOI-anchored pipeline APA exists",
-   "adjudicator": "AF metadata pipeline (doi.org content negotiation / document front matter)",
-   "authority": "David Kirsh descope ruling, chat 2026-09-13"
+   "disposition": "human_review",
+   "reason": "pipeline APA lineage untrusted (source: zotero_bib_export_validated+oa_title_match)"
   },
   {
    "item_id": "PDF-0469-apa_citation",
@@ -65,9 +57,9 @@
    "item_id": "PDF-0676-apa_citation",
    "paper_id": "PDF-0676",
    "disposition": "machine_adjudicated",
-   "machine_verdict": "exactly_correct",
-   "corrected_value": null,
-   "reason": "candidate agrees with pipeline APA (jaccard 0.52)",
+   "machine_verdict": "incorrect",
+   "corrected_value": "Thampanichwat, C., Wongvorachan, T., Bunyarittikit, S., Chunhajinda, P., Phaibulputhipong, P., & Wongmahasiri, R. (2024). The Architectural Design Strategies That Promote Attention to Foster Mindfulness: A Systematic Review, Content Analysis and Meta-Analysis. Buildings, 14(8), 2508. https://doi.org/10.3390/buildings14082508",
+   "reason": "candidate is an incomplete citation (no year/authors \u2014 bare title); pipeline APA supplies the full record",
    "adjudicator": "AF metadata pipeline (doi.org content negotiation / document front matter)",
    "authority": "David Kirsh descope ruling, chat 2026-09-13"
   },
@@ -77,7 +69,7 @@
    "disposition": "machine_adjudicated",
    "machine_verdict": "exactly_correct",
    "corrected_value": null,
-   "reason": "candidate agrees with pipeline APA (jaccard 0.97)",
+   "reason": "candidate agrees with pipeline APA (jaccard 0.97, year 2020)",
    "adjudicator": "AF metadata pipeline (doi.org content negotiation / document front matter)",
    "authority": "David Kirsh descope ruling, chat 2026-09-13"
   },
@@ -149,7 +141,7 @@
   }
  ],
  "summary": {
-  "machine_adjudicated": 12,
-  "human_review": 4
+  "machine_adjudicated": 10,
+  "human_review": 6
  }
 }

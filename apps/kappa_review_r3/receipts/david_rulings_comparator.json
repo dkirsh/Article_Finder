@@ -1,6 +1,6 @@
 {
  "schema": "kappa_r3_david_comparator.v1",
- "generated_at": "2026-09-13T12:33:52+00:00",
+ "generated_at": "2026-09-13T12:54:45+00:00",
  "purpose": "David Kirsh's existing human rulings on kappa-20 papers, applied as a third comparator at ANALYSIS time (Stephan vs machine vs David where available). Never merged into the frozen pack; human provenance outranks machine.",
  "field_rulings": [
   {

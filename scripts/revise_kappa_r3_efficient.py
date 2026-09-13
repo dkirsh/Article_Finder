@@ -214,6 +214,10 @@ def main():
             fail("machine_resolved_items_malformed")
         alien = set(mr) - item_ids
         if alien: fail(f"machine_resolved_items_not_pack_items:{sorted(alien)[:5]}")
+        # F6: only the stratum David's ruling covers may be machine-resolved.
+        stratum_of = {i["item_id"]: i["stratum"] for i in parent_review["items"]}
+        off_ruling = [x for x in mr if stratum_of.get(x) != "apa_citation"]
+        if off_ruling: fail(f"machine_resolved_outside_apa_ruling:{off_ruling[:5]}")
         efficient_queue["machine_resolved_items"] = sorted(mr)
 
     # A1(b): the brief must not describe per-field verdict mechanics to the
@@ -228,10 +232,19 @@ def main():
         "order we computed, and the queue adjusts as you work, so the required "
         "count changes along the way. Progress is saved in this browser; download "
         "a portable backup whenever you stop.")
+    descoped = sorted(efficient_queue.get("machine_resolved_items", []))
     revision = {
-        "revision_id": "kappa-20-hitl-operational-r3.1-amended-2026-09-13",
-        "amends": "kappa-20-hitl-operational-r3-efficient-2026-09-11",
-        "amendment_basis": "REVIEW_VERDICT_R3_EFFICIENT_2026-09-13_claude_opus.md A1-A6; second-round refusal fixed A1(b) brief and static audit set",
+        "revision_id": ("kappa-20-hitl-operational-r3.2-apa-descope-2026-09-13"
+                        if descoped else "kappa-20-hitl-operational-r3.1-amended-2026-09-13"),
+        "amends": ("kappa-20-hitl-operational-r3.1-amended-2026-09-13"
+                   if descoped else "kappa-20-hitl-operational-r3-efficient-2026-09-11"),
+        "amendment_basis": ("David Kirsh descope ruling 2026-09-13 (apa_citation is a lookup "
+                            "problem) + round-4 review fixes; earlier basis: "
+                            "REVIEW_VERDICT_R3_EFFICIENT/R3_AMENDMENT/R3_1_2026-09-13_claude_opus.md"
+                            if descoped else
+                            "REVIEW_VERDICT_R3_EFFICIENT_2026-09-13_claude_opus.md A1-A6; "
+                            "second-round refusal fixed A1(b) brief and static audit set"),
+        "machine_resolved_count": len(descoped),
         "parent_pack_sha256": parent_review["pack_sha256"],
         "parent_manifest_sha256": parent_manifest_sha,
         "scientific_content_sha256": sci,
@@ -245,7 +258,9 @@ def main():
             "verdicts shown during review), stop-state in exports only",
             "review_data: efficient_queue block (ranks + config only; no route-B "
             "values), neutral reviewer brief",
-        ],
+        ] + ([f"apa_citation descoped: {len(descoped)} items machine-adjudicated "
+              "against DOI-anchored pipeline APAs (ids only in pack; verdicts in "
+              "AF receipts/apa_machine_adjudication.json)"] if descoped else []),
     }
     review["operational_revision"] = revision
     review["app_assets"] = {a: sha256(OUT / a) for a in
