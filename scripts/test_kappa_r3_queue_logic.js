@@ -30,8 +30,10 @@ check("mechanical releases at n=5 zero errors (UB<=0.15)",
   QL.wilsonUpperBound(0, 5, CFG.z_one_sided_80) <= 0.15 + 1e-9);
 check("NEGATIVE: n=4 zero errors does not quite clear 0.15 (UB=0.1504)",
   QL.wilsonUpperBound(0, 4, CFG.z_one_sided_80) > 0.15);
-check("semantic releases at n=7 zero errors (UB<=0.10)",
+check("semantic bound clears 0.10 by n=7 zero errors (math)",
   QL.wilsonUpperBound(0, 7, CFG.z_one_sided_80) <= 0.10 + 1e-9);
+check("semantic min_n is 10 — release waits for David's 10-15 band (A5)",
+  CFG.classes.semantic.min_n === 10);
 check("NEGATIVE: 1 error in 8 does not clear 0.10",
   QL.wilsonUpperBound(1, 8, CFG.z_one_sided_80) > 0.10);
 check("fail-fast: 4 errors in 5 condemns (LB>=0.35)",
@@ -56,6 +58,13 @@ check("NEGATIVE: 2 errors in 10 neither releases nor condemns",
   const undec = respond(items, ["cannot_decide", "cannot_decide", "exactly_correct"]);
   const st4 = QL.strataStopState(items, undec, CFG).sample_n;
   check("cannot_decide stays out of the bound's n", st4.n === 1 && st4.undecided === 2);
+  const weird = respond(items, ["banana", "exactly_correct", "totally_new_verdict",
+    "exactly_correct", "exactly_correct", "exactly_correct", "exactly_correct"]);
+  const st6 = QL.strataStopState(items, weird, CFG).sample_n;
+  check("NEGATIVE (A6): unrecognised verdicts are excluded, never successes",
+    st6.n === 5 && st6.undecided === 2 && st6.errors === 0);
+  check("verdictClass triage", QL.verdictClass("incorrect") === "error" &&
+    QL.verdictClass("exactly_correct") === "success" && QL.verdictClass("banana") === "excluded");
   const demoItems = mkItems("sample_n", 6, "demo_only_non_evaluation");
   const st5 = QL.strataStopState(demoItems, respond(demoItems,
     ["exactly_correct", "exactly_correct", "exactly_correct", "exactly_correct"]), CFG);
@@ -87,7 +96,12 @@ check("NEGATIVE: 2 errors in 10 neither releases nor condemns",
   }};
   const sampleItems = items.filter((i) => i.stratum === "sample_n" && i.evaluation_role === "human_kappa_evaluation");
   const responses = respond(sampleItems, ["exactly_correct", "exactly_correct", "exactly_correct", "exactly_correct", "exactly_correct"]);
+  const snapshot = JSON.stringify(items);
   const result = QL.efficientQueue(data, responses);
+  check("PURITY (A4): efficientQueue mutates no input item", JSON.stringify(items) === snapshot);
+  check("audit membership is returned, not smuggled via flags",
+    Array.isArray(result.audit) && result.audit.length >= 1 &&
+    result.audit.every((id) => result.queue.includes(id)));
   const inQueue = new Set(result.queue);
   check("released stratum sheds unanswered items", result.skipped.length > 0);
   const remaining = sampleItems.slice(5);

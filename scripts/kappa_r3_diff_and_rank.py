@@ -30,7 +30,7 @@ STOP = {
     "classes": {
         "mechanical": {"threshold": 0.15, "min_n": 4,
             "strata": ["apa_citation", "article_type", "sample_n", "p_value", "effect_size"]},
-        "semantic": {"threshold": 0.10, "min_n": 7,
+        "semantic": {"threshold": 0.10, "min_n": 10,
             "strata": ["main_conclusion", "independent_variables", "dependent_variables",
                        "construct_pair", "direction", "stimulus_description",
                        "methods_surface_summary", "measurement_inventory"]},
@@ -189,18 +189,38 @@ def main():
             condemned.add(s)
     demo_count = sum(1 for r in rows if r["demo"])
     strata_summary = {}
+    overstatement = {}
     for s, st in sim_state.items():
         name, cls = stratum_class(s)
         dis_items = [r for r in rows if not r["demo"] and r["stratum"] == s]
+        pop_rate = sum(1 for r in dis_items if r["rank_score"] >= 0.5) / max(1, len(dis_items))
+        prefix_rate = st["errors"] / max(1, st["n"])
+        overstatement[s] = round(prefix_rate - pop_rate, 3)
         strata_summary[s] = {"class": name, "items": len(dis_items),
             "route_agreement_rate": round(sum(1 for r in dis_items if r["disagreement"] < 0.5) / max(1, len(dis_items)), 3),
             "mean_disagreement": round(sum(r["disagreement"] for r in dis_items) / max(1, len(dis_items)), 3),
             "sim_judged": st["n"], "sim_errors": st["errors"],
+            "sim_prefix_error_rate": round(prefix_rate, 3),
+            "sim_population_rate_proxy": round(pop_rate, 3),
             "sim_released": s in released, "sim_condemned": s in condemned}
 
-    receipt = {"schema": "kappa_r3_route_b_diff_receipt.v1",
+    receipt = {"schema": "kappa_r3_route_b_diff_receipt.v2",
         "pack": str(PACK), "pack_sha256": data["pack_sha256"],
-        "route_b_system": "claude sonnet subagents, blind to candidates, docling text only (session 2026-09-11)",
+        "route_b_system": "claude sonnet subagents, blind to candidates, docling text only (session 2026-09-11); raw outputs archived at apps/kappa_review_r3/receipts/route_b_raw/",
+        "disclosure": {
+            "ordering_bias": ("Items are ordered disagreement-first, so the first n judgments "
+                "of a stratum are NOT a random sample of it: sequential bounds computed on that "
+                "prefix OVERSTATE the stratum's population error rate. A CONDEMNED verdict "
+                "therefore certifies the FLAGGED (route-disagreement) items — which are exactly "
+                "the re-extraction queue — not the stratum as a whole. Population error "
+                "estimates must be computed post-hoc from all judgments including audit items, "
+                "stratified by route-agreement."),
+            "measured_prefix_overstatement_by_stratum": overstatement,
+            "calibration": ("One-sided 80% Wilson bounds throughout: this is a triage "
+                "instrument matched to David Kirsh's per-field budgets (3-5 mechanical, "
+                "10-15 semantic), not a certification statistic; the 95%/n~50 certification "
+                "regime applies at registry write-back, never here."),
+        },
         "items": rows, "strata": strata_summary,
         "simulation": {"assumption": "reviewer confirms agreements, errors disagreements, queue order",
             "expected_required_eval_items": judged, "demo_items_always_required": demo_count,

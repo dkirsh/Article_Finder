@@ -1,8 +1,27 @@
 {
- "schema": "kappa_r3_route_b_diff_receipt.v1",
+ "schema": "kappa_r3_route_b_diff_receipt.v2",
  "pack": "/Users/davidusa/REPOS/_shared_artifacts/AE_HITL/AE_KAPPA_PILOT_FROZEN_20_PLUS_DEMO_HITL_R2_2026-08-20",
  "pack_sha256": "e476e7404362d97842a48ab4457438602d7f3debe334e073cc785c7c78ca4704",
- "route_b_system": "claude sonnet subagents, blind to candidates, docling text only (session 2026-09-11)",
+ "route_b_system": "claude sonnet subagents, blind to candidates, docling text only (session 2026-09-11); raw outputs archived at apps/kappa_review_r3/receipts/route_b_raw/",
+ "disclosure": {
+  "ordering_bias": "Items are ordered disagreement-first, so the first n judgments of a stratum are NOT a random sample of it: sequential bounds computed on that prefix OVERSTATE the stratum's population error rate. A CONDEMNED verdict therefore certifies the FLAGGED (route-disagreement) items \u2014 which are exactly the re-extraction queue \u2014 not the stratum as a whole. Population error estimates must be computed post-hoc from all judgments including audit items, stratified by route-agreement.",
+  "measured_prefix_overstatement_by_stratum": {
+   "apa_citation": 0.0,
+   "article_type": 0.25,
+   "main_conclusion": 0.1,
+   "independent_variables": 0.15,
+   "dependent_variables": 0.25,
+   "construct_pair": 0.15,
+   "direction": 0.2,
+   "sample_n": 0.162,
+   "p_value": 0.3,
+   "effect_size": 0.1,
+   "stimulus_description": -0.05,
+   "methods_surface_summary": 0.062,
+   "measurement_inventory": 0.05
+  },
+  "calibration": "One-sided 80% Wilson bounds throughout: this is a triage instrument matched to David Kirsh's per-field budgets (3-5 mechanical, 10-15 semantic), not a certification statistic; the 95%/n~50 certification regime applies at registry write-back, never here."
+ },
  "items": [
   {
    "item_id": "PDF-0187-apa_citation",
@@ -5613,6 +5632,8 @@
    "mean_disagreement": 0.75,
    "sim_judged": 4,
    "sim_errors": 3,
+   "sim_prefix_error_rate": 0.75,
+   "sim_population_rate_proxy": 0.75,
    "sim_released": false,
    "sim_condemned": true
   },
@@ -5623,6 +5644,8 @@
    "mean_disagreement": 0.75,
    "sim_judged": 4,
    "sim_errors": 4,
+   "sim_prefix_error_rate": 1.0,
+   "sim_population_rate_proxy": 0.75,
    "sim_released": false,
    "sim_condemned": true
   },
@@ -5631,8 +5654,10 @@
    "items": 20,
    "route_agreement_rate": 0.3,
    "mean_disagreement": 0.621,
-   "sim_judged": 7,
-   "sim_errors": 5,
+   "sim_judged": 10,
+   "sim_errors": 6,
+   "sim_prefix_error_rate": 0.6,
+   "sim_population_rate_proxy": 0.5,
    "sim_released": false,
    "sim_condemned": true
   },
@@ -5641,8 +5666,10 @@
    "items": 20,
    "route_agreement_rate": 0.15,
    "mean_disagreement": 0.79,
-   "sim_judged": 7,
-   "sim_errors": 7,
+   "sim_judged": 10,
+   "sim_errors": 10,
+   "sim_prefix_error_rate": 1.0,
+   "sim_population_rate_proxy": 0.85,
    "sim_released": false,
    "sim_condemned": true
   },
@@ -5651,8 +5678,10 @@
    "items": 20,
    "route_agreement_rate": 0.15,
    "mean_disagreement": 0.804,
-   "sim_judged": 7,
-   "sim_errors": 7,
+   "sim_judged": 10,
+   "sim_errors": 10,
+   "sim_prefix_error_rate": 1.0,
+   "sim_population_rate_proxy": 0.75,
    "sim_released": false,
    "sim_condemned": true
   },
@@ -5661,8 +5690,10 @@
    "items": 20,
    "route_agreement_rate": 0.4,
    "mean_disagreement": 0.598,
-   "sim_judged": 7,
-   "sim_errors": 4,
+   "sim_judged": 10,
+   "sim_errors": 7,
+   "sim_prefix_error_rate": 0.7,
+   "sim_population_rate_proxy": 0.55,
    "sim_released": false,
    "sim_condemned": true
   },
@@ -5671,8 +5702,10 @@
    "items": 20,
    "route_agreement_rate": 0.3,
    "mean_disagreement": 0.693,
-   "sim_judged": 7,
-   "sim_errors": 7,
+   "sim_judged": 10,
+   "sim_errors": 9,
+   "sim_prefix_error_rate": 0.9,
+   "sim_population_rate_proxy": 0.7,
    "sim_released": false,
    "sim_condemned": true
   },
@@ -5683,6 +5716,8 @@
    "mean_disagreement": 0.58,
    "sim_judged": 4,
    "sim_errors": 3,
+   "sim_prefix_error_rate": 0.75,
+   "sim_population_rate_proxy": 0.588,
    "sim_released": false,
    "sim_condemned": true
   },
@@ -5693,6 +5728,8 @@
    "mean_disagreement": 0.775,
    "sim_judged": 4,
    "sim_errors": 4,
+   "sim_prefix_error_rate": 1.0,
+   "sim_population_rate_proxy": 0.7,
    "sim_released": false,
    "sim_condemned": true
   },
@@ -5703,6 +5740,8 @@
    "mean_disagreement": 0.93,
    "sim_judged": 4,
    "sim_errors": 4,
+   "sim_prefix_error_rate": 1.0,
+   "sim_population_rate_proxy": 0.9,
    "sim_released": false,
    "sim_condemned": true
   },
@@ -5711,8 +5750,10 @@
    "items": 20,
    "route_agreement_rate": 0.2,
    "mean_disagreement": 0.738,
-   "sim_judged": 7,
-   "sim_errors": 5,
+   "sim_judged": 10,
+   "sim_errors": 6,
+   "sim_prefix_error_rate": 0.6,
+   "sim_population_rate_proxy": 0.65,
    "sim_released": false,
    "sim_condemned": true
   },
@@ -5723,6 +5764,8 @@
    "mean_disagreement": 0.581,
    "sim_judged": 13,
    "sim_errors": 6,
+   "sim_prefix_error_rate": 0.462,
+   "sim_population_rate_proxy": 0.4,
    "sim_released": false,
    "sim_condemned": true
   },
@@ -5731,15 +5774,17 @@
    "items": 20,
    "route_agreement_rate": 0.1,
    "mean_disagreement": 0.81,
-   "sim_judged": 7,
-   "sim_errors": 6,
+   "sim_judged": 10,
+   "sim_errors": 9,
+   "sim_prefix_error_rate": 0.9,
+   "sim_population_rate_proxy": 0.85,
    "sim_released": false,
    "sim_condemned": true
   }
  },
  "simulation": {
   "assumption": "reviewer confirms agreements, errors disagreements, queue order",
-  "expected_required_eval_items": 82,
+  "expected_required_eval_items": 103,
   "demo_items_always_required": 34,
   "eval_items_total": 253,
   "released_strata": [],

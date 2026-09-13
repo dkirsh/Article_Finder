@@ -335,7 +335,7 @@
    },
    "semantic": {
     "threshold": 0.1,
-    "min_n": 7,
+    "min_n": 10,
     "strata": [
      "main_conclusion",
      "independent_variables",

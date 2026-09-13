@@ -16,7 +16,7 @@ R3 changes (presentation layer only):
   - review_data gains top-level `efficient_queue` (ranks + stop config; NO
     route-B values) and an updated reviewer_brief.
 """
-import hashlib, json, shutil, sys
+import hashlib, json, re, shutil, sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -80,12 +80,13 @@ APP_PATCHES = [
   state.stopState = result.stopState;
   state.skippedCount = (result.skipped || []).length;
 }"""),
-    ("queueReason",
-     """byId("queueReason").textContent = item.phase === "extension" ? "Added after a prior repair signal" : "Diagnostic item";""",
-     """byId("queueReason").textContent = item._audit ? "Spot-audit of a settled field" : (item.phase === "extension" ? "Added after a prior repair signal" : "Diagnostic item");"""),
+    # A1 (blocking): the reviewer must NOT be able to tell audit items from
+    # ordinary ones, nor see per-field verdicts while judging — queueReason is
+    # deliberately left unpatched, and the strata strip below shows progress
+    # counts only. Verdict state still reaches the EXPORT for post-hoc analysis.
     ("progressLabel",
      """    ? `${answered} of ${state.queue.length} current questions answered`""",
-     """    ? `${answered} of ${state.queue.length} required questions answered${state.skippedCount ? ` · ${state.skippedCount} skipped by settled fields` : ""}`"""),
+     """    ? `${answered} of ${state.queue.length} questions in the current queue`"""),
     ("progressStrata",
      """  byId("progressBar").max = Math.max(1, state.queue.length);
   byId("progressBar").value = answered;
@@ -96,25 +97,24 @@ APP_PATCHES = [
 }
 
 function renderStrataStatus() {
+  // Progress counts only — never verdicts. Showing a field's fate mid-review
+  // would anchor the reviewer's remaining judgments (review amendment A1).
   const host = byId("strataStatus");
   if (!host || !state.stopState) { if (host) host.replaceChildren(); return; }
   host.replaceChildren(...Object.entries(state.stopState)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([stratum, s]) => {
       const chip = document.createElement("span");
-      chip.className = "stratum-chip" + (s.released ? " released" : "") + (s.condemned ? " condemned" : "");
-      chip.title = s.released
-        ? "Settled: the evidence bound cleared; remaining items are spot-audit only. An error found in audit re-opens it."
-        : s.condemned
-          ? "This field's error rate is established as high; further confirmations add little. Remaining items are spot-audit only."
-          : `Judged ${s.n} of ${s.total_items}; error bound ${(100 * s.upper_bound).toFixed(0)}% vs ${(100 * s.threshold).toFixed(0)}% target`;
-      chip.textContent = `${stratum.replaceAll("_", " ")} ${s.released ? "✓" : s.condemned ? "✗" : `${s.n}/${s.total_items}`}`;
+      chip.className = "stratum-chip";
+      const done = s.n + s.undecided;
+      chip.title = `${done} of ${s.total_items} answered so far in this field`;
+      chip.textContent = `${stratum.replaceAll("_", " ")} ${done}/${s.total_items}`;
       return chip;
     }));
 }"""),
     ("completeMessage",
      """      : "The queue stopped because all core items and activated extensions have stable answers.";""",
-     """      : "The queue stopped because every field either met its evidence bound or was answered in full; items skipped by the stop rule remain available for spot-audit.";"""),
+     """      : "The queue stopped because the sampling plan has the answers it needs from every field; deferred items can return to the queue if later answers call for them.";"""),
     ("exportStopState",
      """      reliability_disagreement_item_ids: reliabilityDisagreements().map((item) => item.item_id),""",
      """      reliability_disagreement_item_ids: reliabilityDisagreements().map((item) => item.item_id),
@@ -128,11 +128,35 @@ def main():
     eq_path = R3_ASSETS / "efficient_queue.json"
     if not eq_path.is_file(): fail("efficient_queue_payload_missing_run_diff_first")
     efficient_queue = json.loads(eq_path.read_text())
+    # ALLOWLIST validation (review amendment A3): the payload may contain
+    # exactly these keys with exactly these shapes. Anything else — however
+    # innocently named — is refused, so a leak cannot ride in under a bland
+    # or homoglyph key the way a denylist would allow.
+    ALLOWED_TOP = {"schema", "seed", "note", "paper_order", "item_rank", "stop_rule"}
+    extra = set(efficient_queue) - ALLOWED_TOP
+    if extra: fail(f"efficient_queue_unexpected_keys:{sorted(extra)}")
     for key in ("paper_order", "item_rank", "stop_rule", "seed"):
         if key not in efficient_queue: fail(f"efficient_queue_missing_{key}")
-    forbidden = json.dumps(efficient_queue).lower()
-    for leak in ("route_a", "route_b", "disagreement\":", "agree"):
-        if leak in forbidden: fail(f"efficient_queue_leaks_route_values:{leak}")
+    if not (isinstance(efficient_queue["paper_order"], list)
+            and all(isinstance(p, str) for p in efficient_queue["paper_order"])):
+        fail("paper_order_not_string_list")
+    if not (isinstance(efficient_queue["item_rank"], dict)
+            and all(isinstance(v, int) and not isinstance(v, bool)
+                    for v in efficient_queue["item_rank"].values())):
+        fail("item_rank_values_must_be_plain_ints")
+    sr = efficient_queue["stop_rule"]
+    ALLOWED_SR = {"z_one_sided_80", "audit_fraction", "audit_minimum",
+                  "fail_threshold", "classes"}
+    if set(sr) - ALLOWED_SR: fail(f"stop_rule_unexpected_keys:{sorted(set(sr) - ALLOWED_SR)}")
+    for cname, cls in sr["classes"].items():
+        if set(cls) - {"threshold", "min_n", "strata"}:
+            fail(f"stop_rule_class_unexpected_keys:{cname}")
+        if not all(isinstance(s, str) for s in cls["strata"]):
+            fail(f"stop_rule_strata_not_strings:{cname}")
+    if not isinstance(efficient_queue.get("note", ""), str):
+        fail("note_not_a_string")
+    if re.search(r"\d+\.\d{3,}", efficient_queue.get("note", "")):
+        fail("note_contains_precise_floats")
 
     parent_review = json.loads((PACK / "review_data.json").read_text())
     unhashed = {k: v for k, v in parent_review.items() if k != "pack_sha256"}
