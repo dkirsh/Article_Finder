@@ -1,7 +1,6 @@
 {
  "schema": "kappa_r3_efficient_queue.v1",
  "seed": "kappa-r3-2026-09-11",
- "note": "Presentation-layer ordering + sequential stop rule (David Kirsh ruling 2026-09-11). Ranks derive from a second blind extraction route; the route's values are deliberately NOT in this pack - the reviewer must stay unanchored. Full diff receipt: Article_Finder apps/kappa_review_r3/receipts/.",
  "paper_order": [
   "PDF-0007",
   "PDF-0045",

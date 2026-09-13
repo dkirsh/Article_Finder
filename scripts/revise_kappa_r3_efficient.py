@@ -132,9 +132,13 @@ def main():
     # exactly these keys with exactly these shapes. Anything else — however
     # innocently named — is refused, so a leak cannot ride in under a bland
     # or homoglyph key the way a denylist would allow.
-    ALLOWED_TOP = {"schema", "seed", "note", "paper_order", "item_rank", "stop_rule"}
+    # 'note' is NOT accepted from the payload — this script injects a fixed
+    # literal after validation, so free text can never carry route values in.
+    ALLOWED_TOP = {"schema", "seed", "paper_order", "item_rank", "stop_rule"}
     extra = set(efficient_queue) - ALLOWED_TOP
     if extra: fail(f"efficient_queue_unexpected_keys:{sorted(extra)}")
+    if not re.fullmatch(r"[a-z0-9-]{1,40}", str(efficient_queue.get("seed", ""))):
+        fail("seed_format_invalid")
     for key in ("paper_order", "item_rank", "stop_rule", "seed"):
         if key not in efficient_queue: fail(f"efficient_queue_missing_{key}")
     if not (isinstance(efficient_queue["paper_order"], list)
@@ -148,15 +152,15 @@ def main():
     ALLOWED_SR = {"z_one_sided_80", "audit_fraction", "audit_minimum",
                   "fail_threshold", "classes"}
     if set(sr) - ALLOWED_SR: fail(f"stop_rule_unexpected_keys:{sorted(set(sr) - ALLOWED_SR)}")
+    KNOWN_STRATA = {"apa_citation", "article_type", "main_conclusion",
+        "independent_variables", "dependent_variables", "construct_pair",
+        "direction", "sample_n", "p_value", "effect_size",
+        "stimulus_description", "methods_surface_summary", "measurement_inventory"}
     for cname, cls in sr["classes"].items():
         if set(cls) - {"threshold", "min_n", "strata"}:
             fail(f"stop_rule_class_unexpected_keys:{cname}")
-        if not all(isinstance(s, str) for s in cls["strata"]):
-            fail(f"stop_rule_strata_not_strings:{cname}")
-    if not isinstance(efficient_queue.get("note", ""), str):
-        fail("note_not_a_string")
-    if re.search(r"\d+\.\d{3,}", efficient_queue.get("note", "")):
-        fail("note_contains_precise_floats")
+        if not set(cls["strata"]) <= KNOWN_STRATA:
+            fail(f"stop_rule_strata_outside_known_set:{cname}")
 
     parent_review = json.loads((PACK / "review_data.json").read_text())
     unhashed = {k: v for k, v in parent_review.items() if k != "pack_sha256"}
@@ -177,6 +181,8 @@ def main():
     item_ids = {i["item_id"] for i in parent_review["items"]}
     missing_rank = item_ids - set(efficient_queue["item_rank"])
     if missing_rank: fail(f"item_rank_missing_for:{sorted(missing_rank)[:5]}")
+    alien_rank = set(efficient_queue["item_rank"]) - item_ids
+    if alien_rank: fail(f"item_rank_keys_not_pack_items:{sorted(alien_rank)[:5]}")
     paper_ids = {i["paper_id"] for i in parent_review["items"]}
     if paper_ids - set(efficient_queue["paper_order"]): fail("paper_order_incomplete")
 
@@ -194,21 +200,27 @@ def main():
     css = (OUT / "styles.css").read_text()
     css += ("\n.strata-status{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;}\n"
             ".stratum-chip{font-size:11px;padding:2px 8px;border-radius:10px;"
-            "background:#eee7d9;color:#4a4234;}\n"
-            ".stratum-chip.released{background:#d4edda;color:#2f6b3a;}\n"
-            ".stratum-chip.condemned{background:#f8d7da;color:#8a2b2b;}\n")
+            "background:#eee7d9;color:#4a4234;}\n")
     (OUT / "styles.css").write_text(css)
     (OUT / "START_REVIEW.command").chmod(0o755)
 
     review = json.loads((OUT / "review_data.json").read_text())
+    # A1(b): the brief must not describe per-field verdict mechanics to the
+    # person whose unanchored judgment is the measurement.
+    efficient_queue["note"] = (
+        "Presentation-layer ordering and sequential sampling; frozen scientific "
+        "content unchanged. Full method receipt: Article_Finder "
+        "apps/kappa_review_r3/receipts/.")
     review["efficient_queue"] = efficient_queue
     review["reviewer_brief"] = (
         "Judge independently against the complete paper. Questions arrive in an "
-        "order we computed and each field switches off once your judgments pin its "
-        "error rate down, so the required count shrinks as you work. Progress is "
-        "saved in this browser; download a portable backup whenever you stop.")
+        "order we computed, and the queue adjusts as you work, so the required "
+        "count changes along the way. Progress is saved in this browser; download "
+        "a portable backup whenever you stop.")
     revision = {
-        "revision_id": "kappa-20-hitl-operational-r3-efficient-2026-09-11",
+        "revision_id": "kappa-20-hitl-operational-r3.1-amended-2026-09-13",
+        "amends": "kappa-20-hitl-operational-r3-efficient-2026-09-11",
+        "amendment_basis": "REVIEW_VERDICT_R3_EFFICIENT_2026-09-13_claude_opus.md A1-A6; second-round refusal fixed A1(b) brief and static audit set",
         "parent_pack_sha256": parent_review["pack_sha256"],
         "parent_manifest_sha256": parent_manifest_sha,
         "scientific_content_sha256": sci,
@@ -216,11 +228,12 @@ def main():
         "built_by": "fable, Article_Finder scripts/revise_kappa_r3_efficient.py",
         "authority": "David Kirsh chat ruling 2026-09-11 (efficient version inside the pilot)",
         "changed_surface": [
-            "queue_logic.js: per-stratum one-sided-80% Wilson stop rule, "
-            "disagreement-first ordering, seeded 15% audit retention",
-            "app.js: queue delegation, strata status strip, stop-state in exports",
-            "review_data: efficient_queue block (ranks + config only; no route-B values)",
-            "reviewer brief",
+            "queue_logic.js: per-stratum one-sided-80% Wilson stop rule with "
+            "fail-fast, disagreement-first ordering, STATIC seeded audit set",
+            "app.js: queue delegation, progress-count-only strata strip (no "
+            "verdicts shown during review), stop-state in exports only",
+            "review_data: efficient_queue block (ranks + config only; no route-B "
+            "values), neutral reviewer brief",
         ],
     }
     review["operational_revision"] = revision

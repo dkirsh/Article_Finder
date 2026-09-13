@@ -5785,6 +5785,8 @@
  "simulation": {
   "assumption": "reviewer confirms agreements, errors disagreements, queue order",
   "expected_required_eval_items": 103,
+  "audit_members_beyond_sim": 22,
+  "expected_total_asked": 159,
   "demo_items_always_required": 34,
   "eval_items_total": 253,
   "released_strata": [],
@@ -5802,6 +5804,7 @@
    "p_value",
    "sample_n",
    "stimulus_description"
-  ]
+  ],
+  "condemned_caveat": "condemned here certifies the disagreement-enriched PREFIX (the flagged items), not the stratum population - see disclosure.ordering_bias"
  }
 }

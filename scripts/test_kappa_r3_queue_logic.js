@@ -104,9 +104,10 @@ check("NEGATIVE: 2 errors in 10 neither releases nor condemns",
     result.audit.every((id) => result.queue.includes(id)));
   const inQueue = new Set(result.queue);
   check("released stratum sheds unanswered items", result.skipped.length > 0);
-  const remaining = sampleItems.slice(5);
-  const keptCount = remaining.filter((i) => inQueue.has(i.item_id)).length;
-  check("audit keeps at least audit_minimum of a settled stratum", keptCount >= 1);
+  const fullAudit = QL.staticAuditSet(items, data.efficient_queue, CFG);
+  check("audit obligation: every audit member is answered or queued, never skipped",
+    [...fullAudit].every((id) => responses[id] || inQueue.has(id)) &&
+    fullAudit.size >= 1);
   check("answered items never leave the queue", sampleItems.slice(0, 5).every((i) => inQueue.has(i.item_id)));
   check("demo items always required", demo.every((i) => inQueue.has(i.item_id)));
   check("open stratum keeps all items",
@@ -115,6 +116,29 @@ check("NEGATIVE: 2 errors in 10 neither releases nor condemns",
     result.queue.length + result.skipped.length === items.length);
   const again = QL.efficientQueue(data, responses);
   check("queue is deterministic across rebuilds", JSON.stringify(again.queue) === JSON.stringify(result.queue));
+  check("audit set is static: identical across rebuilds",
+    JSON.stringify(again.audit.sort()) === JSON.stringify(result.audit.sort()));
+  check("no audit member is ever skipped",
+    result.skipped.every((id) => !new Set(result.audit).has(id)));
+
+  // THE DRIP REGRESSION (second review round): answer everything the queue
+  // ever asks; the process must terminate with items still skipped, not
+  // trickle the whole pack back one item per save.
+  const drip = {};
+  let asked = 0, guard = 0;
+  for (;;) {
+    const r = QL.efficientQueue(data, drip);
+    const next = r.queue.find((id) => !drip[id]);
+    if (!next) break;
+    drip[next] = {verdict: "exactly_correct", confidence: 4, context_sufficient: true};
+    asked += 1;
+    guard += 1;
+    if (guard > items.length + 5) break;
+  }
+  const finalState = QL.efficientQueue(data, drip);
+  check("NEGATIVE (drip): perfect reviewer is never asked the full pack",
+    asked < items.length && finalState.skipped.length > 0);
+  check("drip loop terminates within item count", guard <= items.length);
 }
 
 // --- fallback without overlay reproduces R2 ordering ---

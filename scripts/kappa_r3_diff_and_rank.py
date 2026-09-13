@@ -103,6 +103,32 @@ def wilson_lb(errors, n, z):
     p, z2 = errors / n, z * z
     return max(0.0, ((p + z2/(2*n)) - z * math.sqrt(p*(1-p)/n + z2/(4*n*n))) / (1 + z2/n))
 
+def fnv1a32(text):
+    """Mirror of queue_logic.js hashString (FNV-1a, 32-bit, ASCII ids)."""
+    h = 2166136261
+    for ch in text:
+        h ^= ord(ch)
+        h = (h * 16777619) & 0xFFFFFFFF
+    return h
+
+def is_keeper(item_id, seed, fraction):
+    return (fnv1a32(f"{seed}:{item_id}") % 1000) < round(fraction * 1000)
+
+def static_audit_set(eval_items, seed, fraction, minimum, ranked):
+    """Mirror of queue_logic.js staticAuditSet: response-independent."""
+    by_stratum = {}
+    for it in eval_items:
+        by_stratum.setdefault(it["stratum"], []).append(it)
+    out = set()
+    for lst in by_stratum.values():
+        keepers = [i for i in lst if is_keeper(i["item_id"], seed, fraction)]
+        out.update(i["item_id"] for i in keepers)
+        if len(keepers) < minimum:
+            rest = sorted((i for i in lst if i["item_id"] not in out),
+                          key=lambda i: (ranked.get(i["item_id"], 999), i["item_id"]))
+            out.update(i["item_id"] for i in rest[:minimum - len(keepers)])
+    return out
+
 def stratum_class(stratum):
     for name, cls in STOP["classes"].items():
         if stratum in cls["strata"]: return name, cls
@@ -173,6 +199,7 @@ def main():
     order = sorted((i for i in items if i["evaluation_role"] == "human_kappa_evaluation"),
                    key=lambda i: (paper_order.index(i["paper_id"]) * 1000 + item_rank[i["item_id"]]))
     judged = 0
+    judged_ids = set()
     released, condemned = set(), set()
     for it in order:
         s = it["stratum"]
@@ -180,6 +207,7 @@ def main():
         st = sim_state[s]
         if s in released or s in condemned: continue
         judged += 1
+        judged_ids.add(it["item_id"])
         st["n"] += 1
         if ranked[it["item_id"]] >= 0.5: st["errors"] += 1
         if st["n"] < cls["min_n"]: continue
@@ -188,6 +216,9 @@ def main():
         elif wilson_lb(st["errors"], st["n"], STOP["z_one_sided_80"]) >= STOP["fail_threshold"]:
             condemned.add(s)
     demo_count = sum(1 for r in rows if r["demo"])
+    audit = static_audit_set(order, "kappa-r3-2026-09-11", STOP["audit_fraction"],
+                             STOP["audit_minimum"], ranked={i["item_id"]: item_rank[i["item_id"]] for i in order})
+    audit_addon = sum(1 for a in audit if a not in judged_ids)
     strata_summary = {}
     overstatement = {}
     for s, st in sim_state.items():
@@ -223,21 +254,23 @@ def main():
         },
         "items": rows, "strata": strata_summary,
         "simulation": {"assumption": "reviewer confirms agreements, errors disagreements, queue order",
-            "expected_required_eval_items": judged, "demo_items_always_required": demo_count,
+            "expected_required_eval_items": judged,
+            "audit_members_beyond_sim": audit_addon,
+            "expected_total_asked": judged + audit_addon + demo_count,
+            "demo_items_always_required": demo_count,
             "eval_items_total": len(order), "released_strata": sorted(released),
-            "condemned_strata": sorted(condemned)}}
+            "condemned_strata": sorted(condemned),
+            "condemned_caveat": ("condemned here certifies the disagreement-enriched "
+                "PREFIX (the flagged items), not the stratum population - see "
+                "disclosure.ordering_bias")}}
     payload = {"schema": "kappa_r3_efficient_queue.v1", "seed": "kappa-r3-2026-09-11",
-        "note": ("Presentation-layer ordering + sequential stop rule (David Kirsh ruling "
-                 "2026-09-11). Ranks derive from a second blind extraction route; the "
-                 "route's values are deliberately NOT in this pack - the reviewer must "
-                 "stay unanchored. Full diff receipt: Article_Finder apps/kappa_review_r3/receipts/."),
         "paper_order": paper_order, "item_rank": item_rank, "stop_rule": STOP}
     (OUT_DIR / "receipts").mkdir(parents=True, exist_ok=True)
     (OUT_DIR / "receipts/route_b_diff_receipt.json").write_text(json.dumps(receipt, indent=1))
     (OUT_DIR / "efficient_queue.json").write_text(json.dumps(payload, indent=1))
     print(f"items ranked: {len(item_rank)} (eval {len(order)}, demo {demo_count})")
-    print(f"simulated required eval items: {judged}/{len(order)}  "
-          f"(+{demo_count} demo always) -> total ~{judged + demo_count} of 287")
+    print(f"simulated required eval items: {judged}/{len(order)} + {audit_addon} audit "
+          f"+ {demo_count} demo -> total ~{judged + audit_addon + demo_count} of 287")
     print(f"released in sim: {len(released)}/13; condemned (fail-fast): {len(condemned)}/13")
     for s, row in sorted(strata_summary.items()):
         state = "RELEASED" if row["sim_released"] else ("CONDEMNED" if row["sim_condemned"] else "exhausted")

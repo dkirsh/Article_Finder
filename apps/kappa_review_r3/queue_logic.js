@@ -156,6 +156,40 @@
     return (hashString(`${seed}:${itemId}`) % 1000) < Math.round(fraction * 1000);
   }
 
+  /* The audit set is STATIC: a pure function of the pack (items + seed +
+   * config), never of responses. Per stratum it holds the hash keepers,
+   * backfilled to audit_minimum by rank when the hash keeps none. A settled
+   * stratum requires exactly its answered items plus its audit-set members —
+   * once those are answered the stratum asks for nothing more. (Second
+   * review round: a response-dependent top-up dripped skipped items back one
+   * per save until every stratum was fully asked, destroying the design.) */
+  function staticAuditSet(items, eq, config) {
+    const minimum = (config.audit_minimum === undefined) ? 1 : config.audit_minimum;
+    const rank = eq.item_rank || {};
+    const byStratum = new Map();
+    for (const item of items) {
+      if (item.evaluation_role !== "human_kappa_evaluation") continue;
+      if (!["core", "reliability"].includes(item.phase)) continue;
+      if (!byStratum.has(item.stratum)) byStratum.set(item.stratum, []);
+      byStratum.get(item.stratum).push(item);
+    }
+    const set = new Set();
+    for (const list of byStratum.values()) {
+      const keepers = list.filter((i) =>
+        isAuditKeeper(i.item_id, eq.seed || "r3", config.audit_fraction));
+      for (const i of keepers) set.add(i.item_id);
+      if (keepers.length < minimum) {
+        const backfill = list.filter((i) => !set.has(i.item_id))
+          .sort((a, b) => (((rank[a.item_id] === undefined ? 999 : rank[a.item_id]) -
+                            (rank[b.item_id] === undefined ? 999 : rank[b.item_id])) ||
+                           a.item_id.localeCompare(b.item_id)))
+          .slice(0, minimum - keepers.length);
+        for (const i of backfill) set.add(i.item_id);
+      }
+    }
+    return set;
+  }
+
   /* The R3 queue.
    * Papers are visited whole (reading a paper is the expensive act), ordered by
    * route-B disagreement mass; within a paper, items run disagreement-first.
@@ -190,48 +224,34 @@
       const within = rank[item.item_id] !== undefined ? rank[item.item_id] : 999;
       return paper * 1000 + within;
     };
-    // Pure recompute on every call: no input is mutated (reviewer amendment
-    // A4 — a persisted flag made audit membership stale across rebuilds).
-    // Audit membership lives in a local set derived deterministically from
-    // (seed, item_id) plus the per-stratum minimum backfill.
-    const auditIds = new Set();
+    // Pure recompute on every call: no input mutated, and audit membership
+    // is the STATIC set above — response-independent, so the workload of a
+    // settled stratum is bounded by (already answered + audit members).
+    const auditIds = staticAuditSet(items, eq, config);
     const required = [];
     const skipped = [];
     for (const item of [...base, ...extensions]) {
       const answered = Boolean(responses[item.item_id]);
       const demo = item.evaluation_role !== "human_kappa_evaluation";
       const settled = stopState[item.stratum] && stopState[item.stratum].settled;
-      if (answered || demo || !settled) { required.push(item); continue; }
-      if (isAuditKeeper(item.item_id, eq.seed || "r3", config.audit_fraction)) {
-        auditIds.add(item.item_id); required.push(item);
+      if (answered || demo || !settled || auditIds.has(item.item_id)) {
+        required.push(item);
       } else {
         skipped.push(item);
-      }
-    }
-    // Guarantee audit_minimum unanswered keepers per settled stratum.
-    const minimum = (config.audit_minimum === undefined) ? 1 : config.audit_minimum;
-    for (const [stratum, s] of Object.entries(stopState)) {
-      if (!s.settled) continue;
-      const kept = required.filter((i) => auditIds.has(i.item_id) && i.stratum === stratum).length;
-      if (kept >= minimum) continue;
-      const candidates = skipped.filter((i) => i.stratum === stratum)
-        .sort((a, b) => pos(a) - pos(b)).slice(0, minimum - kept);
-      for (const item of candidates) {
-        auditIds.add(item.item_id); required.push(item);
-        skipped.splice(skipped.indexOf(item), 1);
       }
     }
     return {
       queue: required.sort((a, b) => pos(a) - pos(b)).map((item) => item.item_id),
       stopState,
       skipped: skipped.map((item) => item.item_id),
-      audit: [...auditIds],
+      audit: [...auditIds].filter((id) => required.some((i) => i.item_id === id)),
     };
   }
 
   return {
     activeStrataFromResponses, responseTriggersExpansion,
     isErrorVerdict, verdictClass, wilsonUpperBound, wilsonLowerBound,
-    strataStopState, efficientQueue, isAuditKeeper, DEFAULT_STOP_CONFIG,
+    strataStopState, efficientQueue, isAuditKeeper, staticAuditSet,
+    DEFAULT_STOP_CONFIG,
   };
 });
