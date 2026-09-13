@@ -28,6 +28,8 @@
 
 | T18 | **VLM route over page images for typing/topicing (route C)**: David's ruling — sometimes the best evidence for type/topic is visual (tables, figures, layout); add a vision-language pass over page images as a third extraction route feeding the dual-route disagreement machinery. Substrate exists: AE κ-pack exporter already produces page images + figure/table crops (527 pages, 180 fig / 113 table crops for 23 papers); generalize that exporter corpus-wide, then a VLM judge on the crops for papers where text routes disagree or text is degraded (KA-ART candidates first). | 2026-09-13 | David: "sometimes the best method would be through using VLM and page images" |
 
+| T19 | **Human-factors gate for every HITL surface** (David's ruling 2026-09-13: integrity review alone is not enough). Before any batch/interface is served to a human, a reviewer walks it AS A FIRST-TIME USER against a written checklist: (1) system status always visible at any scroll (Nielsen 1 — the buried save note); (2) content in the reader's format, not the pipeline's (Nielsen 2 — raw LaTeX/OCR); (3) recognition over recall — APA/venue/metadata present at the point of judgment; (4) error prevention — every required ruling expressible without fighting validation (the off-topic case); (5) 1–2 keystrokes per judgment, auto-advance, no flow breaks; (6) display metadata document-verified (T17 check); (7) failure modes triggered, not assumed (kill the server mid-save, judge with nothing selected). Checklist doc + apply to R3 pack as rung two after the Opus integrity verdict. | 2026-09-13 | Every defect David caught 09-12/13 maps to a known heuristic; the gate makes the checklist run before the human does |
+
 ## In Progress
 
 | ID | Task | Started | Notes |
