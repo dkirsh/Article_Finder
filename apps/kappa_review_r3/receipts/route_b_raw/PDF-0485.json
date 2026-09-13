@@ -1,0 +1,42 @@
+{
+  "paper_id": "PDF-0485",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Siniscalco, A., & Bortolotti, A. (2024). Physiology and psychology of light and colour: Evaluation of an experimental approach. [Conference paper, exact venue/year and page range not printed in the retrieved text; hosted on ResearchGate, publication ID 376553234].",
+    "article_type": "theoretical",
+    "main_conclusion": "Evaluating how light and colour affect human psychology and physiology in a way useful for lighting design requires a carefully staged experimental approach -- beginning with controlled, single-colour presentation (e.g., via a calibrated VR display) and progressing to naturalistic, dynamically lit mock-up environments -- because prior colour-emotion research suffers from poor colour control, neglect of environmental factors, and underpowered samples.",
+    "independent_variables": ["Colour/light stimulus (hue, spectral power distribution) -- proposed, not tested", "Luminous intensity / correlated colour temperature -- proposed, not tested"],
+    "dependent_variables": ["Psychological/emotional response to colour -- proposed, not tested", "Physiological arousal (e.g., melatonin suppression, heart rate/activation) -- proposed, not tested"],
+    "construct_pair": "Light/colour exposure -> Psychological and physiological response",
+    "direction": "not_applicable",
+    "sample_n": null,
+    "p_value": null,
+    "effect_size": null,
+    "stimulus_description": "No stimulus was administered; the paper proposes future presentation of defined colours via an appropriately calibrated screen or VR headset at a fixed focal distance, followed by a second series of tests in a mock-up living environment illuminated by a dynamic coloured-lighting system.",
+    "methods_surface_summary": "This is a position/theoretical paper, not an empirical study: it reviews the Ecological Valence Theory and Color-in-Context Theory, catalogues methodological pitfalls in colour-emotion research, and outlines a proposed two-stage experimental design (controlled VR/screen colour exposure, then a naturalistic dynamically-lit room) for future testing.",
+    "measurement_inventory": []
+  },
+  "confidence": {
+    "apa_citation": 2,
+    "article_type": 4,
+    "main_conclusion": 4,
+    "independent_variables": 3,
+    "dependent_variables": 3,
+    "construct_pair": 3,
+    "direction": 5,
+    "sample_n": 5,
+    "p_value": 5,
+    "effect_size": 5,
+    "stimulus_description": 3,
+    "methods_surface_summary": 4,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "apa_citation": "The docling text has no explicit publication year or journal/proceedings name; it is hosted on ResearchGate (publication 376553234) and cites sources through 2023, so a 2024 conference paper is likely but unconfirmed from the text alone.",
+    "article_type": "No data are collected or reported anywhere in the text; the paper is entirely conceptual/argumentative, proposing a future experimental protocol. Closest categories were theoretical vs. commentary; classified as theoretical because it develops a methodological framework rather than simply commenting on existing work.",
+    "independent_variables": "These are variables the authors propose to manipulate in a future study, not variables actually manipulated in this paper.",
+    "dependent_variables": "Same caveat as independent_variables -- proposed, not measured here.",
+    "direction": "No empirical relationship is tested in this paper, so direction is not_applicable rather than indeterminate.",
+    "stimulus_description": "Described stimulus is prospective/proposed (Figure 2 in the text shows a conceptual VR display and a mock-up room), not administered to any participants in this paper."
+  }
+}

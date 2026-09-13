@@ -1,0 +1,40 @@
+{
+  "paper_id": "PDF-0518",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Axelsson, Ö., Nilsson, M. E., & Berglund, B. (2010). A principal components model of soundscape perception. Journal of the Acoustical Society of America, 128(5), 2836-2846. https://doi.org/10.1121/1.3493436",
+    "article_type": "empirical_quantitative",
+    "main_conclusion": "Soundscape perception is well described by three basic perceptual components (Pleasantness, Eventfulness, Familiarity), and the dominant category of sound in a soundscape (technological, natural, or human) predicts its position on the Pleasantness and Eventfulness dimensions even after controlling for overall loudness.",
+    "independent_variables": ["Dominant sound category of soundscape excerpt (technological, natural, human, none)", "Overall soundscape loudness (Zwicker's N10)", "Acoustic properties of soundscape excerpts (L Aeq,30s, level variability, low-frequency proportion)"],
+    "dependent_variables": ["Pleasantness (principal component 1 score)", "Eventfulness (principal component 2 score)", "Familiarity (principal component 3 score)", "116 individual attribute-match ratings"],
+    "construct_pair": "Dominant sound category (technological/natural/human) -> Pleasantness and Eventfulness of soundscape perception",
+    "direction": "mixed",
+    "sample_n": 100,
+    "p_value": "p < 0.01",
+    "effect_size": "R2 = 0.59 (Pleasantness model with N10 + sound categories); R2 = 0.55 (Eventfulness model with N10 + sound categories)",
+    "stimulus_description": "Listeners heard 50 30-second binaural recordings of urban outdoor soundscapes (from London and Stockholm) covering technological, natural, and human sound sources, played back over calibrated headphones.",
+    "methods_surface_summary": "100 listeners each rated 5 of 50 soundscape excerpts on 116 attribute scales (visual analog 'match' scales); mean attribute ratings per excerpt were subjected to principal components analysis, and the resulting component scores were correlated and regressed against acoustic measures and dominant-sound-category codings.",
+    "measurement_inventory": ["116 unidirectional visual-analog attribute-match scales (0-100mm)", "Zwicker loudness N10 (sone)", "A-weighted equivalent sound pressure level L Aeq,30s", "L A10-L A90 and N10-N90 level-variability indices", "L Ceq,30s - L Aeq,30s (low-frequency proportion index)", "Dominant-sound-category coding (Technological/Human/Natural, dichotomous)"]
+  },
+  "confidence": {
+    "apa_citation": 5,
+    "article_type": 5,
+    "main_conclusion": 5,
+    "independent_variables": 4,
+    "dependent_variables": 5,
+    "construct_pair": 4,
+    "direction": 3,
+    "sample_n": 5,
+    "p_value": 3,
+    "effect_size": 4,
+    "stimulus_description": 5,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "independent_variables": "Dominant sound category is the paper's main manipulated/coded predictor; acoustic variables are measured (not manipulated) predictors used as covariates.",
+    "direction": "Marked 'mixed' because the relationship differs by sound category: technological sounds -> negative (unpleasant), natural sounds -> positive (pleasant, though weak/less clear), human sounds -> positive relation with eventfulness but only weak with pleasantness. No single uniform direction applies across the IV's levels.",
+    "p_value": "The paper reports many p-values across correlations and regressions; the one chosen (p<0.01) is used for the split-half PCA reliability check and several key correlations (Table II); no single overall 'main finding' p-value is designated by the authors.",
+    "effect_size": "R2 values are for the two-step stepwise regressions predicting Pleasantness and Eventfulness from loudness (N10) plus dominant-sound-category variables (Tables III-IV), which the paper treats as its key quantitative result tying sound category to perception."
+  }
+}

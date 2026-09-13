@@ -1,0 +1,41 @@
+{
+  "paper_id": "PDF-0469",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Renz, T., Leistner, P., & Liebl, A. (2018). Effects of the location of sound masking loudspeakers on cognitive performance in open-plan offices: Local sound masking is as efficient as conventional sound masking. Applied Acoustics. https://doi.org/10.1016/j.apacoust.2018.06.024 [Volume/page numbers not printed in the retrieved text; DOI/journal ID inferred from reference-hub prefix S0003-682X(18) shown in the paper's own reference list formatting.]",
+    "article_type": "empirical_quantitative",
+    "main_conclusion": "A local, decentralised sound-masking loudspeaker placed near the distracting speech source performed about as well as a conventional ceiling-mounted masking system for improving working-memory performance and reducing annoyance from background speech, and extending the masking spectrum down to 100 Hz (instead of 200 Hz) gave a further, modest performance benefit.",
+    "independent_variables": ["Sound masking emitter location/configuration (local emitter in acoustic screen or cabinet vs. six-emitter conventional ceiling array)", "Spatial separation between masker and target speech direction (same direction vs. 90 degrees apart)", "Masking spectrum high-pass filter cutoff frequency (100 Hz vs 200 Hz)", "Signal-to-noise ratio (-9 dB vs -12 dB)"],
+    "dependent_variables": ["Mean error rate on a serial (number) recall task", "Perceived annoyance rating (5-point and 11-point scales)"],
+    "construct_pair": "Sound-masking emitter location and configuration -> Working-memory (serial recall) performance and perceived annoyance",
+    "direction": "mixed",
+    "sample_n": 24,
+    "p_value": "p < 0.001",
+    "effect_size": "partial eta-squared = 0.13",
+    "stimulus_description": "Employees performed a serial digit recall task in a modified open-plan office while background speech (recorded German sentences from the Hochmair-Schulz-Moser test) was played from studio monitors simulating two coworkers, combined with pink-noise-based masking sound delivered from either local loudspeakers near the speech sources or a six-emitter ceiling array, at varying SNRs and filter cutoffs, across twelve sound conditions.",
+    "methods_surface_summary": "One-way repeated-measures laboratory design with 24 employees (25 recruited, one excluded) each tested under all twelve sound conditions (Latin-square counterbalanced) in a controlled open-plan office; performance was scored as percentage of digits recalled incorrectly on a serial recall task, and annoyance was rated after each condition; analyzed with repeated-measures ANOVA and Benjamini-Hochberg-corrected one-tailed paired t-tests against silence and unmasked-speech controls.",
+    "measurement_inventory": ["Serial (digit) recall task", "5-point verbal annoyance scale", "11-point numerical annoyance scale (ISO/TS 15666:2003)", "Speech Transmission Index (STI) / sound pressure level instrumentation (NTi XL2 sound level meter)"]
+  },
+  "confidence": {
+    "apa_citation": 3,
+    "article_type": 5,
+    "main_conclusion": 4,
+    "independent_variables": 5,
+    "dependent_variables": 5,
+    "construct_pair": 4,
+    "direction": 3,
+    "sample_n": 4,
+    "p_value": 4,
+    "effect_size": 4,
+    "stimulus_description": 5,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "apa_citation": "Exact volume/page/DOI not visible in the docling text; year (2018) and journal (Applied Acoustics) are stated in the running header; DOI is a plausible reconstruction based on the article's PII prefix appearing in its own reference-hub links, not directly printed.",
+    "direction": "Rated mixed because the effect of emitter location/spatial separation on performance and annoyance was inconsistent across SNR levels and control comparisons -- e.g., local masking helped at -9 dB SNR when co-located with speech but the 90-degree-separated condition sometimes performed worse than silence, and some paired comparisons (e.g., conventional vs. local at -9 dB) showed no significant difference.",
+    "sample_n": "25 employees were recruited but one subject's data were excluded due to equipment failure, leaving 24 for the serial-recall performance analysis (Fig. 3, n=24); the annoyance analysis further dropped to n=21 because three subjects' questionnaire data did not load.",
+    "p_value": "This is the omnibus repeated-measures ANOVA main effect of sound condition on serial-recall mean error rate, F(11,253)=3.48, p<0.001 -- the paper's headline statistical result for cognitive performance; effects for individual paired comparisons vary (see Table 3).",
+    "effect_size": "Reported as the omnibus eta-squared for the performance ANOVA (eta^2=0.13); the parallel omnibus effect for annoyance was much larger (eta^2=0.63), and individual paired-comparison Cohen's d values ranged from about 0.18 to 5.1 across different contrasts (see Tables 3-4)."
+  }
+}

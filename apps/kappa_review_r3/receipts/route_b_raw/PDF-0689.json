@@ -1,0 +1,40 @@
+{
+  "paper_id": "PDF-0689",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Hähn, N., Essah, E., & Blanusa, T. (2021). Biophilic design and office planting: A case study of effects on perceived health, well-being and performance metrics in the workplace. Intelligent Buildings International, 13(4), 241-260. https://doi.org/10.1080/17508975.2020.1732859",
+    "article_type": "empirical_quantitative",
+    "main_conclusion": "Introducing living plants into individual offices (and break-out spaces) significantly increased occupants' perceived attention, creativity and productivity, while later removing plants from individual offices significantly increased perceived stress and decreased attention, efficiency and productivity, but planting had no significant effect on perceived health, well-being, tiredness or motivation.",
+    "independent_variables": ["Presence/placement of living plants (control: no plants; plants in offices and break-out spaces; plants only in break-out spaces)", "Occupant interaction with plants during office breaks (yes/no)"],
+    "dependent_variables": ["Perceived attention", "Perceived creativity", "Perceived productivity", "Perceived efficiency", "Perceived stress", "Perceived health", "Perceived well-being", "Perceived tiredness", "Perceived motivation", "Satisfaction with overall office design"],
+    "construct_pair": "Living plant presence/placement -> perceived workplace performance metrics (attention, creativity, productivity, stress, efficiency)",
+    "direction": "mixed",
+    "sample_n": 40,
+    "p_value": "p = 0.001",
+    "effect_size": null,
+    "stimulus_description": "Office occupants worked in a modern four-storey office building where two potted plants per person (of various species: peace lily, dragon tree, weeping fig, etc.) were introduced into individual offices and eight plants placed in break-out spaces, then later removed, in a rotating within-subjects design across two occupant groups.",
+    "methods_surface_summary": "Repeated-measures field study using paper questionnaires (three-point Likert-type perceived-metric items) administered at baseline, after two weeks of plant introduction, and after plant removal/rotation to 40 occupants across 19 offices; differences were tested with non-parametric Friedman tests (with exact significance) followed by post-hoc Wilcoxon Signed-Rank tests (Bonferroni-corrected) and Fisher's exact tests for the break-interaction question.",
+    "measurement_inventory": ["Custom occupant questionnaire (based on Building Use Studies/Office Productivity Network surveys) rating tiredness, health, stress, well-being, attention, efficiency, creativity, motivation, and productivity on 3-point ordinal scales", "Satisfaction with overall office design item"]
+  },
+  "confidence": {
+    "apa_citation": 5,
+    "article_type": 5,
+    "main_conclusion": 5,
+    "independent_variables": 5,
+    "dependent_variables": 5,
+    "construct_pair": 4,
+    "direction": 4,
+    "sample_n": 5,
+    "p_value": 3,
+    "effect_size": 1,
+    "stimulus_description": 5,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "direction": "Mixed: introducing plants had a positive effect on attention/creativity/productivity but no effect on health/well-being/tiredness/motivation, and removal of plants had a negative effect on attention/productivity/efficiency/stress -- not a single uniform positive or negative relationship.",
+    "p_value": "p=0.001 is reported for the omnibus Friedman test on satisfaction with overall office design (X2(2)=14.381); individual metric comparisons range from p<0.001 (attention, Friedman omnibus) to non-significant. No single p-value represents 'the' main finding since multiple outcomes are tested.",
+    "effect_size": "The paper reports Z-statistics and exact p-values from Friedman/Wilcoxon/Fisher tests but no standardized effect size (e.g., r, d) for the significant comparisons in the visible text.",
+    "sample_n": "N=40 occupants (27 male, 13 female) across 19 offices in one building; determined a priori via power analysis in G*Power."
+  }
+}

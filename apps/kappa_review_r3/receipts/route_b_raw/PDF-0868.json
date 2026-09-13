@@ -1,0 +1,40 @@
+{
+  "paper_id": "PDF-0868",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Gatersleben, B., & Andrews, M. (2013). When walking in nature is not restorative-The role of prospect and refuge. Health & Place, 20, 91-101.",
+    "article_type": "empirical_quantitative",
+    "main_conclusion": "Natural environments high in prospect (clear field of vision) and low in refuge (few hiding places) are more perceived and actually restorative -- improving mood, attention, and reducing heart rate -- than natural environments low in prospect and high in refuge, which can instead increase stress and attention fatigue.",
+    "independent_variables": ["Prospect-refuge level of the natural environment (low / medium / high prospect, inversely varying refuge)", "Setting (laboratory simulation vs. real outdoor field walk), in Study 2"],
+    "dependent_variables": ["Perceived danger", "Fear", "Perceived restoration (self-rating restoration scale)", "Affective states (positive affect, attentiveness, fear arousal, sadness, anger/aggression via ZIPERS)", "Attention (Necker Cube Pattern Control Task reversals)", "Heart rate (physiological restoration)"],
+    "construct_pair": "Prospect-refuge structure of a natural environment -> Restoration (perceived and actual: mood, attention, heart rate)",
+    "direction": "positive",
+    "sample_n": 303,
+    "p_value": "p < .001",
+    "effect_size": "d = 1.24",
+    "stimulus_description": "In Study 1, respondents viewed a slideshow of 12 sequential photographs (preceded by a short descriptive narrative) depicting a walk through a country park, manipulated to be low, medium, or high in prospect-refuge. In Study 2, respondents either walked real paths through a low- or high-prospect-refuge section of the same country park, or viewed first-person video recordings of the same walks projected in a laboratory.",
+    "methods_surface_summary": "Study 1 was a between-subjects online survey (N=269) with three prospect-refuge slideshow conditions, measuring perceived danger, fear, and restoration via one-way ANOVAs, planned contrasts, and mediation analyses. Study 2 used a mixed within/between-subjects design (17 field participants, 17 lab participants) comparing pre/post-walk change scores on affect, attention, and heart rate across high vs. low prospect-refuge walks and field vs. lab settings, analyzed with ANOVA and Tukey post hoc tests.",
+    "measurement_inventory": ["Self-rating restoration scale (SRRS; Han, 2003)", "Perceived danger scale (3 items)", "Fear scale (3 items)", "Zuckerman's Inventory of Personal Reactions (ZIPERS)", "Necker Cube Pattern Control Task (NCPCT)", "A&D UA-767 digital blood pressure/heart rate monitor (heart rate only used)", "Manipulation-check items for prospect, accessibility, and hiding places", "Amended Stroop-based computerized fatigue task (E-Prime 2.0)"]
+  },
+  "confidence": {
+    "apa_citation": 5,
+    "article_type": 5,
+    "main_conclusion": 5,
+    "independent_variables": 5,
+    "dependent_variables": 5,
+    "construct_pair": 5,
+    "direction": 5,
+    "sample_n": 4,
+    "p_value": 4,
+    "effect_size": 4,
+    "stimulus_description": 5,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "sample_n": "Paper reports two studies: Study 1 N=269 (online survey), Study 2 N=17 field + 17 lab = 34. Total across studies = 303. Took the sum since the paper is one article with two linked experiments and no single 'main' study is designated; this is an aggregation choice, not a number printed anywhere as a single total.",
+    "p_value": "Many p-values are reported throughout; selected p<.001 as representative of the strongest/most central reported finding (e.g., perceived restoration difference across prospect-refuge conditions in Study 1, F(2,266)=36.35, p<.001).",
+    "effect_size": "Multiple Cohen's d values are reported for different sub-comparisons (ranging roughly d=0.26 to d=1.94); selected d=1.24, the largest contrast in Study 1's perceived-restoration effect (low vs. high prospect-refuge), as representative of the central prospect-refuge -> restoration relationship. This is a judgment call given the paper reports no single overall effect size.",
+    "direction": "High prospect/low refuge consistently associated with more restoration (higher positive affect, attentiveness, lower fear/sadness/anger, greater heart-rate reduction) than low prospect/high refuge, across both studies."
+  }
+}

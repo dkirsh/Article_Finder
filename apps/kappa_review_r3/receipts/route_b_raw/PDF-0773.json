@@ -1,0 +1,60 @@
+{
+  "paper_id": "PDF-0773",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Bourikas, L., Gauthier, S., Khor Song En, N., & Xiong, P. (2021). Effect of thermal, acoustic and air quality perception interactions on the comfort and satisfaction of people in office buildings. Energies, 14(2), 333. https://doi.org/10.3390/en14020333",
+    "article_type": "empirical_quantitative",
+    "main_conclusion": "In real office buildings, occupants' thermal sensation is associated with both their air-quality perception and their noise perception, and although the two-way interaction between air quality and noise did not significantly affect thermal sensation, operative temperature and sound pressure level each interact significantly with air-quality perception, making air-quality perception a key, previously under-recognized driver of occupant comfort and satisfaction.",
+    "independent_variables": [
+      "Air quality perception vote (ASV)",
+      "Noise/acoustic perception vote (NSV)",
+      "Operative temperature (Top)",
+      "30-minute average sound pressure level (SPL30)",
+      "Interaction terms (ASV x NSV; Top x ASV; SPL30 x ASV)"
+    ],
+    "dependent_variables": [
+      "Thermal sensation vote (TSV)",
+      "Thermal preference vote (TPV) / thermal comfort vote (TCV)",
+      "Overall satisfaction / comfort (POE stage)",
+      "Acoustic comfort vote (NSC)"
+    ],
+    "construct_pair": "Air quality and noise perception (with operative temperature and sound pressure level) -> Thermal sensation/comfort",
+    "direction": "mixed",
+    "sample_n": 116,
+    "p_value": "p = 0.026",
+    "effect_size": "G = -0.114",
+    "stimulus_description": "No experimentally manipulated stimulus was presented; occupants in three real, mixed-mode university office buildings reported their momentary thermal, acoustic and air-quality perceptions via short 'right-here-right-now' surveys while going about normal work, and in one building (Stage 3) their office's sound pressure level, air temperature and relative humidity were concurrently logged.",
+    "methods_surface_summary": "A three-stage field study: Stage 1 was a Building Use Studies post-occupancy evaluation survey (n=26) in one building; Stage 2 was a year-long weekly comfort survey (1079 valid responses from 116 participants) in two other buildings assessing thermal, preference, noise and air-quality votes; Stage 3 was a 5-week focused comfort survey (52 valid responses from 12 participants) in the first building paired with continuous environmental monitoring. Associations were tested with Goodman-Kruskal's gamma, Kendall's tau-b correlation, and mixed-effects (logistic) regression with participant ID as a random effect.",
+    "measurement_inventory": [
+      "ASHRAE 7-point thermal sensation vote (TSV)",
+      "7-point thermal preference vote (TPV)",
+      "7-point noise/acoustic perception vote (NSV) and acoustic comfort vote (NSC)",
+      "7-point air quality perception vote (ASV)",
+      "Building Use Studies (BUS) satisfaction questionnaire (7-point scale)",
+      "Sound-level meters (LAeq, LA10, SPL30, SPL5)",
+      "Temperature and relative humidity dataloggers",
+      "Reverberation-time analyser (Brüel & Kjær 2250)"
+    ]
+  },
+  "confidence": {
+    "apa_citation": 5,
+    "article_type": 5,
+    "main_conclusion": 5,
+    "independent_variables": 4,
+    "dependent_variables": 4,
+    "construct_pair": 4,
+    "direction": 3,
+    "sample_n": 3,
+    "p_value": 3,
+    "effect_size": 3,
+    "stimulus_description": 5,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "sample_n": "The paper has three separate samples (Stage 1: n=26; Stage 2: 116 unique participants producing 1079 responses over 48 weeks; Stage 3: 12 participants producing 52 responses over 5 weeks). Stage 2 is the largest, longest-running survey directly testing the paper's central TSV~ASV+NSV hypothesis, so its 116 individual participants was taken as 'the main study' sample_n; the 1079-response count is the response-level (not person-level) n for that same stage.",
+    "direction": "Multiple, partly opposite-signed relationships are reported: TSV correlates negatively with ASV (G=-0.114) but positively with NSV (G=+0.109 as printed, though the surrounding text's sign convention is inconsistent/possibly a typo); the ASV x NSV interaction on TSV is non-significant; the Top x ASV and SPL30 x ASV interactions are both significant but opposite in sign (-0.408 to -0.051 vs. +0.117 to +0.491 in Table 7). Coded 'mixed' because no single consistent direction summarizes the IV-DV relations.",
+    "p_value": "p=0.026 is the Goodman-Kruskal's gamma test p-value for the TSV~ASV association (Stage 2), chosen as representative of the paper's central 'thermal sensation is associated with air quality perception' claim; the final mixed-effects model's interaction terms are reported only via 95% confidence intervals (Table 7), not printed p-values, though text states these effects were significant at p<0.05.",
+    "effect_size": "G=-0.114 (Goodman-Kruskal's gamma) is the effect size printed for the TSV~ASV correlation referenced above; the final regression model's standardized coefficients are given as confidence intervals (Table 7) rather than point effect sizes with p-values, so a single 'main finding' effect size beyond this correlation is not unambiguous."
+  }
+}

@@ -63,7 +63,7 @@
     classes: {
       mechanical: {threshold: 0.15, min_n: 4,
         strata: ["apa_citation", "article_type", "sample_n", "p_value", "effect_size"]},
-      semantic: {threshold: 0.10, min_n: 7,
+      semantic: {threshold: 0.10, min_n: 10,
         strata: ["main_conclusion", "independent_variables", "dependent_variables",
           "construct_pair", "direction", "stimulus_description",
           "methods_surface_summary", "measurement_inventory"]},
@@ -72,11 +72,18 @@
 
   // An extraction the human had to correct, or that claimed a value the paper
   // does not establish, counts as an error. cannot_decide is neither success
-  // nor error: it routes to expansion and stays out of the bound's n.
-  function isErrorVerdict(verdict) {
-    return ["incorrect", "source_does_not_answer",
-      "substantively_correct_needs_wording"].includes(verdict);
+  // nor error: it routes to expansion and stays out of the bound's n. An
+  // UNRECOGNISED verdict is likewise excluded — it must never count as a
+  // success and quietly help release a stratum (reviewer amendment A6).
+  const SUCCESS_VERDICTS = ["exactly_correct"];
+  const ERROR_VERDICTS = ["incorrect", "source_does_not_answer",
+    "substantively_correct_needs_wording"];
+  function verdictClass(verdict) {
+    if (SUCCESS_VERDICTS.includes(verdict)) return "success";
+    if (ERROR_VERDICTS.includes(verdict)) return "error";
+    return "excluded";
   }
+  function isErrorVerdict(verdict) { return verdictClass(verdict) === "error"; }
 
   function wilsonUpperBound(errors, n, z) {
     if (n <= 0) return 1;
@@ -114,9 +121,10 @@
       s.total_items += 1;
       const response = responses[item.item_id];
       if (!response) continue;
-      if (response.verdict === "cannot_decide") { s.undecided += 1; continue; }
+      const cls = verdictClass(response.verdict);
+      if (cls === "excluded") { s.undecided += 1; continue; }
       s.n += 1;
-      if (isErrorVerdict(response.verdict)) s.errors += 1;
+      if (cls === "error") s.errors += 1;
     }
     for (const [stratum, s] of Object.entries(state)) {
       const cls = stratumClass(stratum, config);
@@ -182,6 +190,11 @@
       const within = rank[item.item_id] !== undefined ? rank[item.item_id] : 999;
       return paper * 1000 + within;
     };
+    // Pure recompute on every call: no input is mutated (reviewer amendment
+    // A4 — a persisted flag made audit membership stale across rebuilds).
+    // Audit membership lives in a local set derived deterministically from
+    // (seed, item_id) plus the per-stratum minimum backfill.
+    const auditIds = new Set();
     const required = [];
     const skipped = [];
     for (const item of [...base, ...extensions]) {
@@ -190,21 +203,21 @@
       const settled = stopState[item.stratum] && stopState[item.stratum].settled;
       if (answered || demo || !settled) { required.push(item); continue; }
       if (isAuditKeeper(item.item_id, eq.seed || "r3", config.audit_fraction)) {
-        item._audit = true; required.push(item);
+        auditIds.add(item.item_id); required.push(item);
       } else {
         skipped.push(item);
       }
     }
-    // Guarantee audit_minimum unanswered keepers per released stratum.
+    // Guarantee audit_minimum unanswered keepers per settled stratum.
     const minimum = (config.audit_minimum === undefined) ? 1 : config.audit_minimum;
     for (const [stratum, s] of Object.entries(stopState)) {
       if (!s.settled) continue;
-      const kept = required.filter((i) => i._audit && i.stratum === stratum).length;
+      const kept = required.filter((i) => auditIds.has(i.item_id) && i.stratum === stratum).length;
       if (kept >= minimum) continue;
       const candidates = skipped.filter((i) => i.stratum === stratum)
         .sort((a, b) => pos(a) - pos(b)).slice(0, minimum - kept);
       for (const item of candidates) {
-        item._audit = true; required.push(item);
+        auditIds.add(item.item_id); required.push(item);
         skipped.splice(skipped.indexOf(item), 1);
       }
     }
@@ -212,12 +225,13 @@
       queue: required.sort((a, b) => pos(a) - pos(b)).map((item) => item.item_id),
       stopState,
       skipped: skipped.map((item) => item.item_id),
+      audit: [...auditIds],
     };
   }
 
   return {
     activeStrataFromResponses, responseTriggersExpansion,
-    isErrorVerdict, wilsonUpperBound, wilsonLowerBound, strataStopState,
-    efficientQueue, isAuditKeeper, DEFAULT_STOP_CONFIG,
+    isErrorVerdict, verdictClass, wilsonUpperBound, wilsonLowerBound,
+    strataStopState, efficientQueue, isAuditKeeper, DEFAULT_STOP_CONFIG,
   };
 });

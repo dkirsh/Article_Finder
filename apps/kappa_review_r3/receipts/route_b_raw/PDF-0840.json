@@ -1,0 +1,44 @@
+{
+  "paper_id": "PDF-0840",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Cal, H. K. K., Kang, J., & Aletta, F. (2024). Methodological approaches and main factors considered in school soundscape studies: A scoping review. Building Acoustics, 31(1), 75-90. https://doi.org/10.1177/1351010X231216016",
+    "article_type": "systematic_review",
+    "main_conclusion": "Across the 11 studies meeting inclusion criteria, school soundscape research has concentrated on primary-school-aged children and on negative, mostly traffic-generated noise assessed through questionnaires, leaving secondary-school perspectives and the potential benefits of positive/holistic school soundscapes comparatively unexplored.",
+    "independent_variables": [],
+    "dependent_variables": [],
+    "construct_pair": "School acoustic/sound environment (soundscape) -> Occupant (student/teacher) perception and well-being",
+    "direction": "not_applicable",
+    "sample_n": null,
+    "p_value": null,
+    "effect_size": null,
+    "stimulus_description": "Not applicable in the usual experimental sense: this is a literature review with no participant-facing stimulus of its own. The 11 reviewed primary studies exposed schoolchildren and teachers to their everyday, unmanipulated school sound environments (e.g., classroom speech and activity noise, traffic and aircraft noise, natural sounds, background music).",
+    "methods_surface_summary": "A PRISMA-ScR scoping review searched the Scopus database (school* AND soundscape*, January 2000-September 2023, English-language, peer-reviewed) yielding 49 records; after title/abstract and full-text screening by three reviewers, 11 studies met the inclusion criteria (investigating a school setting and occupants' perceptions of the sound environment) and were narratively synthesized by participant age group, sound sources studied, and methodology used.",
+    "measurement_inventory": [
+      "PRISMA-ScR reporting checklist / scoping-review protocol",
+      "Scopus bibliographic database search"
+    ]
+  },
+  "confidence": {
+    "apa_citation": 4,
+    "article_type": 4,
+    "main_conclusion": 5,
+    "independent_variables": 5,
+    "dependent_variables": 5,
+    "construct_pair": 2,
+    "direction": 5,
+    "sample_n": 5,
+    "p_value": 5,
+    "effect_size": 5,
+    "stimulus_description": 4,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 3
+  },
+  "notes": {
+    "article_type": "The paper self-describes as a 'scoping review' (PRISMA-ScR), which is not one of the exact category labels offered; 'systematic_review' was chosen as the closest fit since it follows a structured PRISMA-based search/screening protocol rather than an unstructured narrative review.",
+    "apa_citation": "Header gives 'Building Acoustics 2024, Vol. 31(1) 75-90 @ The Author(s) 2023' and DOI 10.1177/1351010X231216016; the mismatch between the printed copyright year (2023, likely online-first) and the printed volume/issue year (2024) is noted but 2024 (the volume year) was used for the reference year.",
+    "construct_pair": "This is a methodological/scoping review of a research literature rather than a single empirical test of one construct pair; the pair given here describes the general topic the reviewed studies investigate, not a relationship this paper itself tested statistically.",
+    "sample_n": "The review synthesizes 11 separate primary studies with their own, very different participant samples (ranging from n=10 teachers to n=2844 children; see Table 3 of the source); there is no single 'main study' sample size for the review itself.",
+    "measurement_inventory": "Listed items are the review's own methodological tools (search database, reporting protocol). The 11 included primary studies used a wide range of instruments (questionnaires, interviews, visual/emotion scales, sound-level measurements) that are catalogued descriptively in the paper's Table 3 rather than extracted individually here, since no single measurement inventory applies to the review as a whole."
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "paper_id": "PDF-0187",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Xie, H., Chen, Q., Nespoli, C., & Riso, T. (2022). Understanding the cognitive immersion of hospitality architecture in culture and nature: Cultural psychology and neuroscience views. Frontiers in Psychology, 13, 833819. https://doi.org/10.3389/fpsyg.2022.833819",
+    "article_type": "empirical_qualitative",
+    "main_conclusion": "Using a single-case field study of the Amanfayun hotel in Hangzhou, the authors show that neuroaesthetic appreciation of hospitality architecture arises from the joint operation of sensory-motor, knowledge-meaning, and emotion-valuation systems (the aesthetic triad), which together explain how fused cultural and natural elements in architecture produce a balanced, immersive aesthetic experience.",
+    "independent_variables": [],
+    "dependent_variables": [],
+    "construct_pair": "Cultural and natural immersion in hospitality architecture -> neuroaesthetic (sensory-motor, knowledge-meaning, emotion-valuation) appreciation",
+    "direction": "not_applicable",
+    "sample_n": 3,
+    "p_value": null,
+    "effect_size": null,
+    "stimulus_description": "Participants (hotel guests) experienced the physical architecture, landscape, and interiors of the Amanfayun hotel in Hangzhou, China, a resort built to merge Buddhist-temple-adjacent natural surroundings with traditional Chinese design elements (sloping roofs, archways, natural materials, adjustable sunshades).",
+    "methods_surface_summary": "Single-case qualitative design: a team of six researchers conducted a 3-day field survey observing the hotel's architecture and landscape, supplemented by in-depth, unstructured interviews with three hotel guests of differing backgrounds; findings were interpreted thematically against three theory-derived propositions built on the aesthetic-triad framework (no statistical analysis).",
+    "measurement_inventory": []
+  },
+  "confidence": {
+    "apa_citation": 5,
+    "article_type": 4,
+    "main_conclusion": 5,
+    "independent_variables": 4,
+    "dependent_variables": 4,
+    "construct_pair": 4,
+    "direction": 4,
+    "sample_n": 3,
+    "p_value": 5,
+    "effect_size": 5,
+    "stimulus_description": 4,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "article_type": "Borderline theoretical/empirical_qualitative: the paper develops a theory-driven framework (three propositions) and illustrates/supports it with a genuine single-case field survey plus three interviews, so it is coded as empirical_qualitative rather than purely theoretical.",
+    "independent_variables": "No manipulated or measured predictor variables in a formal design; the paper qualitatively documents architectural features (fluency, complexity, naturalistic patterns, familiarity, cultural context) rather than treating them as IVs.",
+    "dependent_variables": "No formally measured outcome variable; 'aesthetic appreciation/immersion' is discussed narratively rather than quantified.",
+    "direction": "Not applicable — this is a qualitative single-case/interview study with no quantitative IV-DV test of direction.",
+    "sample_n": "3 interviewed hotel guests are the closest thing to a human 'sample' with reported data (Table 1); a separate team of 6 researchers conducted field observation but were not interview subjects/participants providing outcome data.",
+    "stimulus_description": "No controlled stimulus; participants experienced the real physical hotel environment during their stay/visit."
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "paper_id": "PDF-0719",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Grêt-Regamey, A., & Galleguillos-Torres, M. (2022). Global urban homogenization and the loss of emotions. Scientific Reports. https://doi.org/10.1038/s41598-022-27141-7",
+    "article_type": "empirical_quantitative",
+    "main_conclusion": "Homogenized peri-urban residential landscapes trigger weaker physiological (skin conductance) and self-reported (SAM valence/arousal) emotional responses than urban or rural landscapes, and unlike in urban and rural areas, emotional responses do not significantly predict people's place-making intentions in peri-urban areas, implicating lower social cohesion and place attachment there.",
+    "independent_variables": [
+      "Landscape/scene type (urban vs. peri-urban vs. rural residential VR scene)",
+      "Country/site (Switzerland vs. the Netherlands)"
+    ],
+    "dependent_variables": [
+      "Phasic skin conductance response (electrodermal activity)",
+      "Tonic skin conductance level",
+      "Self-Assessment Manikin (SAM) valence rating",
+      "Self-Assessment Manikin (SAM) arousal rating",
+      "Place-making score",
+      "Place attachment",
+      "Social cohesion"
+    ],
+    "construct_pair": "Landscape homogenization (urban vs. peri-urban vs. rural exposure) -> Emotional/physiological arousal and place-making engagement",
+    "direction": "negative",
+    "sample_n": 285,
+    "p_value": "p = 3e-4",
+    "effect_size": null,
+    "stimulus_description": "Participants wore a VR headset with integrated earphones and viewed 2D 360° photographs (with matched ambisonic soundscapes) of an urban, a peri-urban, or a rural residential street scene from either Switzerland or the Netherlands, each shown for two minutes.",
+    "methods_surface_summary": "285 adults recruited on the street via a mobile VR lab in two countries were exposed, in randomized order, to urban, peri-urban and rural 360° VR scenes while skin conductance was recorded continuously; after each scene they rated valence/arousal (SAM), and afterward completed a questionnaire on place attachment, social cohesion and place-making, analyzed with Friedman tests, a Generalized Linear Mixed Model, and stepwise/AIC-based regression.",
+    "measurement_inventory": [
+      "Skin conductance / electrodermal activity (phasic and tonic components, Ledalab decomposition)",
+      "Self-Assessment Manikin (SAM) - valence and arousal",
+      "Place attachment questionnaire (based on Bonaiuto et al., 2015)",
+      "Social cohesion questionnaire",
+      "Place-making questionnaire (5-point Likert)"
+    ]
+  },
+  "confidence": {
+    "apa_citation": 4,
+    "article_type": 5,
+    "main_conclusion": 5,
+    "independent_variables": 5,
+    "dependent_variables": 5,
+    "construct_pair": 4,
+    "direction": 4,
+    "sample_n": 5,
+    "p_value": 3,
+    "effect_size": 1,
+    "stimulus_description": 5,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "apa_citation": "Title, authors, and DOI (10.1038/s41598-022-27141-7, an s41598 prefix = Scientific Reports) are printed in the text ('© The Author(s) 2022'), so year is set to 2022; however no volume/issue/page numbers are printed anywhere in this extraction, so the reference is incomplete on those elements.",
+    "direction": "IV is a 3-level categorical landscape type rather than a continuous/binary variable, so 'positive/negative' is approximate: peri-urban exposure (relative to urban/rural) is associated with lower/blunted (i.e. more negative-valence, lower-arousal) physiological and self-reported emotional responses, hence coded 'negative'.",
+    "p_value": "Multiple significant p-values are reported for the physiological-response comparison (Friedman tests): phasic slope angle p=6.1e-3, phasic AUC p=3e-4, tonic AUC p=1.1e-2. p=3e-4 (phasic area-under-curve) was chosen as representative of the headline physiological finding (peri-urban < urban/rural); other p-values for the same overall claim are given in the source text.",
+    "effect_size": "No canonical effect-size statistic (d, r, eta2) is printed for the main peri-urban-vs-other comparison; the closest quantities are the Friedman chi-square statistics (e.g. chi2(2)=16.4) and the regression R2-adjusted values by scene type in Table 1 (rural 0.49, urban 0.22, peri-urban 0.13), neither of which is a direct effect size for the main IV->DV contrast, so left null.",
+    "sample_n": "285 total participants exposed to the VR scenes (Methods, Participants); subsequent regression analyses used smaller, place-specific sub-samples (33-113) after listwise deletion for incomplete survey answers."
+  }
+}

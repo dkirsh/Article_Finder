@@ -1,0 +1,42 @@
+{
+  "paper_id": "PDF-0885",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Zhong, W., Schröder, T. W. A., & Bekkering, J. D. (2022). Biophilic design in architecture and its contributions to health, well-being, and sustainability: A critical review. Frontiers of Architectural Research, 11(1), 114-141. https://doi.org/10.1016/j.foar.2021.07.006",
+    "article_type": "narrative_review",
+    "main_conclusion": "Biophilic design is a richer and more complex framework than simply adding vegetation to buildings -- it spans physical, sensory, metaphorical, morphological, material, and spiritual forms of 'nature' -- and, synthesized against the UN Sustainable Development Goals, has substantial (though largely unquantified) potential to advance sustainable architecture's health, well-being, biodiversity, and circularity goals.",
+    "independent_variables": [],
+    "dependent_variables": [],
+    "construct_pair": "Biophilic design elements/strategies -> Sustainable architecture outcomes (health, well-being, productivity, biodiversity, circularity)",
+    "direction": "not_applicable",
+    "sample_n": null,
+    "p_value": null,
+    "effect_size": null,
+    "stimulus_description": null,
+    "methods_surface_summary": "A critical literature review that searched Scopus, Web of Science, and Google Scholar (plus snowball sampling) for publications on biophilia/biophilic design/biophilic architecture/biophilic building, screened for relevance to architecture and sustainability, yielding 141 selected sources; the authors comparatively analyzed taxonomies of 'nature' across major biophilic design frameworks and mapped biophilic design benefits against the 17 UN Sustainable Development Goals.",
+    "measurement_inventory": []
+  },
+  "confidence": {
+    "apa_citation": 5,
+    "article_type": 5,
+    "main_conclusion": 5,
+    "independent_variables": 5,
+    "dependent_variables": 5,
+    "construct_pair": 4,
+    "direction": 5,
+    "sample_n": 5,
+    "p_value": 5,
+    "effect_size": 5,
+    "stimulus_description": 5,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "article_type": "This is explicitly a literature review (search across three databases, 141 sources selected, comparative/synthetic analysis) with no original empirical data collection -- classified as narrative_review rather than systematic_review because inclusion/exclusion is described qualitatively without a PRISMA-style protocol, formal quality scoring, or meta-analytic synthesis.",
+    "independent_variables": "None manipulated or measured as predictors; this is a conceptual/theoretical synthesis, not an experiment.",
+    "dependent_variables": "None measured; the review discusses benefits and challenges narratively and via a framework/table synthesis rather than quantified outcome variables.",
+    "sample_n": "No human participants; the review's 'sample' is 141 published sources, not human subjects, so sample_n (human participants) is null.",
+    "stimulus_description": "Not applicable -- no participants were exposed to stimuli; this is a document/literature review.",
+    "measurement_inventory": "The paper does mention quantitative indices proposed for FUTURE evaluation of biophilic buildings (e.g., water area size, air ventilation rate, daylight factor, biodiversity level) but these are proposed criteria, not instruments used to measure anything in this study, so left empty rather than listed as 'used' measures."
+  }
+}

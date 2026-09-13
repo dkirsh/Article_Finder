@@ -1,0 +1,56 @@
+{
+  "paper_id": "PDF-0213",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Yang, W., & Moon, H. J. (n.d.). Combined effects of acoustic, thermal, and illumination conditions on the comfort of discrete senses and overall indoor environment. Building and Environment. [Publication year, volume, and page numbers are not printed anywhere in the extracted docling text; journal, authors, affiliations, and DOI-free reference list confirm venue and authorship.]",
+    "article_type": "empirical_quantitative",
+    "main_conclusion": "In a controlled-chamber experiment crossing sound type, sound level, room temperature, illuminance, and gender, each subjective comfort dimension was shaped not only by its matching physical factor but by the other environmental factors too, and acoustic conditions (especially sound level) had the single greatest influence on overall indoor environmental comfort.",
+    "independent_variables": [
+      "sound type (babble, fan, music, water, plus an ambient-noise reference)",
+      "sound level (45, 55, 65, 75 dBA)",
+      "room temperature (20, 25, 30 °C)",
+      "illuminance level (150, 500, 1000 lx)",
+      "gender"
+    ],
+    "dependent_variables": [
+      "acoustic comfort",
+      "thermal comfort",
+      "visual comfort",
+      "overall indoor environmental (IE) comfort"
+    ],
+    "construct_pair": "Acoustic conditions (sound type/level) -> overall indoor environmental comfort",
+    "direction": "negative",
+    "sample_n": 60,
+    "p_value": "p = .000 (reported as .000, i.e. p < .001) for the effect of sound level on indoor environmental comfort",
+    "effect_size": "partial eta squared (η²p) = .255 for the effect of sound level on indoor environmental comfort (the largest single effect reported)",
+    "stimulus_description": "Sixty university students were exposed, in an environmentally controlled indoor chamber, to nine temperature x illuminance configurations (20/25/30 °C x 150/500/1000 lx), each paired with 17 sound stimuli (babble, fan, music, and water noise at 45-75 dBA, plus an ambient-noise reference) presented for 25 seconds each through a loudspeaker.",
+    "methods_surface_summary": "Within-subjects 4 (sound type) x 4 (sound level) x 3 (temperature) x 3 (illuminance) x 2 (gender) factorial laboratory design in a purpose-built environmental chamber; after each condition participants rated acoustic, thermal, visual, and overall indoor environmental comfort on an 11-point numeric scale; data analyzed with factorial ANOVA (partial eta squared effect sizes), Bonferroni post-hoc tests, and a varimax-rotated factor analysis.",
+    "measurement_inventory": [
+      "11-point numeric comfort/annoyance scale (per ISO/TS 15666)",
+      "pure-tone audiometric hearing screening (GSI 18 audiometer)",
+      "digital thermometers (Autonics THD-W; SATO SKL200THII) for air temperature/humidity",
+      "illuminance meter (Konica Minolta T-10A) and luminance/spectral meters (Konica Minolta CS-200, CS-2000)"
+    ]
+  },
+  "confidence": {
+    "apa_citation": 2,
+    "article_type": 5,
+    "main_conclusion": 5,
+    "independent_variables": 5,
+    "dependent_variables": 5,
+    "construct_pair": 4,
+    "direction": 3,
+    "sample_n": 5,
+    "p_value": 4,
+    "effect_size": 4,
+    "stimulus_description": 5,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "apa_citation": "Journal (Building and Environment), authors (Wonyoung Yang, Hyeun Jun Moon), and title are printed in full in the docling text, but publication year, volume, and page numbers are not present anywhere in the extracted file, so they are left out rather than guessed. A companion 2018 paper by the same authors is cited in the reference list, suggesting this article postdates 2018, but that is inference, not a printed fact.",
+    "direction": "Coded 'negative' for the headline acoustic-conditions relation (higher sound level -> lower comfort, confirmed by the means table: comfort decreases monotonically as dBA increases). However, the overall pattern across all 5 IVs and 4 DVs is genuinely mixed (e.g., thermal comfort peaks at an intermediate 25°C rather than moving monotonically, illuminance effects on thermal comfort are non-monotonic, and several gender interactions reverse sign by condition) — direction is reported for the single most emphasized IV-DV pair per the field's main IV->DV instruction, not for every tested effect.",
+    "sample_n": "Text states '60 university students' and Table 1 gives '30 men, 30 women' physical characteristics; total N=60 is stated explicitly, hence high confidence despite the citation gaps.",
+    "construct_pair": "The paper studies four DVs simultaneously; sound level's effect on overall IE comfort is highlighted in the abstract and conclusion as the single largest and most emphasized relationship, so it was selected as the 'main' pair."
+  }
+}

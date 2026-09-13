@@ -1,0 +1,40 @@
+{
+  "paper_id": "PDF-0268",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Tsiganov, A. V. (1997). The Stäckel systems and algebraic curves. arXiv preprint [identifier printed in the text as \"arch-ive/9712003\", which appears to be an OCR/docling corruption of an arXiv identifier such as solv-int/9712003; not independently verifiable from the given text].",
+    "article_type": "theoretical",
+    "main_conclusion": "The paper proves that the Stäckel matrix defining separable, orthogonal curvilinear coordinate systems on a flat manifold is exactly the derivative of the Abel-Jacobi map (the Brill-Noether matrix) on an associated hyperelliptic algebraic curve, and uses this identification to construct Lax pairs, r-matrix algebras, and flat coordinates unifying a broad family of integrable mechanical (Stäckel) systems.",
+    "independent_variables": [],
+    "dependent_variables": [],
+    "construct_pair": "Derivative of the Abel-Jacobi map (Brill-Noether matrix) on a hyperelliptic curve -> Stäckel matrix / separable coordinate structure of integrable mechanical systems",
+    "direction": "not_applicable",
+    "sample_n": null,
+    "p_value": null,
+    "effect_size": null,
+    "stimulus_description": null,
+    "methods_surface_summary": "Pure mathematical physics: the paper derives theorems (via algebraic geometry, symplectic geometry, and Lax-pair/r-matrix formalism) connecting the Abel-Jacobi map on hyperelliptic curves to the classical Stäckel theorem, with no empirical data, participants, or measurements of any kind.",
+    "measurement_inventory": []
+  },
+  "confidence": {
+    "apa_citation": 2,
+    "article_type": 5,
+    "main_conclusion": 4,
+    "independent_variables": 5,
+    "dependent_variables": 5,
+    "construct_pair": 3,
+    "direction": 5,
+    "sample_n": 5,
+    "p_value": 5,
+    "effect_size": 5,
+    "stimulus_description": 5,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "general": "IMPORTANT FLAG: this document is a pure mathematics/mathematical-physics paper (integrable systems, algebraic curves, Abel-Jacobi maps) with no participants, stimuli, measurements, or statistics of any kind. It is categorically mismatched with the other three papers in this batch (which are architecture/environmental-psychology/acoustics studies) and with the 13-field extraction schema, which presupposes an empirical or human-subjects study. Nearly all quantitative/empirical fields are null by necessity, not by extraction failure — the text itself is intact and fully readable (not damaged), it is simply off-topic for this schema.",
+    "apa_citation": "Author (A.V. Tsiganov), affiliation, and title are printed clearly at the top of the document along with a bracketed identifier '[arch-ive/9712003]' that reads as a garbled/OCR-corrupted arXiv preprint number (the plausible original is an arXiv category like solv-int or dg-ga from 1997, but the exact category cannot be reconstructed with confidence from the given text alone). No journal name, volume, or page numbers are given anywhere in the text, consistent with this being an arXiv preprint rather than a published journal article.",
+    "construct_pair": "There is no empirical exposure/outcome relationship; the 'construct pair' given here is a mathematical-object relationship (a map's derivative determining a matrix), reframed loosely into the IV->DV template only because the schema requires a non-null string.",
+    "main_conclusion": "Confidence lowered slightly from 5 because this is dense specialist mathematics; the stated conclusion is a good-faith paraphrase of Theorem 2 and the paper's stated main objective, not a claim I can independently verify mathematically."
+  }
+}

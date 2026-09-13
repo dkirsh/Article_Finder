@@ -1,0 +1,40 @@
+{
+  "paper_id": "PDF-1306",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Stamps, A. E., III. (2004). Mystery, complexity, legibility and coherence: A meta-analysis. Journal of Environmental Psychology, 24(1), 1-16.",
+    "article_type": "meta_analysis",
+    "main_conclusion": "The correlations between environmental preference and the four Kaplan informational variables (mystery, complexity, legibility, coherence) reported across 30 years of research are so heterogeneous -- ranging from strongly negative to strongly positive -- that no reliable collective (pooled) correlation, or even a consistent direction of effect, can currently be established for the informational model of environmental preference.",
+    "independent_variables": ["Mystery rating of a scene", "Complexity rating of a scene", "Legibility rating of a scene", "Coherence rating of a scene", "Scene type (natural vs. built vs. mixed/other, as a moderator)"],
+    "dependent_variables": ["Environmental preference rating"],
+    "construct_pair": "Informational variables (mystery, complexity, legibility, coherence) -> Environmental preference",
+    "direction": "indeterminate",
+    "sample_n": 6288,
+    "p_value": "a = 3e-18",
+    "effect_size": "r = 0.42",
+    "stimulus_description": "Not applicable in the usual sense -- this meta-analysis synthesizes findings from 61 prior published studies (28 with data usable for quantitative synthesis) in which original respondents viewed photographs or slides of natural and built environments and rated them on preference and on the four informational variables.",
+    "methods_surface_summary": "A quantitative literature review (meta-analysis) following Hedges and Olkin's methods: literature was searched across PsycINFO, Web of Science, and other sources; 61 articles (12,452 participants, 3125 scenes) were located, of which 28 (6288 participants, 1820 scenes) met eligibility criteria for quantitative synthesis; collective correlations, heterogeneity chi-square tests, and contrasts between solid vs. dubious studies and natural vs. built scenes were computed for the four preference-informational-variable relationships.",
+    "measurement_inventory": ["Semantic differential rating scales for preference, coherence, legibility, complexity, and mystery (as used in the original Kaplan & Kaplan protocol)", "Category Identification Method (CIM) for classifying scene types"]
+  },
+  "confidence": {
+    "apa_citation": 5,
+    "article_type": 5,
+    "main_conclusion": 5,
+    "independent_variables": 4,
+    "dependent_variables": 5,
+    "construct_pair": 5,
+    "direction": 5,
+    "sample_n": 4,
+    "p_value": 3,
+    "effect_size": 3,
+    "stimulus_description": 5,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 4
+  },
+  "notes": {
+    "sample_n": "6288 is the total number of participants across the 28 studies retained for the actual quantitative meta-analysis (the 'reduced database'); the broader literature search covered 12,452 participants across all 61 located articles. These are not human participants tested directly by this paper's authors but aggregated counts from prior studies -- flagged since 'sample_n' as defined (human participants in the main study) is an unusual fit for a meta-analysis.",
+    "p_value": "The paper reports many p/alpha values across four variables and multiple sub-analyses (solid vs. dubious, natural vs. built). Selected the heterogeneity test alpha for mystery on the full combined solid+dubious sample (chi2=183, df=26, a=1e-25) is another option; I instead report the solid-studies-only mystery heterogeneity (chi2=116, df=14, a=3e-18) as representative of the paper's central 'non-reproducibility' finding, but this is a judgment call among several statistically central values -- no single overall p-value is given for the whole paper.",
+    "effect_size": "Collective correlations (# r) are reported per variable: coherence r=0.46, legibility r=0.22, complexity r=0.32, mystery r=0.42 (solid studies) / 0.43 (combined) -- but the paper's central point is that these point estimates are misleading given severe heterogeneity, so no single effect size can be presented as 'the' finding. Reported mystery's solid-study collective r=0.42 as one representative value, with this caveat.",
+    "direction": "Explicitly indeterminate: paper reports individual study correlations ranging from about -0.45 to +0.97 across the four variables, and states heterogeneity is too large to determine 'the degree and direction' of any of the four relationships (Discussion, Section 4.6)."
+  }
+}
