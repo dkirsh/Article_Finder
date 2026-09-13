@@ -218,6 +218,14 @@ def main():
         stratum_of = {i["item_id"]: i["stratum"] for i in parent_review["items"]}
         off_ruling = [x for x in mr if stratum_of.get(x) != "apa_citation"]
         if off_ruling: fail(f"machine_resolved_outside_apa_ruling:{off_ruling[:5]}")
+        # P9 (round-5 review): the id list must equal the adjudication
+        # receipt's machine subset — a stale or hand-edited list cannot
+        # silently undo a lineage-based human_review disposition.
+        receipt = json.loads((R3_ASSETS / "receipts/apa_machine_adjudication.json").read_text())
+        receipt_machine = sorted(r["item_id"] for r in receipt["items"]
+                                 if r["disposition"] == "machine_adjudicated")
+        if sorted(mr) != receipt_machine:
+            fail("machine_resolved_items_disagree_with_adjudication_receipt")
         efficient_queue["machine_resolved_items"] = sorted(mr)
 
     # A1(b): the brief must not describe per-field verdict mechanics to the
