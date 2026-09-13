@@ -51,6 +51,18 @@
   #passages button { padding:1px 6px; font-size:11px; }
   .esc { color:var(--danger); font-weight:600; }
   #saveinfo { font-size:11px; color:#666; margin-top:6px; }
+  #articlecard { max-width:78ch; margin:0 0 10px; }
+  .card-apa { background:#f4f1ea; border:1px solid var(--line); border-radius:8px;
+              padding:8px 12px; font-size:13.5px; }
+  .card-apa.card-missing { background:#fff3cd; }
+  .card-flag { background:#8a2b2b; color:#fff; font-size:10px; padding:1px 6px;
+               border-radius:8px; vertical-align:middle; }
+  .card-venue, .card-meta { font-size:12px; color:#555; margin-top:5px; padding:0 2px; }
+  #doctabs { margin:0 0 10px; }
+  #doctabs button { font:13px inherit; padding:5px 14px; border:1px solid var(--line);
+                    background:#f4f1ea; cursor:pointer; border-radius:7px 7px 0 0; }
+  #doctabs button.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  #pdfframe { width:100%; height:86vh; border:1px solid var(--line); background:#fff; }
   #toast { position:fixed; bottom:14px; right:16px; z-index:20; display:none;
            padding:10px 16px; border-radius:9px; font-size:14px; font-weight:600;
            color:#fff; background:#2f6b3a; box-shadow:0 2px 10px rgba(0,0,0,.25); }
@@ -62,7 +74,13 @@
 
 <main id="doc">
   <h1 id="doctitle">Select a paper</h1>
+  <div id="articlecard"></div>
+  <div id="doctabs">
+    <button id="tabText" type="button" class="active">Extracted text</button>
+    <button id="tabPdf" type="button">Original PDF</button>
+  </div>
   <div id="doctext"></div>
+  <iframe id="pdfframe" style="display:none" title="Original PDF"></iframe>
 </main>
 
 <aside id="form">
@@ -181,6 +199,71 @@ function cleanForDisplay(t){
     .replace(/[ \t]{3,}/g, "  ");
 }
 
+// LaTeX tabular -> HTML table. Handles multirow/multicolumn and rules; cell
+// text is escaped, then simple \textbf is restored as bold.
+function tabularToHtml(block){
+  let body = block
+    .replace(/\\begin\{tabular\}\{[^}]*\}|\\end\{tabular\}/g, "")
+    .replace(/\\hline|\\toprule|\\midrule|\\bottomrule|\\cline\{[^}]*\}/g, "")
+    .replace(/\\multirow\{\d+\}\{[^}]*\}\{([\s\S]*?)\}/g, "$1");
+  const rows = body.split(/\\\\/).map((r) => r.trim()).filter(Boolean);
+  const html = rows.map((r) => {
+    const cells = r.split(/(?<!\\)&/).map((c) => {
+      const mc = c.match(/\\multicolumn\{(\d+)\}\{[^}]*\}\{([\s\S]*?)\}/);
+      let span = 1, text = c;
+      if (mc) { span = Number(mc[1]); text = mc[2]; }
+      text = text.trim().replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/\\textbf\{([^{}]*)\}/g, "<b>$1</b>").replace(/\\textit\{([^{}]*)\}/g, "<i>$1</i>");
+      return span > 1 ? `<td colspan="${span}">${text}</td>` : `<td>${text}</td>`;
+    }).join("");
+    return `<tr>${cells}</tr>`;
+  }).join("");
+  return `\n\n<table>${html}</table>\n\n`;
+}
+
+// Article-information block often printed in a paper's page footer
+// (abbreviations, corresponding author, e-mail) — surfaced under the title.
+function extractArticleMeta(raw){
+  const found = [];
+  for (const re of [
+    /(?:^|\n)(Abbreviations?:[^\n]*(?:\n(?!\s*\n)[^\n]*)*)/,
+    /(?:^|\n)(\*?\s?Correspond(?:ing author|ence)[^\n]*(?:\n(?!\s*\n)[^\n]*)*)/i,
+    /(?:^|\n)(E-?mail address(?:es)?:[^\n]*(?:\n(?!\s*\n)[^\n]*)*)/i,
+  ]){
+    const m = raw.match(re);
+    if (m && m[1].length < 600) found.push(m[1].replace(/\s+/g, " ").trim());
+  }
+  return found;
+}
+
+function esc(s){ return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+function renderArticleCard(t, raw){
+  const card = document.getElementById("articlecard");
+  const bits = [];
+  if (t.apa) {
+    let apa = esc(t.apa);
+    if (t.venue) {
+      const v = esc(t.venue);
+      if (apa.includes(v)) apa = apa.replace(v, `<b>${v}</b>`);
+      else bits.push(`<div class="card-venue">Publication source: <b>${v}</b></div>`);
+    }
+    bits.unshift(`<div class="card-apa">${apa}${t.apa_suspect ? ' <span class="card-flag">APA unverified</span>' : ""}</div>`);
+  } else {
+    bits.push(`<div class="card-apa card-missing">No APA citation on record${t.venue ? ` — source: <b>${esc(t.venue)}</b>` : ""}</div>`);
+  }
+  for (const m of extractArticleMeta(raw)) bits.push(`<div class="card-meta">${esc(m)}</div>`);
+  card.innerHTML = bits.join("");
+}
+
+function setDocTab(which){
+  const pdf = which === "pdf";
+  document.getElementById("doctext").style.display = pdf ? "none" : "";
+  document.getElementById("pdfframe").style.display = pdf ? "block" : "none";
+  document.getElementById("tabText").classList.toggle("active", !pdf);
+  document.getElementById("tabPdf").classList.toggle("active", pdf);
+}
+
 // Render the paper properly: markdown structure via marked, math typeset by
 // KaTeX. Math spans are masked before the markdown pass (marked would mangle
 // underscores inside them) and restored after. Falls back to the plain
@@ -191,6 +274,7 @@ function renderDoc(pane, raw){
   if (!canRender) { pane.className = "plain"; pane.textContent = cleanForDisplay(raw); return; }
   const mathBank = [];
   const masked = raw
+    .replace(/^\s*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\s*\n/i, "")
     .replace(/<(script|style)[\s\S]*?<\/\1>/gi, "")
     // structural LaTeX outside math delimiters -> markdown equivalents
     .replace(/\\title\{\s*([\s\S]*?)\}/g, (_, x) => `# ${x.replace(/\s+/g, " ").trim()}\n`)
@@ -204,10 +288,8 @@ function renderDoc(pane, raw){
     .replace(/\\begin\{(?:figure|center)\}(?:\[[^\]]*\])?|\\end\{(?:figure|center)\}|\\centering/g, "")
     .replace(/0\.\d+\\textwidth|\\textwidth/g, "")
     .replace(/\\footnotetext\{([\s\S]*?)\}/g, "\n> $1\n")
-    // KaTeX cannot typeset tabular; show those aligned as plain code instead
-    .replace(/\\begin\{tabular\}[\s\S]*?\\end\{tabular\}/g,
-      (m) => "\n```\n" + m.replace(/\\begin\{tabular\}\{[^}]*\}|\\end\{tabular\}|\\hline/g, "")
-        .replace(/\\\\/g, "\n").replace(/&/g, " | ").trim() + "\n```\n")
+    // tabular environments become real HTML tables (KaTeX cannot typeset them)
+    .replace(/\\begin\{tabular\}[\s\S]*?\\end\{tabular\}/g, tabularToHtml)
     .replace(/\\begin\{(?:align\*?|equation\*?)\}([\s\S]*?)\\end\{(?:align\*?|equation\*?)\}/g, "$$$$$1$$$$")
     .replace(/\\\[([\s\S]*?)\\\]|\$\$([\s\S]*?)\$\$|\\\((.*?)\\\)/g,
       (m) => { mathBank.push(m); return `@@MATH${mathBank.length - 1}@@`; });
@@ -232,6 +314,11 @@ async function open(t){
   const txt = await (await fetch(t.text_file)).text();
   const pane = document.getElementById("doctext");
   renderDoc(pane, txt);
+  renderArticleCard(t, txt);
+  const pdfBtn = document.getElementById("tabPdf");
+  pdfBtn.style.display = t.pdf_file ? "" : "none";
+  document.getElementById("pdfframe").src = t.pdf_file || "about:blank";
+  setDocTab("text");
   // assisted mode only: highlight machine receipts (never present in blind batches)
   if (window.MODE === "assisted" && t.machine_receipts){
     let html = pane.innerHTML;
@@ -270,6 +357,9 @@ function renderPassages(){
     ol.appendChild(li);
   });
 }
+
+document.getElementById("tabText").onclick = () => setDocTab("text");
+document.getElementById("tabPdf").onclick = () => setDocTab("pdf");
 
 document.getElementById("markbtn").onclick = () => {
   const sel = window.getSelection();

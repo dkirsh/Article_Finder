@@ -26,6 +26,8 @@
 
 | T17 | **URGENT — Title-vs-document sweep, corpus-wide, INCLUDING trusted rows**: 322 paper_bibliographic rows carry a trust label (gold_registry/validated) contradicted by their source lineage (oa_title_match / QUARANTINED). David caught PDF-0814 live: DOI right, title from a sibling paper via oa_title_match, trust said gold. Sweep all 1,760: extract document front-matter title (\title{} / first heading), jaccard vs DB title; disagreements get title_trust downgraded + document title recorded; NO trust label may survive that its source lineage contradicts. Blind-50 batches already swept (10/50 display titles corrected against documents, 2026-09-12). Batch-build scripts gain a mandatory document-title check before any batch is served to a human. | 2026-09-12 | David: "it was never tested for title accuracy" — correct; the audit tested registry agreement, never the document itself |
 
+| T18 | **VLM route over page images for typing/topicing (route C)**: David's ruling — sometimes the best evidence for type/topic is visual (tables, figures, layout); add a vision-language pass over page images as a third extraction route feeding the dual-route disagreement machinery. Substrate exists: AE κ-pack exporter already produces page images + figure/table crops (527 pages, 180 fig / 113 table crops for 23 papers); generalize that exporter corpus-wide, then a VLM judge on the crops for papers where text routes disagree or text is degraded (KA-ART candidates first). | 2026-09-13 | David: "sometimes the best method would be through using VLM and page images" |
+
 ## In Progress
 
 | ID | Task | Started | Notes |
