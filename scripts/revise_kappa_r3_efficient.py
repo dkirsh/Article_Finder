@@ -115,6 +115,50 @@ function renderStrataStatus() {
     ("completeMessage",
      """      : "The queue stopped because all core items and activated extensions have stable answers.";""",
      """      : "The queue stopped because the sampling plan has the answers it needs from every field; deferred items can return to the queue if later answers call for them.";"""),
+    ("fieldGuidePanel",
+     """  byId("stratum").textContent = item.stratum_label;""",
+     """  byId("stratum").textContent = item.stratum_label;
+  renderFieldGuide(item);"""),
+    ("fieldGuideFns",
+     """function setRadio(name, value) {""",
+     """function renderFieldGuide(item) {
+  const host = byId("fieldGuide");
+  const guide = (state.data.field_guide || {}).strata || {};
+  const entry = guide[item.stratum];
+  if (!host) return;
+  if (!entry) { host.classList.add("hidden"); byId("fieldInfoBtn").style.display = "none"; return; }
+  byId("fieldInfoBtn").style.display = "";
+  const parts = [`<p><strong>What you are judging.</strong> ${entry.definition}</p>`];
+  const values = entry.values || {};
+  if (Object.keys(values).length) {
+    parts.push("<p><strong>The values and what they mean:</strong></p><ul>" +
+      Object.entries(values).map(([v, d]) => `<li><code>${v}</code> — ${d}</li>`).join("") + "</ul>");
+  }
+  if (entry.multi) parts.push(`<p><strong>More than one can be true.</strong> ${entry.multi}</p>`);
+  host.innerHTML = parts.join("");
+  // inline definition for the machine's own value, right where it is judged
+  const cand = item.candidate_display && item.candidate_display.value;
+  const hint = byId("candidateValueHint");
+  if (hint) {
+    const d = typeof cand === "string" ? values[cand.trim().toLowerCase()] : null;
+    hint.textContent = d ? `${cand}: ${d}` : "";
+    hint.classList.toggle("hidden", !d);
+  }
+}
+
+function setRadio(name, value) {"""),
+    ("alsoAppliesCollect",
+     """    corrected_value: byId("correctedValue").value.trim(),""",
+     """    corrected_value: byId("correctedValue").value.trim(),
+    also_applies: byId("alsoApplies").value.trim(),"""),
+    ("alsoAppliesRestore",
+     """    byId("correctedValue").value = response.corrected_value || "";""",
+     """    byId("correctedValue").value = response.corrected_value || "";
+    byId("alsoApplies").value = response.also_applies || "";"""),
+    ("fieldInfoToggle",
+     """byId("markTextButton").addEventListener("click", markSelectedText);""",
+     """byId("markTextButton").addEventListener("click", markSelectedText);
+byId("fieldInfoBtn").addEventListener("click", () => byId("fieldGuide").classList.toggle("hidden"));"""),
     ("exportStopState",
      """      reliability_disagreement_item_ids: reliabilityDisagreements().map((item) => item.item_id),""",
      """      reliability_disagreement_item_ids: reliabilityDisagreements().map((item) => item.item_id),
@@ -196,11 +240,37 @@ def main():
     html = patch(html, '<progress id="progressBar"',
                  '<div id="strataStatus" class="strata-status"></div><progress id="progressBar"',
                  "strataStatusDiv")
+    html = patch(html, '<span id="stratum"></span>',
+                 '<span id="stratum"></span> <button id="fieldInfoBtn" type="button" '
+                 'class="info-btn" title="What am I judging? What do the values mean?">i</button>',
+                 "fieldInfoBtn")
+    html = patch(html, '<div id="candidateValue" class="candidate-values"></div>',
+                 '<div id="candidateValue" class="candidate-values"></div>'
+                 '<div id="candidateValueHint" class="cand-hint hidden"></div>'
+                 '<div id="fieldGuide" class="field-guide hidden"></div>',
+                 "fieldGuidePanelDiv")
+    html = patch(html, '<div id="rationaleWrap" class="form-row hidden">',
+                 '<div class="form-row"><label for="alsoApplies">Also applies '
+                 '(optional) — when more than one value is truly right, add the '
+                 'others here, e.g. "empirical_quantitative"</label>'
+                 '<input id="alsoApplies" type="text" placeholder="second true label, if any"></div>\n'
+                 '          <div id="rationaleWrap" class="form-row hidden">',
+                 "alsoAppliesRow")
     (OUT / "index.html").write_text(html)
     css = (OUT / "styles.css").read_text()
     css += ("\n.strata-status{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;}\n"
             ".stratum-chip{font-size:11px;padding:2px 8px;border-radius:10px;"
-            "background:#eee7d9;color:#4a4234;}\n")
+            "background:#eee7d9;color:#4a4234;}\n"
+            ".info-btn{display:inline-flex;align-items:center;justify-content:center;"
+            "width:18px;height:18px;border-radius:50%;border:1px solid #7a5c2e;"
+            "background:#fff;color:#7a5c2e;font:600 12px/1 Georgia,serif;cursor:pointer;"
+            "vertical-align:middle;}\n"
+            ".field-guide{background:#f7f4ec;border:1px solid #d8d4cc;border-radius:8px;"
+            "padding:10px 14px;margin:8px 0;font-size:13px;line-height:1.5;}\n"
+            ".field-guide code{background:#eee7d9;padding:0 4px;border-radius:4px;}\n"
+            ".field-guide ul{margin:4px 0 4px 18px;padding:0;}\n"
+            ".cand-hint{font-size:12px;color:#555;background:#f7f4ec;border-left:3px solid #7a5c2e;"
+            "padding:4px 10px;margin:4px 0;}\n")
     (OUT / "styles.css").write_text(css)
     (OUT / "START_REVIEW.command").chmod(0o755)
 
@@ -228,6 +298,29 @@ def main():
             fail("machine_resolved_items_disagree_with_adjudication_receipt")
         efficient_queue["machine_resolved_items"] = sorted(mr)
 
+    # Field guide (David's walkthrough ruling 2026-09-13: no value the human
+    # must judge may go undefined). Injected from the authored repo file;
+    # strict shape validation — strings only, strata within the known set.
+    fg_path = R3_ASSETS / "field_guide.json"
+    field_guide = None
+    if fg_path.is_file():
+        fg = json.loads(fg_path.read_text())
+        strata_map = fg.get("strata")
+        if not isinstance(strata_map, dict): fail("field_guide_malformed")
+        KNOWN_STRATA_FG = {"apa_citation", "article_type", "main_conclusion",
+            "independent_variables", "dependent_variables", "construct_pair",
+            "direction", "sample_n", "p_value", "effect_size",
+            "stimulus_description", "methods_surface_summary", "measurement_inventory"}
+        if set(strata_map) - KNOWN_STRATA_FG: fail("field_guide_unknown_strata")
+        for sname, entry in strata_map.items():
+            if set(entry) - {"definition", "values", "multi"}:
+                fail(f"field_guide_unexpected_keys:{sname}")
+            if not isinstance(entry.get("definition"), str): fail(f"field_guide_definition_missing:{sname}")
+            for k, v in (entry.get("values") or {}).items():
+                if not (isinstance(k, str) and isinstance(v, str)):
+                    fail(f"field_guide_values_not_strings:{sname}")
+        field_guide = fg
+
     # A1(b): the brief must not describe per-field verdict mechanics to the
     # person whose unanchored judgment is the measurement.
     efficient_queue["note"] = (
@@ -235,6 +328,8 @@ def main():
         "content unchanged. Full method receipt: Article_Finder "
         "apps/kappa_review_r3/receipts/.")
     review["efficient_queue"] = efficient_queue
+    if field_guide is not None:
+        review["field_guide"] = field_guide
     review["reviewer_brief"] = (
         "Judge independently against the complete paper. Questions arrive in an "
         "order we computed, and the queue adjusts as you work, so the required "
