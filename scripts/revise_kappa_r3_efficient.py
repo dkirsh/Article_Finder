@@ -56,65 +56,13 @@ def patch(text: str, old: str, new: str, label: str) -> str:
     if n != 1: fail(f"patch_anchor_{label}_matched_{n}_times")
     return text.replace(old, new)
 
+# Machine-line patches (queue delegation, neutral strip, neutral texts,
+# stop-state exports) are NOT in this list: they already live inside the R33
+# base assets this script now builds on. This list holds only the layer David
+# ruled on during his walkthrough: the field guide (i button + definitions),
+# the candidate-value hint, 'Also applies', and choose-from-alternatives
+# correction controls for closed-vocabulary fields.
 APP_PATCHES = [
-    ("buildQueue",
-     """function buildQueue() {
-  const base = state.data.items.filter((item) => ["core", "reliability"].includes(item.phase));
-  const activeStrata = new Set(
-    AEHITLQueueLogic.activeStrataFromResponses(state.data.items, state.responses)
-  );
-  const extensions = state.data.items.filter(
-    (item) => item.phase === "extension" && activeStrata.has(item.stratum)
-  );
-  const paperOrder = [...new Set(state.data.items.map((item) => item.paper_id))];
-  state.queue = [...base, ...extensions]
-    .sort((left, right) => {
-      const paperDifference = paperOrder.indexOf(left.paper_id) - paperOrder.indexOf(right.paper_id);
-      return paperDifference || left.priority - right.priority;
-    })
-    .map((item) => item.item_id);
-}""",
-     """function buildQueue() {
-  const result = AEHITLQueueLogic.efficientQueue(state.data, state.responses);
-  state.queue = result.queue;
-  state.stopState = result.stopState;
-  state.skippedCount = (result.skipped || []).length;
-}"""),
-    # A1 (blocking): the reviewer must NOT be able to tell audit items from
-    # ordinary ones, nor see per-field verdicts while judging — queueReason is
-    # deliberately left unpatched, and the strata strip below shows progress
-    # counts only. Verdict state still reaches the EXPORT for post-hoc analysis.
-    ("progressLabel",
-     """    ? `${answered} of ${state.queue.length} current questions answered`""",
-     """    ? `${answered} of ${state.queue.length} questions in the current queue`"""),
-    ("progressStrata",
-     """  byId("progressBar").max = Math.max(1, state.queue.length);
-  byId("progressBar").value = answered;
-}""",
-     """  byId("progressBar").max = Math.max(1, state.queue.length);
-  byId("progressBar").value = answered;
-  renderStrataStatus();
-}
-
-function renderStrataStatus() {
-  // Progress counts only — never verdicts. Showing a field's fate mid-review
-  // would anchor the reviewer's remaining judgments (review amendment A1).
-  const host = byId("strataStatus");
-  if (!host || !state.stopState) { if (host) host.replaceChildren(); return; }
-  host.replaceChildren(...Object.entries(state.stopState)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([stratum, s]) => {
-      const chip = document.createElement("span");
-      chip.className = "stratum-chip";
-      const done = s.n + s.undecided;
-      chip.title = `${done} of ${s.total_items} answered so far in this field`;
-      chip.textContent = `${stratum.replaceAll("_", " ")} ${done}/${s.total_items}`;
-      return chip;
-    }));
-}"""),
-    ("completeMessage",
-     """      : "The queue stopped because all core items and activated extensions have stable answers.";""",
-     """      : "The queue stopped because the sampling plan has the answers it needs from every field; deferred items can return to the queue if later answers call for them.";"""),
     ("fieldGuidePanel",
      """  byId("stratum").textContent = item.stratum_label;""",
      """  byId("stratum").textContent = item.stratum_label;
@@ -126,16 +74,18 @@ function renderStrataStatus() {
   const guide = (state.data.field_guide || {}).strata || {};
   const entry = guide[item.stratum];
   if (!host) return;
-  if (!entry) { host.classList.add("hidden"); byId("fieldInfoBtn").style.display = "none"; return; }
-  byId("fieldInfoBtn").style.display = "";
-  const parts = [`<p><strong>What you are judging.</strong> ${entry.definition}</p>`];
-  const values = entry.values || {};
-  if (Object.keys(values).length) {
-    parts.push("<p><strong>The values and what they mean:</strong></p><ul>" +
-      Object.entries(values).map(([v, d]) => `<li><code>${v}</code> — ${d}</li>`).join("") + "</ul>");
+  const values = (entry && entry.values) || {};
+  if (!entry) { host.classList.add("hidden"); byId("fieldInfoBtn").style.display = "none"; }
+  else {
+    byId("fieldInfoBtn").style.display = "";
+    const parts = [`<p><strong>What you are judging.</strong> ${entry.definition}</p>`];
+    if (Object.keys(values).length) {
+      parts.push("<p><strong>The values and what they mean:</strong></p><ul>" +
+        Object.entries(values).map(([v, d]) => `<li><code>${v}</code> — ${d}</li>`).join("") + "</ul>");
+    }
+    if (entry.multi) parts.push(`<p><strong>More than one can be true.</strong> ${entry.multi}</p>`);
+    host.innerHTML = parts.join("");
   }
-  if (entry.multi) parts.push(`<p><strong>More than one can be true.</strong> ${entry.multi}</p>`);
-  host.innerHTML = parts.join("");
   // inline definition for the machine's own value, right where it is judged
   const cand = item.candidate_display && item.candidate_display.value;
   const hint = byId("candidateValueHint");
@@ -144,26 +94,65 @@ function renderStrataStatus() {
     hint.textContent = d ? `${cand}: ${d}` : "";
     hint.classList.toggle("hidden", !d);
   }
+  // Corrections are a CHOICE among the field's defined values, never a guess
+  // into thin air (David's ruling 2026-09-14). Fields without a closed
+  // vocabulary keep the free-text box.
+  const choice = byId("correctedChoice");
+  const dl = byId("valueOptions");
+  const hasVocab = Object.keys(values).length > 0;
+  if (choice) {
+    choice.replaceChildren();
+    if (hasVocab) {
+      const ph = document.createElement("option");
+      ph.value = ""; ph.textContent = "choose the correct value…";
+      choice.append(ph);
+      for (const v of Object.keys(values)) {
+        const o = document.createElement("option"); o.value = v; o.textContent = v; choice.append(o);
+      }
+      const other = document.createElement("option");
+      other.value = "__other"; other.textContent = "other — type it below";
+      choice.append(other);
+    }
+    choice.classList.toggle("hidden", !hasVocab);
+    byId("correctedValue").classList.toggle("hidden", hasVocab);
+  }
+  if (dl) {
+    dl.replaceChildren();
+    if (hasVocab) for (const v of Object.keys(values)) {
+      const o = document.createElement("option"); o.value = v; dl.append(o);
+    }
+  }
+}
+
+function collectCorrectedValue() {
+  const choice = byId("correctedChoice");
+  if (choice && !choice.classList.contains("hidden") && choice.value && choice.value !== "__other")
+    return choice.value;
+  return byId("correctedValue").value.trim();
 }
 
 function setRadio(name, value) {"""),
     ("alsoAppliesCollect",
      """    corrected_value: byId("correctedValue").value.trim(),""",
-     """    corrected_value: byId("correctedValue").value.trim(),
+     """    corrected_value: collectCorrectedValue(),
     also_applies: byId("alsoApplies").value.trim(),"""),
     ("alsoAppliesRestore",
      """    byId("correctedValue").value = response.corrected_value || "";""",
      """    byId("correctedValue").value = response.corrected_value || "";
-    byId("alsoApplies").value = response.also_applies || "";"""),
+    byId("alsoApplies").value = response.also_applies || "";
+    const cc = byId("correctedChoice");
+    if (cc && !cc.classList.contains("hidden") && response.corrected_value) {
+      const match = [...cc.options].some((o) => o.value === response.corrected_value);
+      cc.value = match ? response.corrected_value : "__other";
+      byId("correctedValue").classList.toggle("hidden", match);
+    }"""),
     ("fieldInfoToggle",
      """byId("markTextButton").addEventListener("click", markSelectedText);""",
      """byId("markTextButton").addEventListener("click", markSelectedText);
-byId("fieldInfoBtn").addEventListener("click", () => byId("fieldGuide").classList.toggle("hidden"));"""),
-    ("exportStopState",
-     """      reliability_disagreement_item_ids: reliabilityDisagreements().map((item) => item.item_id),""",
-     """      reliability_disagreement_item_ids: reliabilityDisagreements().map((item) => item.item_id),
-      strata_stop_state: state.stopState || null,
-      skipped_item_count: state.skippedCount || 0,"""),
+byId("fieldInfoBtn").addEventListener("click", () => byId("fieldGuide").classList.toggle("hidden"));
+byId("correctedChoice").addEventListener("change", () => {
+  byId("correctedValue").classList.toggle("hidden", byId("correctedChoice").value !== "__other");
+});"""),
 ]
 
 def main():
@@ -231,15 +220,23 @@ def main():
     if paper_ids - set(efficient_queue["paper_order"]): fail("paper_order_incomplete")
 
     shutil.copytree(PACK, OUT)
+    # Base UI = the R33 hand-edited interface (David's ruling 2026-09-14:
+    # "8783 is the right version"), preserved under version control at
+    # r33_hand_edits/. It already carries the machine-line queue features
+    # (delegated buildQueue, neutral strata strip, stop-state exports), so the
+    # patch list below holds ONLY the field-guide/choice layer.
+    HAND = R3_ASSETS / "r33_hand_edits"
+    for asset in ("app.js", "index.html", "styles.css", "stephan.html"):
+        src = HAND / asset
+        if not src.is_file(): fail(f"r33_hand_edit_missing:{asset}")
+        (OUT / asset).write_text(src.read_text())
     (OUT / "queue_logic.js").write_text((R3_ASSETS / "queue_logic.js").read_text())
     app = (OUT / "app.js").read_text()
     for label, old, new in APP_PATCHES:
         app = patch(app, old, new, label)
     (OUT / "app.js").write_text(app)
     html = (OUT / "index.html").read_text()
-    html = patch(html, '<progress id="progressBar"',
-                 '<div id="strataStatus" class="strata-status"></div><progress id="progressBar"',
-                 "strataStatusDiv")
+    # (no strataStatus insertion: the R33 base index already carries it)
     html = patch(html, '<span id="stratum"></span>',
                  '<span id="stratum"></span> <button id="fieldInfoBtn" type="button" '
                  'class="info-btn" title="What am I judging? What do the values mean?">i</button>',
@@ -249,11 +246,17 @@ def main():
                  '<div id="candidateValueHint" class="cand-hint hidden"></div>'
                  '<div id="fieldGuide" class="field-guide hidden"></div>',
                  "fieldGuidePanelDiv")
+    html = patch(html, '<textarea id="correctedValue"',
+                 '<select id="correctedChoice" class="hidden"></select>'
+                 '<textarea id="correctedValue"',
+                 "correctedChoiceSelect")
     html = patch(html, '<div id="rationaleWrap" class="form-row hidden">',
                  '<div class="form-row"><label for="alsoApplies">Also applies '
                  '(optional) — when more than one value is truly right, add the '
                  'others here, e.g. "empirical_quantitative"</label>'
-                 '<input id="alsoApplies" type="text" placeholder="second true label, if any"></div>\n'
+                 '<input id="alsoApplies" type="text" list="valueOptions" '
+                 'placeholder="second true label, if any">'
+                 '<datalist id="valueOptions"></datalist></div>\n'
                  '          <div id="rationaleWrap" class="form-row hidden">',
                  "alsoAppliesRow")
     (OUT / "index.html").write_text(html)
@@ -305,6 +308,9 @@ def main():
     field_guide = None
     if fg_path.is_file():
         fg = json.loads(fg_path.read_text())
+        # Round-6 gap fix: allowlist the WHOLE guide object, not only strata.
+        if set(fg) - {"schema", "note", "strata"}: fail("field_guide_unexpected_top_keys")
+        if not isinstance(fg.get("note", ""), str): fail("field_guide_note_not_string")
         strata_map = fg.get("strata")
         if not isinstance(strata_map, dict): fail("field_guide_malformed")
         KNOWN_STRATA_FG = {"apa_citation", "article_type", "main_conclusion",
@@ -316,6 +322,8 @@ def main():
             if set(entry) - {"definition", "values", "multi"}:
                 fail(f"field_guide_unexpected_keys:{sname}")
             if not isinstance(entry.get("definition"), str): fail(f"field_guide_definition_missing:{sname}")
+            if "multi" in entry and not isinstance(entry["multi"], str):
+                fail(f"field_guide_multi_not_string:{sname}")
             for k, v in (entry.get("values") or {}).items():
                 if not (isinstance(k, str) and isinstance(v, str)):
                     fail(f"field_guide_values_not_strings:{sname}")
@@ -328,6 +336,20 @@ def main():
         "content unchanged. Full method receipt: Article_Finder "
         "apps/kappa_review_r3/receipts/.")
     review["efficient_queue"] = efficient_queue
+    # Start-screen copy, human-first (David's ruling 2026-09-14: the reader
+    # must be told the objective plainly; no machine-compressed mashups).
+    review["title"] = "Checking the machine's reading of 20 papers"
+    review["purpose"] = (
+        "The objective of this review is to measure how accurately our "
+        "extraction system reads scientific papers, and to catch exactly where "
+        "it goes wrong. The machine has already pulled a set of facts from each "
+        "paper: the citation, the kind of paper it is, who was studied, what "
+        "was measured, what was found. One question at a time, you will check "
+        "one extracted fact against the paper itself and say whether the "
+        "machine got it right. The first three papers are labeled demonstration "
+        "papers - use them to get comfortable; they are excluded from the "
+        "measurement. The other twenty are the evaluation sample, frozen since "
+        "August so that nothing can quietly change what is being measured.")
     if field_guide is not None:
         review["field_guide"] = field_guide
     review["reviewer_brief"] = (
@@ -337,10 +359,14 @@ def main():
         "a portable backup whenever you stop.")
     descoped = sorted(efficient_queue.get("machine_resolved_items", []))
     revision = {
-        "revision_id": ("kappa-20-hitl-operational-r3.2-apa-descope-2026-09-13"
+        "revision_id": ("kappa-20-hitl-operational-r3.5-merged-ui-2026-09-14"
                         if descoped else "kappa-20-hitl-operational-r3.1-amended-2026-09-13"),
-        "amends": ("kappa-20-hitl-operational-r3.1-amended-2026-09-13"
+        "amends": ("kappa-20-hitl-operational-r3.2-apa-descope-2026-09-13"
                    if descoped else "kappa-20-hitl-operational-r3-efficient-2026-09-11"),
+        "ui_base": ("R33 hand-edited interface (per-reviewer storage, draft "
+                    "autosave, gate control, field navigator, responsive), "
+                    "archived at AF apps/kappa_review_r3/r33_hand_edits/, "
+                    "merged on David's ruling 2026-09-14" if descoped else None),
         "amendment_basis": ("David Kirsh descope ruling 2026-09-13 (apa_citation is a lookup "
                             "problem) + round-4 review fixes; earlier basis: "
                             "REVIEW_VERDICT_R3_EFFICIENT/R3_AMENDMENT/R3_1_2026-09-13_claude_opus.md"
