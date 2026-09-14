@@ -55,6 +55,7 @@ function openReviewerSettings(message = "") {
     byId("resumeNotice").classList.remove("hidden");
   }
   byId("independence").focus({preventScroll: true});
+  syncSettingsButton();
 }
 function returnToPaper() {
   if (!gateOpen()) {
@@ -64,6 +65,7 @@ function returnToPaper() {
   byId("startScreen").classList.add("hidden");
   byId("completeScreen").classList.add("hidden");
   byId("reviewScreen").classList.remove("hidden");
+  syncSettingsButton();
   renderItem({focus: true});
 }
 function renderReviewerIdentity() {
@@ -101,6 +103,7 @@ function navigateToItem(itemId) {
   byId("startScreen").classList.add("hidden");
   byId("completeScreen").classList.add("hidden");
   byId("reviewScreen").classList.remove("hidden");
+  syncSettingsButton();
   renderItem({focus: true});
 }
 function switchProfile(value, freshSession = false) {
@@ -280,9 +283,10 @@ function itemSession(itemId) {
 
 function paperState(paperId, item) {
   if (!state.paperStates[paperId]) {
-    const firstFocus = item.evidence_pages.find((page) => page.role === "focus")?.page_ref || 1;
+    // Every paper opens at page 1 (DK ruling 2026-09-14); the machine's
+    // suggested evidence pages remain available as chips, never as the start.
     state.paperStates[paperId] = {
-      active_page_ref: firstFocus,
+      active_page_ref: 1,
       active_mode: "image",
       viewed_page_refs: [],
       dwell_ms_by_page: {},
@@ -304,6 +308,22 @@ function renderProgress() {
   byId("progressBar").max = Math.max(1, state.queue.length);
   byId("progressBar").value = answered;
   renderStrataStatus();
+  renderStartProgress();
+}
+
+function renderStartProgress() {
+  const host = byId("startProgress");
+  if (!host) return;
+  const answered = state.queue.filter((id) => state.responses[id]).length;
+  host.textContent = answered
+    ? `${answered} of ${state.queue.length} questions answered so far. Entering the review returns you to your next unanswered question, on the page where you left off.`
+    : `0 of ${state.queue.length} questions answered so far. Entering the review begins at the first question.`;
+  host.classList.remove("hidden");
+}
+
+function syncSettingsButton() {
+  const button = byId("reviewerSettingsButton");
+  if (button) button.disabled = !byId("startScreen").classList.contains("hidden");
 }
 
 function renderStrataStatus() {
@@ -881,15 +901,15 @@ async function init() {
     const savedTime = state.lastSavedAt
       ? new Date(state.lastSavedAt).toLocaleString()
       : "an earlier session";
-    byId("resumeNotice").textContent = `${answerCount} saved answers found for ${state.reviewer.reviewer_id} from ${savedTime}. Begin to resume, or start a new review.`;
-    byId("resumeNotice").classList.remove("hidden");
+    if (answerCount) {
+      byId("resumeNotice").textContent = `Welcome back, ${state.reviewer.reviewer_id}: your answers were last saved ${savedTime}.`;
+      byId("resumeNotice").classList.remove("hidden");
+    }
     byId("resetSavedButton").classList.remove("hidden");
   }
-  if (gateOpen()) {
-    byId("startScreen").classList.add("hidden");
-    byId("reviewScreen").classList.remove("hidden");
-    renderItem();
-  }
+  // The review always opens on this page (DK ruling 2026-09-14): a returning
+  // reviewer sees their progress here first, then re-enters at their place.
+  syncSettingsButton();
 }
 
 byId("reviewerForm").addEventListener("submit", (event) => {
@@ -918,6 +938,7 @@ byId("reviewerForm").addEventListener("submit", (event) => {
   saveLocal();
   byId("startScreen").classList.add("hidden");
   byId("reviewScreen").classList.remove("hidden");
+  syncSettingsButton();
   renderItem();
 });
 

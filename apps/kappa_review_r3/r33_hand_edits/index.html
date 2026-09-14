@@ -36,7 +36,7 @@
       <label for="reviewerSwitch">Reviewer</label>
       <select id="reviewerSwitch"><option value="David">David</option><option value="Stephan">Stephan</option></select>
       <span id="reviewerStatus" role="status"></span>
-      <button id="reviewerSettingsButton" type="button">Review settings</button>
+      <button id="reviewerSettingsButton" type="button" title="Return to the instructions and reviewer settings page">Instructions and settings</button>
     </div>
   </nav>
   <main>
@@ -50,7 +50,7 @@
         <ol>
           <li>Read the exact question and the candidate value.</li>
           <li>Read as much of the complete paper as your judgment requires.</li>
-          <li>Mark the text passages that were important to your answer; these teach us where field evidence occurs.</li>
+          <li><strong>Mark the text passages that were important to your answer; these teach us where field evidence occurs.</strong> This is the most important step in the whole process: your marked passages verify what the strongest evidence in the article is, and in problematic cases they are what the system learns from.</li>
           <li>Correct the value in your own words when it is wrong or imprecise.</li>
         </ol>
         <p class="boundary">This pilot builds a repair-learning set. It does not certify corpus accuracy.</p>
@@ -58,6 +58,7 @@
         <p id="resumeNotice" class="resume-notice hidden"></p>
       </div>
       <form id="reviewerForm" class="reviewer-form">
+        <p id="startProgress" class="start-progress hidden"></p>
         <label for="reviewerId">Reviewer name or stable ID</label>
         <input id="reviewerId" autocomplete="name" required placeholder="Stephan">
         <label for="expertise">Relevant expertise</label>
@@ -87,32 +88,6 @@
           <p class="block-label">Our proposed answer</p>
           <div id="candidateValue" class="candidate-values"></div>
         </div>
-
-        <section class="missed-finding-card" aria-labelledby="missedFindingHeading">
-          <div class="missed-finding-heading">
-            <div>
-              <p class="block-label">Recall check</p>
-              <h3 id="missedFindingHeading">Findings absent from the extraction</h3>
-            </div>
-            <button id="addMissedFindingButton" type="button">Add missed finding</button>
-          </div>
-          <form id="missedFindingForm" class="hidden">
-            <label for="missedFieldName">Field or finding type</label>
-            <input id="missedFieldName" required placeholder="Outcome, measure, limitation...">
-            <label for="missedValue">Scientifically accurate finding</label>
-            <textarea id="missedValue" required placeholder="State the omitted finding and its proper scope."></textarea>
-            <label for="missedPageRefs">Supporting page numbers</label>
-            <input id="missedPageRefs" required inputmode="numeric" placeholder="3, 5">
-            <label for="missedFindingNote">Optional note</label>
-            <textarea id="missedFindingNote" placeholder="Explain only what is not clear from the finding itself."></textarea>
-            <div class="actions">
-              <button id="cancelMissedFindingButton" type="button">Cancel</button>
-              <button class="primary" type="submit">Record missed finding</button>
-            </div>
-            <p id="missedFindingError" class="form-error" role="alert"></p>
-          </form>
-          <div id="missedFindingList" class="missed-finding-list"></div>
-        </section>
 
         <div class="evidence-mark-card">
           <div>
@@ -181,6 +156,32 @@
           </div>
           <p id="formError" class="form-error" role="alert"></p>
         </form>
+
+        <section class="missed-finding-card" aria-labelledby="missedFindingHeading">
+          <div class="missed-finding-heading">
+            <div>
+              <p class="block-label">Recall check</p>
+              <h3 id="missedFindingHeading">Findings absent from the extraction</h3>
+            </div>
+            <button id="addMissedFindingButton" type="button">Add missed finding</button>
+          </div>
+          <form id="missedFindingForm" class="hidden">
+            <label for="missedFieldName">Field or finding type</label>
+            <input id="missedFieldName" required placeholder="Outcome, measure, limitation...">
+            <label for="missedValue">Scientifically accurate finding</label>
+            <textarea id="missedValue" required placeholder="State the omitted finding and its proper scope."></textarea>
+            <label for="missedPageRefs">Supporting page numbers</label>
+            <input id="missedPageRefs" required inputmode="numeric" placeholder="3, 5">
+            <label for="missedFindingNote">Optional note</label>
+            <textarea id="missedFindingNote" placeholder="Explain only what is not clear from the finding itself."></textarea>
+            <div class="actions">
+              <button id="cancelMissedFindingButton" type="button">Cancel</button>
+              <button class="primary" type="submit">Record missed finding</button>
+            </div>
+            <p id="missedFindingError" class="form-error" role="alert"></p>
+          </form>
+          <div id="missedFindingList" class="missed-finding-list"></div>
+        </section>
       </aside>
 
       <section class="evidence-panel">

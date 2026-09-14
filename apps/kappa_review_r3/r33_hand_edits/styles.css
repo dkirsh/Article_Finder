@@ -331,6 +331,19 @@ main { min-height: 0; overflow: hidden; }
   .reviewer-controls { gap: 6px; }
   #reviewerStatus { max-width: 190px; }
 }
+/* Walkthrough fixes (DK 2026-09-14): a compact reviewer-name field; the
+   progress line inside the settings box. (The guaranteed start-screen side
+   margin lives at the END of this sheet so no media block can shrink it.) */
+.reviewer-form #reviewerId { display: block; max-width: 260px; }
+.start-progress {
+  border-left: 3px solid var(--accent);
+  background: var(--soft);
+  padding: 8px 11px;
+  margin: 0 0 18px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 @media (max-width: 699px) {
   body { height: auto; min-height: 100dvh; display: block; overflow: auto; }
   .viewport-warning { display: block; padding: 8px 14px; font-size: 12px; line-height: 1.4; background: #fff6ed; border-bottom: 1px solid var(--line); }
@@ -355,3 +368,7 @@ main { min-height: 0; overflow: hidden; }
   .intro h2 { font-size: 24px; max-width: none; }
   .intro { font-size: 15px; }
 }
+
+/* Last rule on purpose: the start screen keeps a real side margin at every
+   width (DK 2026-09-14: "need at least 5 pixels"). */
+.start-screen { padding-left: max(20px, 2vw); padding-right: max(20px, 2vw); }

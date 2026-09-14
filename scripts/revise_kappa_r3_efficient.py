@@ -94,6 +94,22 @@ APP_PATCHES = [
     hint.textContent = d ? `${cand}: ${d}` : "";
     hint.classList.toggle("hidden", !d);
   }
+  // The classification space is ALWAYS visible (DK walkthrough 2026-09-14:
+  // "where are the choices for each field"); the i button opens definitions.
+  const chips = byId("valueChips");
+  if (chips) {
+    chips.replaceChildren();
+    const names = Object.keys(values);
+    if (names.length) {
+      const label = document.createElement("span");
+      label.className = "chips-label";
+      label.textContent = "The defined values for this field (press i for what each means):";
+      chips.append(label, ...names.map((v) => {
+        const c = document.createElement("code"); c.textContent = v; return c;
+      }));
+    }
+    chips.classList.toggle("hidden", !names.length);
+  }
   // Corrections are a CHOICE among the field's defined values, never a guess
   // into thin air (David's ruling 2026-09-14). Fields without a closed
   // vocabulary keep the free-text box.
@@ -135,6 +151,15 @@ function setRadio(name, value) {"""),
     ("alsoAppliesCollect",
      """    corrected_value: byId("correctedValue").value.trim(),""",
      """    corrected_value: collectCorrectedValue(),
+    also_applies: byId("alsoApplies").value.trim(),"""),
+    # Round-7 BLOCKER fix: captureDraft must read the SAME controls collectResponse
+    # reads, or a revisit-then-keystroke silently blanks a stored choice/second
+    # label and the blank rides into the export.
+    ("draftCollect",
+     """    verdict: document.querySelector('input[name="verdict"]:checked')?.value || "",
+    corrected_value: byId("correctedValue").value,""",
+     """    verdict: document.querySelector('input[name="verdict"]:checked')?.value || "",
+    corrected_value: collectCorrectedValue(),
     also_applies: byId("alsoApplies").value.trim(),"""),
     ("alsoAppliesRestore",
      """    byId("correctedValue").value = response.corrected_value || "";""",
@@ -244,6 +269,7 @@ def main():
     html = patch(html, '<div id="candidateValue" class="candidate-values"></div>',
                  '<div id="candidateValue" class="candidate-values"></div>'
                  '<div id="candidateValueHint" class="cand-hint hidden"></div>'
+                 '<div id="valueChips" class="value-chips hidden"></div>'
                  '<div id="fieldGuide" class="field-guide hidden"></div>',
                  "fieldGuidePanelDiv")
     html = patch(html, '<textarea id="correctedValue"',
@@ -261,10 +287,9 @@ def main():
                  "alsoAppliesRow")
     (OUT / "index.html").write_text(html)
     css = (OUT / "styles.css").read_text()
-    css += ("\n.strata-status{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;}\n"
-            ".stratum-chip{font-size:11px;padding:2px 8px;border-radius:10px;"
-            "background:#eee7d9;color:#4a4234;}\n"
-            ".info-btn{display:inline-flex;align-items:center;justify-content:center;"
+    # (No .strata-status/.stratum-chip append: R33 styles its own navigator;
+    # the pre-R33 rules squashed it — round-7 cosmetic finding.)
+    css += ("\n.info-btn{display:inline-flex;align-items:center;justify-content:center;"
             "width:18px;height:18px;border-radius:50%;border:1px solid #7a5c2e;"
             "background:#fff;color:#7a5c2e;font:600 12px/1 Georgia,serif;cursor:pointer;"
             "vertical-align:middle;}\n"
@@ -273,7 +298,12 @@ def main():
             ".field-guide code{background:#eee7d9;padding:0 4px;border-radius:4px;}\n"
             ".field-guide ul{margin:4px 0 4px 18px;padding:0;}\n"
             ".cand-hint{font-size:12px;color:#555;background:#f7f4ec;border-left:3px solid #7a5c2e;"
-            "padding:4px 10px;margin:4px 0;}\n")
+            "padding:4px 10px;margin:4px 0;}\n"
+            ".value-chips{display:flex;flex-wrap:wrap;align-items:center;gap:4px;"
+            "margin:8px 0 2px;font-size:12px;}\n"
+            ".value-chips .chips-label{color:#5d6861;font-weight:600;margin-right:2px;}\n"
+            ".value-chips code{background:#eee7d9;color:#4a4234;padding:2px 7px;"
+            "border-radius:9px;font-size:11px;}\n")
     (OUT / "styles.css").write_text(css)
     (OUT / "START_REVIEW.command").chmod(0o755)
 
@@ -359,9 +389,9 @@ def main():
         "a portable backup whenever you stop.")
     descoped = sorted(efficient_queue.get("machine_resolved_items", []))
     revision = {
-        "revision_id": ("kappa-20-hitl-operational-r3.5-merged-ui-2026-09-14"
+        "revision_id": ("kappa-20-hitl-operational-r3.6-walkthrough-fixes-2026-09-14"
                         if descoped else "kappa-20-hitl-operational-r3.1-amended-2026-09-13"),
-        "amends": ("kappa-20-hitl-operational-r3.2-apa-descope-2026-09-13"
+        "amends": ("kappa-20-hitl-operational-r3.5-merged-ui-2026-09-14"
                    if descoped else "kappa-20-hitl-operational-r3-efficient-2026-09-11"),
         "ui_base": ("R33 hand-edited interface (per-reviewer storage, draft "
                     "autosave, gate control, field navigator, responsive), "
@@ -389,7 +419,22 @@ def main():
             "values), neutral reviewer brief",
         ] + ([f"apa_citation descoped: {len(descoped)} items machine-adjudicated "
               "against DOI-anchored pipeline APAs (ids only in pack; verdicts in "
-              "AF receipts/apa_machine_adjudication.json)"] if descoped else []),
+              "AF receipts/apa_machine_adjudication.json)",
+              "r3.5 merge: R33 hand-edited UI is the build base; field guide "
+              "(i button + definitions), candidate-value hint, always-visible "
+              "value chips, choose-from-alternatives correction select for "
+              "closed-vocabulary fields, Also-applies input, human-first "
+              "title/purpose (round-7 finding: changed_surface must record these)",
+              "r3.6 walkthrough fixes (DK 2026-09-14): every paper opens at "
+              "page 1 (suggested pages stay chips); the app always lands on the "
+              "start screen, which shows progress; missed-finding card moved "
+              "below the decision form so the agree/disagree choices are near "
+              "the top; instruction 3 (mark passages) bolded; compact reviewer "
+              "name field + guaranteed start-screen margins; settings button "
+              "renamed and disabled while settings are open; captureDraft "
+              "extended to the choice select and also_applies (round-7 BLOCKER); "
+              "stale pre-R33 strata-chip CSS dropped (round-7 cosmetic)"]
+             if descoped else []),
     }
     review["operational_revision"] = revision
     review["app_assets"] = {a: sha256(OUT / a) for a in
