@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scientific extraction review</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="viewport-warning" role="alert">
+    For recorded judgments, use a window at least 700 pixels wide. You can browse the questions and paper below.
+  </div>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Article Eater / Human adjudication</p>
+      <h1 id="studyTitle">Scientific extraction review</h1>
+    </div>
+    <div class="review-status">
+      <div class="progress-block" aria-live="polite">
+        <span id="progressLabel">Preparing review</span>
+        <progress id="progressBar" value="0" max="1"></progress>
+      </div>
+      <div class="save-block" aria-live="polite">
+        <span id="saveStatus">Autosave starts when the review begins</span>
+        <button id="backupButton" type="button" disabled>Download backup</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="workspace-toolbar" aria-label="Review navigation">
+    <details id="fieldNavigator" class="field-navigator">
+      <summary><span id="fieldNavigationLabel">Browse fields</span></summary>
+      <div id="strataStatus" class="strata-status" aria-label="Fields in the review queue"></div>
+    </details>
+    <div class="reviewer-controls">
+      <label for="reviewerSwitch">Reviewer</label>
+      <select id="reviewerSwitch"><option value="David">David</option><option value="Stephan">Stephan</option></select>
+      <span id="reviewerStatus" role="status"></span>
+      <button id="reviewerSettingsButton" type="button">Review settings</button>
+    </div>
+  </nav>
+  <main>
+    <section id="startScreen" class="start-screen">
+      <div class="intro">
+        <p class="kicker">One precise question at a time</p>
+        <h2>Judge the extraction against the article, not against plausibility.</h2>
+        <p id="purpose"></p>
+        <p id="reviewerBrief" class="reviewer-brief"></p>
+        <p id="gateStatus" class="gate-status hidden" role="status"></p>
+        <ol>
+          <li>Read the exact question and the candidate value.</li>
+          <li>Read as much of the complete paper as your judgment requires.</li>
+          <li>Mark the text passages that were important to your answer; these teach us where field evidence occurs.</li>
+          <li>Correct the value in your own words when it is wrong or imprecise.</li>
+        </ol>
+        <p class="boundary">This pilot builds a repair-learning set. It does not certify corpus accuracy.</p>
+        <p class="backup-boundary">Your browser saves progress locally. Download a backup whenever you stop; the downloaded JSON is the portable scientific record.</p>
+        <p id="resumeNotice" class="resume-notice hidden"></p>
+      </div>
+      <form id="reviewerForm" class="reviewer-form">
+        <label for="reviewerId">Reviewer name or stable ID</label>
+        <input id="reviewerId" autocomplete="name" required placeholder="Stephan">
+        <label for="expertise">Relevant expertise</label>
+        <input id="expertise" placeholder="Architecture, methods, statistics...">
+        <label class="check-row">
+          <input id="independence" type="checkbox" required>
+          <span>I did not author the candidate extractions.</span>
+        </label>
+        <button class="primary" type="submit">Save settings and review</button>
+        <button id="returnToPaperButton" class="secondary" type="button">Return to paper without saving settings</button>
+        <button id="resetSavedButton" class="secondary hidden" type="button">Start a new review</button>
+      </form>
+    </section>
+
+    <section id="reviewScreen" class="review-screen hidden">
+      <aside class="question-panel">
+        <div class="question-meta">
+          <span id="paperId"></span>
+          <span id="stratum"></span>
+          <span id="queueReason"></span>
+        </div>
+        <p class="kicker">Our conjecture for you to check</p>
+        <h2 id="question" tabindex="-1"></h2>
+        <p id="answerGuidance" class="guidance"></p>
+
+        <div class="candidate-block">
+          <p class="block-label">Our proposed answer</p>
+          <div id="candidateValue" class="candidate-values"></div>
+        </div>
+
+        <section class="missed-finding-card" aria-labelledby="missedFindingHeading">
+          <div class="missed-finding-heading">
+            <div>
+              <p class="block-label">Recall check</p>
+              <h3 id="missedFindingHeading">Findings absent from the extraction</h3>
+            </div>
+            <button id="addMissedFindingButton" type="button">Add missed finding</button>
+          </div>
+          <form id="missedFindingForm" class="hidden">
+            <label for="missedFieldName">Field or finding type</label>
+            <input id="missedFieldName" required placeholder="Outcome, measure, limitation...">
+            <label for="missedValue">Scientifically accurate finding</label>
+            <textarea id="missedValue" required placeholder="State the omitted finding and its proper scope."></textarea>
+            <label for="missedPageRefs">Supporting page numbers</label>
+            <input id="missedPageRefs" required inputmode="numeric" placeholder="3, 5">
+            <label for="missedFindingNote">Optional note</label>
+            <textarea id="missedFindingNote" placeholder="Explain only what is not clear from the finding itself."></textarea>
+            <div class="actions">
+              <button id="cancelMissedFindingButton" type="button">Cancel</button>
+              <button class="primary" type="submit">Record missed finding</button>
+            </div>
+            <p id="missedFindingError" class="form-error" role="alert"></p>
+          </form>
+          <div id="missedFindingList" class="missed-finding-list"></div>
+        </section>
+
+        <div class="evidence-mark-card">
+          <div>
+            <strong>Show us the passages you used</strong>
+            <p>Open the paper text, then click each sentence that mattered. Your marked evidence is part of the learning record.</p>
+          </div>
+          <button id="openMarkingButton" type="button">Open text and mark evidence</button>
+          <span id="markedCount" aria-live="polite">No passages marked yet</span>
+        </div>
+
+        <form id="decisionForm">
+          <fieldset>
+            <legend>Do you agree with our proposed answer?</legend>
+            <label class="choice"><input type="radio" name="verdict" value="exactly_correct" required><span><strong>Agree: exactly right</strong><small>The value and its scope match the source.</small></span></label>
+            <label class="choice"><input type="radio" name="verdict" value="substantively_correct_needs_wording"><span><strong>Mostly agree: revise the wording</strong><small>The science is right but the expression is misleading or imprecise.</small></span></label>
+            <label class="choice"><input type="radio" name="verdict" value="incorrect"><span><strong>Disagree: replace it</strong><small>The value, direction, scope, or role conflicts with the source.</small></span></label>
+            <label class="choice"><input type="radio" name="verdict" value="source_does_not_answer"><span><strong>Not established in the paper</strong><small>Use this only after checking enough of the full paper to support an absence judgment.</small></span></label>
+            <label class="choice"><input type="radio" name="verdict" value="cannot_decide"><span><strong>Cannot decide yet</strong><small>The evidence is ambiguous or insufficient.</small></span></label>
+          </fieldset>
+
+          <div id="correctionWrap" class="form-row hidden">
+            <label for="correctedValue">Corrected value</label>
+            <textarea id="correctedValue" placeholder="State the smallest scientifically accurate replacement."></textarea>
+          </div>
+          <div id="rationaleWrap" class="form-row hidden">
+            <label for="errorClass">Optional repair label</label>
+            <select id="errorClass">
+              <option value="">Leave for the repair team</option>
+              <option value="wrong_value">Wrong value or statistic</option>
+              <option value="omission">Important information omitted</option>
+              <option value="scope">Scope, population, or condition is wrong</option>
+              <option value="evidence_role">Direct and cited findings confused</option>
+              <option value="visual_transcription">Figure or table read incorrectly</option>
+              <option value="unsupported_inference">Inference exceeds the source</option>
+              <option value="provenance_locator">Evidence or page locator is wrong</option>
+              <option value="wording_precision">Wording is scientifically imprecise</option>
+              <option value="other">Other</option>
+            </select>
+            <label for="rationale">Optional note</label>
+            <textarea id="rationale" placeholder="Add a brief note only if the corrected answer does not speak for itself."></textarea>
+          </div>
+
+          <div class="form-row">
+            <label for="confidence">Confidence</label>
+            <select id="confidence" required>
+              <option value="">Choose</option>
+              <option value="4">Certain</option>
+              <option value="3">Probable</option>
+              <option value="2">Tentative</option>
+              <option value="1">Guessing</option>
+            </select>
+          </div>
+
+          <label class="check-row context-check">
+            <input id="needsMoreContext" type="checkbox">
+            <span>I need source material beyond this complete paper to decide.</span>
+          </label>
+          <div id="contextRequestWrap" class="form-row hidden">
+            <label for="contextRequest">What additional context do you need?</label>
+            <textarea id="contextRequest" placeholder="For example: a supplement, preregistration, or cited dataset."></textarea>
+          </div>
+
+          <div class="actions">
+            <button id="previousButton" type="button">Previous</button>
+            <button class="primary" type="submit">Save and continue</button>
+          </div>
+          <p id="formError" class="form-error" role="alert"></p>
+        </form>
+      </aside>
+
+      <section class="evidence-panel">
+        <div class="evidence-header">
+          <div>
+            <p class="kicker">Complete paper</p>
+            <h2 id="evidenceTitle"></h2>
+          </div>
+          <div class="view-tabs" role="tablist">
+            <button id="imageTab" class="active" type="button" role="tab">Page image</button>
+            <button id="textTab" type="button" role="tab">Text + mark evidence</button>
+          </div>
+        </div>
+        <p id="evidenceHint" class="evidence-hint"></p>
+        <div class="document-nav">
+          <button id="pagePrevious" type="button" aria-label="Previous paper page">Previous page</button>
+          <label for="pageSelect">Page</label>
+          <select id="pageSelect"></select>
+          <button id="pageNext" type="button" aria-label="Next paper page">Next page</button>
+          <span id="visitedPages" class="visited-pages"></span>
+        </div>
+        <div id="focusNav" class="page-nav" aria-label="Suggested evidence pages"></div>
+        <div id="macrostructureGallery" class="macrostructure-gallery" aria-label="Extracted figure and table regions on this page"></div>
+        <div id="imageView" class="image-view">
+          <div class="zoom-controls" aria-label="Page magnification">
+          <button id="zoomOut" class="icon-button" type="button" title="Zoom out" aria-label="Zoom out">-</button>
+          <button id="zoomReset" type="button" title="Fit page width" aria-label="Fit page width">Fit width</button>
+          <button id="zoomIn" class="icon-button" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+          </div>
+          <div id="imageCanvas" class="image-canvas"><img id="pageImage" alt="Article page"></div>
+        </div>
+        <div id="textView" class="text-view hidden">
+          <p class="mark-instruction"><strong>Mark what informed your judgment.</strong> Click a decisive passage to mark or unmark it. For a shorter phrase, select it and use the button below.</p>
+          <button id="markTextButton" type="button">Mark selected text</button>
+          <p id="markError" class="form-error" role="alert"></p>
+          <div id="pageText" class="paper-text"></div>
+          <div id="markedTextList" class="marked-text-list"></div>
+        </div>
+      </section>
+    </section>
+
+    <section id="completeScreen" class="complete-screen hidden">
+      <p class="kicker">Review checkpoint</p>
+      <h2 id="completeTitle"></h2>
+      <p id="completeMessage"></p>
+      <div id="completionStats" class="completion-stats"></div>
+      <div class="actions">
+        <button id="returnButton" type="button">Review answers</button>
+        <button id="exportButton" class="primary" type="button">Download final export</button>
+      </div>
+      <p class="boundary">Send the exported JSON file back with the review pack. Browser autosave is not the scientific record.</p>
+    </section>
+  </main>
+
+  <script src="queue_logic.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
