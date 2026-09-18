@@ -1,0 +1,147 @@
+{
+ "schema": "kappa_r3_apa_machine_adjudication.v1",
+ "generated_at": "2026-09-13T12:54:45+00:00",
+ "principle": "APA correctness is a lookup problem; human judgment is reserved for papers the pipeline cannot anchor to a DOI.",
+ "items": [
+  {
+   "item_id": "PDF-0187-apa_citation",
+   "paper_id": "PDF-0187",
+   "disposition": "human_review",
+   "reason": "pipeline APA lineage untrusted (source: QUARANTINED_bad_bib_join_2026-09-10+printed_doi+oa_title_mat)"
+  },
+  {
+   "item_id": "PDF-0217-apa_citation",
+   "paper_id": "PDF-0217",
+   "disposition": "human_review",
+   "reason": "no clean pipeline APA on record"
+  },
+  {
+   "item_id": "PDF-0390-apa_citation",
+   "paper_id": "PDF-0390",
+   "disposition": "human_review",
+   "reason": "pipeline APA lineage untrusted (source: zotero_bib_export_validated+oa_title_match)"
+  },
+  {
+   "item_id": "PDF-0469-apa_citation",
+   "paper_id": "PDF-0469",
+   "disposition": "machine_adjudicated",
+   "machine_verdict": "incorrect",
+   "corrected_value": "Renz, T., Leistner, P., & Liebl, A. (2018). Effects of the location of sound masking loudspeakers on cognitive performance in open-plan offices: Local sound masking is as efficient as conventional sound masking. Applied Acoustics, 139, 24\u201333. https://doi.org/10.1016/j.apacoust.2018.04.003",
+   "reason": "candidate claimed no citation; DOI-anchored pipeline APA exists",
+   "adjudicator": "AF metadata pipeline (doi.org content negotiation / document front matter)",
+   "authority": "David Kirsh descope ruling, chat 2026-09-13"
+  },
+  {
+   "item_id": "PDF-0485-apa_citation",
+   "paper_id": "PDF-0485",
+   "disposition": "human_review",
+   "reason": "no clean pipeline APA on record"
+  },
+  {
+   "item_id": "PDF-0488-apa_citation",
+   "paper_id": "PDF-0488",
+   "disposition": "human_review",
+   "reason": "no clean pipeline APA on record"
+  },
+  {
+   "item_id": "PDF-0518-apa_citation",
+   "paper_id": "PDF-0518",
+   "disposition": "machine_adjudicated",
+   "machine_verdict": "incorrect",
+   "corrected_value": "Axelsson, \u00d6., Nilsson, M. E., & Berglund, B. (2010). A principal components model of soundscape perception. The Journal of the Acoustical Society of America, 128(5), 2836\u20132846. https://doi.org/10.1121/1.3493436",
+   "reason": "candidate claimed no citation; DOI-anchored pipeline APA exists",
+   "adjudicator": "AF metadata pipeline (doi.org content negotiation / document front matter)",
+   "authority": "David Kirsh descope ruling, chat 2026-09-13"
+  },
+  {
+   "item_id": "PDF-0676-apa_citation",
+   "paper_id": "PDF-0676",
+   "disposition": "machine_adjudicated",
+   "machine_verdict": "incorrect",
+   "corrected_value": "Thampanichwat, C., Wongvorachan, T., Bunyarittikit, S., Chunhajinda, P., Phaibulputhipong, P., & Wongmahasiri, R. (2024). The Architectural Design Strategies That Promote Attention to Foster Mindfulness: A Systematic Review, Content Analysis and Meta-Analysis. Buildings, 14(8), 2508. https://doi.org/10.3390/buildings14082508",
+   "reason": "candidate is an incomplete citation (no year/authors \u2014 bare title); pipeline APA supplies the full record",
+   "adjudicator": "AF metadata pipeline (doi.org content negotiation / document front matter)",
+   "authority": "David Kirsh descope ruling, chat 2026-09-13"
+  },
+  {
+   "item_id": "PDF-0689-apa_citation",
+   "paper_id": "PDF-0689",
+   "disposition": "machine_adjudicated",
+   "machine_verdict": "exactly_correct",
+   "corrected_value": null,
+   "reason": "candidate agrees with pipeline APA (jaccard 0.97, year 2020)",
+   "adjudicator": "AF metadata pipeline (doi.org content negotiation / document front matter)",
+   "authority": "David Kirsh descope ruling, chat 2026-09-13"
+  },
+  {
+   "item_id": "PDF-0708-apa_citation",
+   "paper_id": "PDF-0708",
+   "disposition": "machine_adjudicated",
+   "machine_verdict": "incorrect",
+   "corrected_value": "KITCHIN, R. M. (1996). METHODOLOGICAL CONVERGENCE IN COGNITIVE MAPPING RESEARCH: INVESTIGATING CONFIGURATIONAL KNOWLEDGE. Journal of Environmental Psychology, 16(3), 163\u2013185. https://doi.org/10.1006/jevp.1996.0015",
+   "reason": "candidate claimed no citation; DOI-anchored pipeline APA exists",
+   "adjudicator": "AF metadata pipeline (doi.org content negotiation / document front matter)",
+   "authority": "David Kirsh descope ruling, chat 2026-09-13"
+  },
+  {
+   "item_id": "PDF-0719-apa_citation",
+   "paper_id": "PDF-0719",
+   "disposition": "machine_adjudicated",
+   "machine_verdict": "incorrect",
+   "corrected_value": "Gr\u00eat-Regamey, A., & Galleguillos-Torres, M. (2022). Global urban homogenization and the loss of emotions. Scientific Reports, 12(1). https://doi.org/10.1038/s41598-022-27141-7",
+   "reason": "candidate claimed no citation; DOI-anchored pipeline APA exists",
+   "adjudicator": "AF metadata pipeline (doi.org content negotiation / document front matter)",
+   "authority": "David Kirsh descope ruling, chat 2026-09-13"
+  },
+  {
+   "item_id": "PDF-0773-apa_citation",
+   "paper_id": "PDF-0773",
+   "disposition": "human_review",
+   "reason": "no clean pipeline APA on record"
+  },
+  {
+   "item_id": "PDF-0840-apa_citation",
+   "paper_id": "PDF-0840",
+   "disposition": "machine_adjudicated",
+   "machine_verdict": "incorrect",
+   "corrected_value": "Kurukose Cal, H. K., Kang, J., & Aletta, F. (2023). Methodological approaches and main factors considered in school soundscape studies: A scoping review. Building Acoustics, 31(1), 75\u201390. https://doi.org/10.1177/1351010x231216016",
+   "reason": "candidate claimed no citation; DOI-anchored pipeline APA exists",
+   "adjudicator": "AF metadata pipeline (doi.org content negotiation / document front matter)",
+   "authority": "David Kirsh descope ruling, chat 2026-09-13"
+  },
+  {
+   "item_id": "PDF-0851-apa_citation",
+   "paper_id": "PDF-0851",
+   "disposition": "machine_adjudicated",
+   "machine_verdict": "incorrect",
+   "corrected_value": "Scheer, F. A. J. L., van Doornen, L. J. P., & Buijs, R. M. (1999). Light and Diurnal Cycle Affect Human Heart Rate: Possible Role for the Circadian Pacemaker. Journal of Biological Rhythms, 14(3), 202\u2013212. https://doi.org/10.1177/074873099129000614",
+   "reason": "candidate claimed no citation; DOI-anchored pipeline APA exists",
+   "adjudicator": "AF metadata pipeline (doi.org content negotiation / document front matter)",
+   "authority": "David Kirsh descope ruling, chat 2026-09-13"
+  },
+  {
+   "item_id": "PDF-0885-apa_citation",
+   "paper_id": "PDF-0885",
+   "disposition": "machine_adjudicated",
+   "machine_verdict": "incorrect",
+   "corrected_value": "Zhong, W., Schr\u00f6der, T., & Bekkering, J. (2022). Biophilic design in architecture and its contributions to health, well-being, and sustainability: A critical review. Frontiers of Architectural Research, 11(1), 114\u2013141. https://doi.org/10.1016/j.foar.2021.07.006",
+   "reason": "candidate claimed no citation; DOI-anchored pipeline APA exists",
+   "adjudicator": "AF metadata pipeline (doi.org content negotiation / document front matter)",
+   "authority": "David Kirsh descope ruling, chat 2026-09-13"
+  },
+  {
+   "item_id": "PDF-1306-apa_citation",
+   "paper_id": "PDF-1306",
+   "disposition": "machine_adjudicated",
+   "machine_verdict": "incorrect",
+   "corrected_value": "Stamps, A. E. (2004). Mystery, complexity, legibility and coherence: A meta-analysis. Journal of Environmental Psychology, 24(1), 1\u201316. https://doi.org/10.1016/s0272-4944(03)00023-9",
+   "reason": "candidate claimed no citation; DOI-anchored pipeline APA exists",
+   "adjudicator": "AF metadata pipeline (doi.org content negotiation / document front matter)",
+   "authority": "David Kirsh descope ruling, chat 2026-09-13"
+  }
+ ],
+ "summary": {
+  "machine_adjudicated": 10,
+  "human_review": 6
+ }
+}

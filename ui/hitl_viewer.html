@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HITL Paper Judgment</title>
+<link rel="stylesheet" href="vendor/katex.min.css">
+<script src="vendor/marked.min.js"></script>
+<script src="vendor/katex.min.js"></script>
+<script src="vendor/auto-render.min.js"></script>
+<style>
+  :root { --ink:#1a1a1a; --ground:#fbfaf8; --panel:#ffffff; --line:#d8d4cc;
+          --accent:#7a5c2e; --mark:#fff3cd; --human-mark:#d4edda; --danger:#8a2b2b; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.55 -apple-system, "Segoe UI", sans-serif;
+         color:var(--ink); background:var(--ground); height:100vh; display:flex; }
+  #tasks { width:230px; min-width:230px; border-right:1px solid var(--line);
+           overflow-y:auto; background:var(--panel); padding:10px; }
+  #tasks h2 { font-size:14px; margin:4px 0 10px; }
+  .task { padding:6px 8px; border-radius:6px; cursor:pointer; font-size:13px; margin-bottom:2px; }
+  .task:hover { background:#f0ede7; }
+  .task.active { background:#ece5d8; font-weight:600; }
+  .task .st { float:right; font-size:11px; }
+  .done .st::after { content:"✓"; color:#2f6b3a; }
+  .escalated .st::after { content:"⚑"; color:var(--danger); }
+  #doc { flex:1; overflow-y:auto; padding:26px 34px; background:var(--ground); }
+  #doc h1 { font-size:18px; margin-top:0; }
+  #doctext { word-wrap:break-word; max-width:78ch; line-height:1.6; }
+  #doctext.plain { white-space:pre-wrap; }
+  #doctext p { margin:0 0 0.9em; }
+  #doctext h1, #doctext h2, #doctext h3 { font-size:1.05em; margin:1.2em 0 0.5em; }
+  #doctext table { border-collapse:collapse; margin:0.8em 0; font-size:0.92em; }
+  #doctext th, #doctext td { border:1px solid var(--line); padding:3px 8px; }
+  #doctext img { display:none; }
+  #doctext .katex-display { overflow-x:auto; }
+  mark.machine { background:var(--mark); }
+  mark.human { background:var(--human-mark); }
+  #form { width:320px; min-width:320px; border-left:1px solid var(--line);
+          background:var(--panel); overflow-y:auto; padding:14px; }
+  #form h2 { font-size:14px; margin:2px 0 8px; }
+  fieldset { border:1px solid var(--line); border-radius:8px; margin:0 0 10px; padding:8px 10px; }
+  legend { font-size:12px; font-weight:600; letter-spacing:.03em; }
+  label { display:block; font-size:13px; margin:2px 0; cursor:pointer; }
+  textarea { width:100%; min-height:60px; font:13px/1.4 inherit; border:1px solid var(--line);
+             border-radius:6px; padding:6px; }
+  button { font:13px inherit; padding:7px 12px; border:1px solid var(--line); border-radius:7px;
+           background:#f4f1ea; cursor:pointer; margin:3px 3px 3px 0; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  #passages { font-size:12px; }
+  #passages li { margin-bottom:5px; }
+  #passages button { padding:1px 6px; font-size:11px; }
+  .esc { color:var(--danger); font-weight:600; }
+  #saveinfo { font-size:11px; color:#666; margin-top:6px; }
+  #articlecard { max-width:78ch; margin:0 0 10px; }
+  .card-apa { background:#f4f1ea; border:1px solid var(--line); border-radius:8px;
+              padding:8px 12px; font-size:13.5px; }
+  .card-apa.card-missing { background:#fff3cd; }
+  .card-flag { background:#8a2b2b; color:#fff; font-size:10px; padding:1px 6px;
+               border-radius:8px; vertical-align:middle; }
+  .card-venue, .card-meta { font-size:12px; color:#555; margin-top:5px; padding:0 2px; }
+  #doctabs { margin:0 0 10px; }
+  #doctabs button { font:13px inherit; padding:5px 14px; border:1px solid var(--line);
+                    background:#f4f1ea; cursor:pointer; border-radius:7px 7px 0 0; }
+  #doctabs button.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  #pdfframe { width:100%; height:86vh; border:1px solid var(--line); background:#fff; }
+  #toast { position:fixed; bottom:14px; right:16px; z-index:20; display:none;
+           padding:10px 16px; border-radius:9px; font-size:14px; font-weight:600;
+           color:#fff; background:#2f6b3a; box-shadow:0 2px 10px rgba(0,0,0,.25); }
+  #toast.bad { background:#8a2b2b; }
+</style>
+</head>
+<body>
+<nav id="tasks"><h2>Papers</h2><div id="tasklist">loading…</div></nav>
+
+<main id="doc">
+  <h1 id="doctitle">Select a paper</h1>
+  <div id="articlecard"></div>
+  <div id="doctabs">
+    <button id="tabText" type="button" class="active">Extracted text</button>
+    <button id="tabPdf" type="button">Original PDF</button>
+  </div>
+  <div id="doctext"></div>
+  <iframe id="pdfframe" style="display:none" title="Original PDF"></iframe>
+</main>
+
+<aside id="form">
+  <h2 id="formtitle">Judgment</h2>
+
+  <fieldset><legend>METHOD — how was the knowledge produced?</legend>
+    <label><input type="radio" name="method" value="empirical_quant"> empirical – quantitative</label>
+    <label><input type="radio" name="method" value="empirical_qual"> empirical – qualitative</label>
+    <label><input type="radio" name="method" value="mixed"> mixed methods</label>
+    <label><input type="radio" name="method" value="review_narrative"> narrative review</label>
+    <label><input type="radio" name="method" value="review_systematic"> systematic review</label>
+    <label><input type="radio" name="method" value="meta_analysis"> meta-analysis</label>
+    <label><input type="radio" name="method" value="theoretical"> theoretical (builds/defends a theory — pointers &amp; associations alone are a review)</label>
+    <label><input type="radio" name="method" value="unsure"> unsure — explain in notes</label>
+  </fieldset>
+
+  <fieldset><legend>FORM — what kind of document?</legend>
+    <label><input type="radio" name="form" value="journal_article" checked> journal article</label>
+    <label><input type="radio" name="form" value="commentary"> commentary / response</label>
+    <label><input type="radio" name="form" value="book_chapter"> book chapter</label>
+    <label><input type="radio" name="form" value="edited_collection"> edited collection</label>
+    <label><input type="radio" name="form" value="other"> other — note it</label>
+  </fieldset>
+
+  <fieldset><legend>FIELD — does it belong in our corpus?</legend>
+    <label><input type="radio" name="field" value="in_field"> in field</label>
+    <label><input type="radio" name="field" value="borderline"> borderline</label>
+    <label><input type="radio" name="field" value="out_of_field"> out of field</label>
+    <label style="margin-top:6px;border-top:1px solid var(--line);padding-top:6px">
+      <input type="checkbox" id="notcnfa"> <strong>not a CNfA topic</strong> (fast flag — usable with any ruling above)</label>
+  </fieldset>
+
+  <fieldset><legend>Decisive passages (select text in the paper, then mark)</legend>
+    <button id="markbtn">Mark selected passage as decisive</button>
+    <ol id="passages"></ol>
+  </fieldset>
+
+  <fieldset><legend>Escalation</legend>
+    <label class="esc"><input type="checkbox" id="escalate"> David should also evaluate this decision</label>
+  </fieldset>
+
+  <fieldset><legend>Notes</legend><textarea id="notes"></textarea></fieldset>
+
+  <button class="primary" id="savebtn">Save judgment</button>
+  <button id="exportbtn">Export all judgments (JSON)</button>
+  <div id="saveinfo"></div>
+</aside>
+
+<div id="toast"></div>
+<script>
+let BATCH = null, TASKS = [], CURRENT = null, TOAST_T = null;
+
+function flash(msg, ok) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = ok ? "" : "bad";
+  t.style.display = "block";
+  clearTimeout(TOAST_T);
+  TOAST_T = setTimeout(() => { t.style.display = "none"; }, ok ? 2600 : 6000);
+}
+
+const store = {
+  key: pid => `hitl:${BATCH}:${pid}`,
+  get(pid){ try { return JSON.parse(localStorage.getItem(this.key(pid))) || null; } catch(e){ return null; } },
+  set(pid, v){ try { localStorage.setItem(this.key(pid), JSON.stringify(v)); } catch(e){ alert("Could not save locally: " + e); } },
+};
+
+async function init(){
+  const res = await fetch("tasks.json");
+  const data = await res.json();
+  BATCH = data.created + ":" + (data.mode || "blind");
+  TASKS = data.tasks; window.MODE = data.mode || "blind";
+  // restore from the server's on-disk autosave (survives any browser/window)
+  window.DURABLE=false;
+  try{
+    const r=await fetch("saved");
+    if(r.ok){
+      const saved=await r.json(); window.DURABLE=true;
+      for(const pid in saved){ if(!store.get(pid)) store.set(pid,saved[pid]); }
+    }
+  }catch(e){}
+  if(!window.DURABLE)
+    alert("WARNING: static server - judgments would live only in this browser.\n"+
+          "Serve with  python3 hitl_serve.py  so every save lands on disk.");
+  renderList();
+}
+
+function renderList(){
+  const el = document.getElementById("tasklist"); el.innerHTML = "";
+  let done = 0;
+  for (const t of TASKS){
+    const j = store.get(t.paper_id);
+    const d = document.createElement("div");
+    d.className = "task" + (j ? " done" : "") + (j && j.escalate ? " escalated" : "")
+                + (CURRENT && CURRENT.paper_id === t.paper_id ? " active" : "");
+    d.innerHTML = `${t.paper_id}<span class="st"></span>`;
+    d.title = t.title; d.onclick = () => open(t);
+    el.appendChild(d);
+    if (j) done++;
+  }
+  document.querySelector("#tasks h2").textContent = `Papers (${done}/${TASKS.length})`;
+}
+
+// display-time cleanup of LaTeX/mathpix debris; the on-disk text is untouched
+function cleanForDisplay(t){
+  return t
+    .replace(/\\(?:begin|end)\{[a-zA-Z*]+\}/g, " ")
+    .replace(/\\(?:text|textbf|textit|mathrm|mathbf|mathit|emph|mbox)\{([^{}]*)\}/g, "$1")
+    .replace(/\\(?:label|ref|cite|footnote)\{[^{}]*\}/g, "")
+    .replace(/\\[\(\)\[\]]/g, "")
+    .replace(/\$\$/g, "")
+    .replace(/\\([%&_#$])/g, "$1")
+    .replace(/\\\\/g, "\n")
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, "[figure]")
+    .replace(/[ \t]{3,}/g, "  ");
+}
+
+// LaTeX tabular -> HTML table. Handles multirow/multicolumn and rules; cell
+// text is escaped, then simple \textbf is restored as bold.
+function tabularToHtml(block){
+  let body = block
+    .replace(/\\begin\{tabular\}\{[^}]*\}|\\end\{tabular\}/g, "")
+    .replace(/\\hline|\\toprule|\\midrule|\\bottomrule|\\cline\{[^}]*\}/g, "")
+    .replace(/\\multirow\{\d+\}\{[^}]*\}\{([\s\S]*?)\}/g, "$1");
+  const rows = body.split(/\\\\/).map((r) => r.trim()).filter(Boolean);
+  const html = rows.map((r) => {
+    const cells = r.split(/(?<!\\)&/).map((c) => {
+      const mc = c.match(/\\multicolumn\{(\d+)\}\{[^}]*\}\{([\s\S]*?)\}/);
+      let span = 1, text = c;
+      if (mc) { span = Number(mc[1]); text = mc[2]; }
+      text = text.trim().replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/\\textbf\{([^{}]*)\}/g, "<b>$1</b>").replace(/\\textit\{([^{}]*)\}/g, "<i>$1</i>");
+      return span > 1 ? `<td colspan="${span}">${text}</td>` : `<td>${text}</td>`;
+    }).join("");
+    return `<tr>${cells}</tr>`;
+  }).join("");
+  return `\n\n<table>${html}</table>\n\n`;
+}
+
+// Article-information block often printed in a paper's page footer
+// (abbreviations, corresponding author, e-mail) — surfaced under the title.
+function extractArticleMeta(raw){
+  const found = [];
+  for (const re of [
+    /(?:^|\n)(Abbreviations?:[^\n]*(?:\n(?!\s*\n)[^\n]*)*)/,
+    /(?:^|\n)(\*?\s?Correspond(?:ing author|ence)[^\n]*(?:\n(?!\s*\n)[^\n]*)*)/i,
+    /(?:^|\n)(E-?mail address(?:es)?:[^\n]*(?:\n(?!\s*\n)[^\n]*)*)/i,
+  ]){
+    const m = raw.match(re);
+    if (m && m[1].length < 600) found.push(m[1].replace(/\s+/g, " ").trim());
+  }
+  return found;
+}
+
+function esc(s){ return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+function renderArticleCard(t, raw){
+  const card = document.getElementById("articlecard");
+  const bits = [];
+  if (t.apa) {
+    let apa = esc(t.apa);
+    if (t.venue) {
+      const v = esc(t.venue);
+      if (apa.includes(v)) apa = apa.replace(v, `<b>${v}</b>`);
+      else bits.push(`<div class="card-venue">Publication source: <b>${v}</b></div>`);
+    }
+    bits.unshift(`<div class="card-apa">${apa}${t.apa_suspect ? ' <span class="card-flag">APA unverified</span>' : ""}</div>`);
+  } else {
+    bits.push(`<div class="card-apa card-missing">No APA citation on record${t.venue ? ` — source: <b>${esc(t.venue)}</b>` : ""}</div>`);
+  }
+  for (const m of extractArticleMeta(raw)) bits.push(`<div class="card-meta">${esc(m)}</div>`);
+  card.innerHTML = bits.join("");
+}
+
+function setDocTab(which){
+  const pdf = which === "pdf";
+  document.getElementById("doctext").style.display = pdf ? "none" : "";
+  document.getElementById("pdfframe").style.display = pdf ? "block" : "none";
+  document.getElementById("tabText").classList.toggle("active", !pdf);
+  document.getElementById("tabPdf").classList.toggle("active", pdf);
+}
+
+// Render the paper properly: markdown structure via marked, math typeset by
+// KaTeX. Math spans are masked before the markdown pass (marked would mangle
+// underscores inside them) and restored after. Falls back to the plain
+// cleaner when the vendor libraries are absent (e.g. a batch copied without
+// its vendor/ directory).
+function renderDoc(pane, raw){
+  const canRender = typeof marked !== "undefined" && typeof renderMathInElement !== "undefined";
+  if (!canRender) { pane.className = "plain"; pane.textContent = cleanForDisplay(raw); return; }
+  const mathBank = [];
+  const masked = raw
+    .replace(/^\s*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\s*\n/i, "")
+    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, "")
+    // structural LaTeX outside math delimiters -> markdown equivalents
+    .replace(/\\title\{\s*([\s\S]*?)\}/g, (_, x) => `# ${x.replace(/\s+/g, " ").trim()}\n`)
+    .replace(/\\author\{([\s\S]*?)\}\n/g, (_, x) => `**${x.replace(/\\\\/g, "; ").replace(/\s+/g, " ").trim()}**\n\n`)
+    .replace(/\\(?:section|subsection|subsubsection)\*?\{([^{}]*)\}/g, "\n## $1\n")
+    .replace(/\\begin\{abstract\}/g, "\n**Abstract.** ")
+    .replace(/\\end\{abstract\}/g, "\n")
+    // figure environments: keep the caption, drop the graphics plumbing
+    .replace(/\\caption\{([\s\S]*?)\}\n/g, "\n*Figure: $1*\n")
+    .replace(/\\(?:includegraphics|captionsetup)(?:\[[^\]]*\])?\{[^{}]*\}/g, "")
+    .replace(/\\begin\{(?:figure|center)\}(?:\[[^\]]*\])?|\\end\{(?:figure|center)\}|\\centering/g, "")
+    .replace(/0\.\d+\\textwidth|\\textwidth/g, "")
+    .replace(/\\footnotetext\{([\s\S]*?)\}/g, "\n> $1\n")
+    // tabular environments become real HTML tables (KaTeX cannot typeset them)
+    .replace(/\\begin\{tabular\}[\s\S]*?\\end\{tabular\}/g, tabularToHtml)
+    .replace(/\\begin\{(?:align\*?|equation\*?)\}([\s\S]*?)\\end\{(?:align\*?|equation\*?)\}/g, "$$$$$1$$$$")
+    .replace(/\\\[([\s\S]*?)\\\]|\$\$([\s\S]*?)\$\$|\\\((.*?)\\\)/g,
+      (m) => { mathBank.push(m); return `@@MATH${mathBank.length - 1}@@`; });
+  let html = marked.parse(masked, {mangle: false, headerIds: false});
+  html = html.replace(/@@MATH(\d+)@@/g, (_, i) => mathBank[Number(i)]
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+  pane.className = "";
+  pane.innerHTML = html;
+  try {
+    renderMathInElement(pane, {throwOnError: false, delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "\\[", right: "\\]", display: true},
+      {left: "\\(", right: "\\)", display: false},
+    ]});
+  } catch (e) {}
+}
+
+async function open(t){
+  CURRENT = t;
+  document.getElementById("doctitle").textContent = `${t.paper_id} — ${t.title}`;
+  document.getElementById("formtitle").textContent = `Judgment — ${t.paper_id}`;
+  const txt = await (await fetch(t.text_file)).text();
+  const pane = document.getElementById("doctext");
+  renderDoc(pane, txt);
+  renderArticleCard(t, txt);
+  const pdfBtn = document.getElementById("tabPdf");
+  pdfBtn.style.display = t.pdf_file ? "" : "none";
+  document.getElementById("pdfframe").src = t.pdf_file || "about:blank";
+  setDocTab("text");
+  // assisted mode only: highlight machine receipts (never present in blind batches)
+  if (window.MODE === "assisted" && t.machine_receipts){
+    let html = pane.innerHTML;
+    for (const r of t.machine_receipts){
+      const frag = r.slice(0, 40).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      html = html.replace(new RegExp(frag), m => `<mark class="machine">${m}</mark>`);
+    }
+    pane.innerHTML = html;
+  }
+  loadForm(store.get(t.paper_id));
+  renderList();
+  pane.parentElement.scrollTop = 0;
+  document.getElementById("form").scrollTop = 0;
+}
+
+function loadForm(j){
+  for (const grp of ["method","form","field"]){
+    document.querySelectorAll(`input[name=${grp}]`).forEach(i => i.checked = false);
+    if (grp === "form" && !(j && j.form)) document.querySelector('input[name=form][value=journal_article]').checked = true;
+    if (j && j[grp]) { const el = document.querySelector(`input[name=${grp}][value=${j[grp]}]`); if (el) el.checked = true; }
+  }
+  document.getElementById("notcnfa").checked = !!(j && j.not_cnfa_topic);
+  document.getElementById("escalate").checked = !!(j && j.escalate);
+  document.getElementById("notes").value = (j && j.notes) || "";
+  window.passages = (j && j.decisive_passages) || [];
+  renderPassages();
+  document.getElementById("saveinfo").textContent = j ? `saved ${j.saved_at}` : "not yet saved";
+}
+
+function renderPassages(){
+  const ol = document.getElementById("passages"); ol.innerHTML = "";
+  window.passages.forEach((p, i) => {
+    const li = document.createElement("li");
+    li.innerHTML = `“${p.text.slice(0,120)}${p.text.length>120?"…":""}” <button data-i="${i}">✕</button>`;
+    li.querySelector("button").onclick = () => { window.passages.splice(i,1); renderPassages(); };
+    ol.appendChild(li);
+  });
+}
+
+document.getElementById("tabText").onclick = () => setDocTab("text");
+document.getElementById("tabPdf").onclick = () => setDocTab("pdf");
+
+document.getElementById("markbtn").onclick = () => {
+  const sel = window.getSelection();
+  const text = sel ? sel.toString().trim() : "";
+  if (!text) { alert("Select the decisive text in the paper first, then click Mark."); return; }
+  const full = document.getElementById("doctext").textContent;
+  window.passages.push({ text, char_offset: full.indexOf(text) });
+  renderPassages(); sel.removeAllRanges();
+};
+
+document.getElementById("savebtn").onclick = () => {
+  if (!CURRENT) { alert("Click a paper in the left-hand list first, then judge and save."); return; }
+  const val = grp => { const el = document.querySelector(`input[name=${grp}]:checked`); return el ? el.value : null; };
+  const offTopic = document.getElementById("notcnfa").checked;
+  if (!offTopic && !val("method")) { alert("Choose a METHOD judgment (or 'unsure') before saving."); return; }
+  const rec = {
+    paper_id: CURRENT.paper_id, method: val("method"), form: val("form"), field: val("field"),
+    not_cnfa_topic: document.getElementById("notcnfa").checked,
+    escalate: document.getElementById("escalate").checked,
+    notes: document.getElementById("notes").value,
+    decisive_passages: window.passages,
+    batch: BATCH, saved_at: new Date().toISOString(),
+  };
+  store.set(CURRENT.paper_id, rec);
+  fetch("save",{method:"POST",body:JSON.stringify(rec)})
+    .then(r=>{document.getElementById("saveinfo").textContent =
+      r.ok ? "ON DISK just now" : "browser only (!)";
+      flash(r.ok ? `${rec.paper_id} saved — ON DISK` : `${rec.paper_id} saved in BROWSER ONLY — server did not record it`, r.ok);})
+    .catch(()=>{document.getElementById("saveinfo").textContent="browser only (!)";
+      flash(`${rec.paper_id} saved in BROWSER ONLY — server did not record it`, false);});
+  renderList();
+  // advance to the next paper without a judgment (wrapping); stay if all done
+  const start = TASKS.findIndex(t => t.paper_id === CURRENT.paper_id);
+  for (let i = 1; i <= TASKS.length; i += 1) {
+    const next = TASKS[(start + i) % TASKS.length];
+    if (!store.get(next.paper_id)) { open(next); return; }
+  }
+  flash("All papers judged — press Export all judgments", true);
+};
+
+document.getElementById("exportbtn").onclick = () => {
+  const out = { schema: "hitl_judgments.v1", batch: BATCH,
+                exported_at: new Date().toISOString(),
+                judgments: TASKS.map(t => store.get(t.paper_id)).filter(Boolean) };
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], {type: "application/json"}));
+  a.download = `hitl_judgments_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+};
+
+init();
+</script>
+</body>
+</html>

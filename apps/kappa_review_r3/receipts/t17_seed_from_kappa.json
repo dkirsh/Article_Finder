@@ -1,0 +1,36 @@
+{
+ "schema": "t17_seed.v1",
+ "generated_at": "2026-09-13T12:54:45+00:00",
+ "rows": [
+  {
+   "paper_id": "PDF-0187",
+   "source": "QUARANTINED_bad_bib_join_2026-09-10+printed_doi+oa_title_match",
+   "title_trust": "gold_registry",
+   "note": "kappa-20 apa row with contradicted lineage (round-4 review F2/F3)"
+  },
+  {
+   "paper_id": "PDF-0217",
+   "source": "QUARANTINED_bad_bib_join_2026-09-10",
+   "title_trust": "gold_registry",
+   "note": "kappa-20 apa row with contradicted lineage (round-4 review F2/F3)"
+  },
+  {
+   "paper_id": "PDF-0390",
+   "source": "zotero_bib_export_validated+oa_title_match",
+   "title_trust": "validated",
+   "note": "kappa-20 apa row with contradicted lineage (round-4 review F2/F3)"
+  },
+  {
+   "paper_id": "PDF-0488",
+   "source": "QUARANTINED_bad_bib_join_2026-09-10",
+   "title_trust": "gold_registry",
+   "note": "kappa-20 apa row with contradicted lineage (round-4 review F2/F3)"
+  },
+  {
+   "paper_id": "PDF-0773",
+   "source": "QUARANTINED_bad_bib_join_2026-09-10",
+   "title_trust": "gold_registry",
+   "note": "kappa-20 apa row with contradicted lineage (round-4 review F2/F3)"
+  }
+ ]
+}

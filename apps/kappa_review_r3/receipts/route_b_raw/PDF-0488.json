@@ -1,0 +1,41 @@
+{
+  "paper_id": "PDF-0488",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Smolders, K. C. H. J., & de Kort, Y. A. W. (2014). Bright light and mental fatigue: Effects on alertness, vitality, performance and physiological arousal. Journal of Environmental Psychology. [Volume/issue/page numbers not printed in the retrieved text; article was 'Available online 4 January 2014'.]",
+    "article_type": "empirical_quantitative",
+    "main_conclusion": "Exposure to a higher illuminance level (1000 lx vs. 200 lx at the eye) during the day reduced subjective sleepiness and helped restore self-control capacity specifically when participants were mentally fatigued rather than rested, but its effects on objective task performance and autonomic physiological arousal were inconsistent -- and sometimes adverse -- and were not similarly moderated by prior mental fatigue.",
+    "independent_variables": ["Illuminance level at the eye (200 lx vs. 1000 lx, both at 4000K)", "Antecedent mental state (mental fatigue induction vs. relaxing control condition)", "Measurement block (time in session, Block 1 vs. Block 2)"],
+    "dependent_variables": ["Subjective sleepiness (Karolinska Sleepiness Scale)", "Subjective vitality, tension, positive and negative affect", "State self-control capacity", "Reaction time and accuracy on the Psychomotor Vigilance Task, Go-NoGo task, and 2-Back task", "Heart rate and heart-rate variability (LF/HF ratio)", "Skin conductance level", "Subjective appraisals of and beliefs about the lighting and environment"],
+    "construct_pair": "Illuminance level (bright vs. dim light) -> Subjective alertness/vitality, cognitive task performance, and physiological arousal",
+    "direction": "mixed",
+    "sample_n": 28,
+    "p_value": "p = .02",
+    "effect_size": "pseudo R-squared = .28 (linear mixed model, main effect of Lighting condition on sleepiness)",
+    "stimulus_description": "Participants sat in a simulated office room lit by ceiling and wall fluorescent luminaires calibrated to produce either 200 lx or 1000 lx at eye level (4000K correlated colour temperature, no daylight contribution), after having completed either a 29-minute mentally fatiguing task battery (flight-simulation multitasking plus a modified Stroop task) or a matched-duration relaxing control activity (nature movie, magazines, congruent Stroop).",
+    "methods_surface_summary": "A 2 (illuminance: 200 vs. 1000 lx) x 2 (antecedent state: fatigue vs. control) within-subjects laboratory design tested 28 students across four separate sessions (106 total sessions); during 30 minutes of light exposure, self-reports, three performance tasks, and ECG/EDA physiological measures were collected in two repeated 13-minute blocks; data were analyzed with linear mixed models controlling for baseline scores and light sensitivity.",
+    "measurement_inventory": ["Karolinska Sleepiness Scale (KSS)", "Activation-Deactivation Checklist (vitality and tension items)", "State Self-Control Capacity Scale", "Psychomotor Vigilance Task (PVT, auditory)", "Auditory Go-NoGo task", "Visual 2-Back task", "Electrocardiography (heart rate, heart-rate variability)", "Electrodermal activity / skin conductance level", "Semantic differential lighting-evaluation items (based on Flynn et al., 1973)", "Pittsburgh Sleep Quality Index (PSQI)", "Munich Chronotype Questionnaire (MCTQ)", "Subjective trait vitality scale", "SF-36 general health subscale"]
+  },
+  "confidence": {
+    "apa_citation": 3,
+    "article_type": 5,
+    "main_conclusion": 5,
+    "independent_variables": 5,
+    "dependent_variables": 5,
+    "construct_pair": 5,
+    "direction": 4,
+    "sample_n": 5,
+    "p_value": 4,
+    "effect_size": 4,
+    "stimulus_description": 5,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "apa_citation": "Volume/issue/page numbers were not present in the retrieved docling text (journal masthead only shows the journal name and 'Available online 4 January 2014'); confirmed as Journal of Environmental Psychology from the running header.",
+    "direction": "Rated mixed because the illuminance effect was clearly positive (beneficial) for subjective sleepiness/self-control specifically under fatigue, null for vitality's moderation by fatigue, beneficial for sustained-attention (PVT) decline over time regardless of fatigue, but adverse for Go-NoGo accuracy (fatigued vs rested differences) and 2-Back accuracy under bright light -- i.e., direction differs by dependent measure.",
+    "p_value": "Chosen as the paper's clearest single main-effect result tied to the central illuminance manipulation (Table 4: main effect of Lighting condition on sleepiness, F(1,179)=5.46, p=.02); the theoretically central state-dependent interaction on sleepiness only approached significance, F(1,179)=3.62, p=.06, with a significant fatigued-only post hoc contrast F(1,177)=9.68, p<.01.",
+    "effect_size": "The paper reports pseudo R-squared values (proportion of residual variance reduction) for each LMM rather than Cohen's d or eta-squared; no traditional standardized effect size is given for the headline illuminance-by-fatigue interaction.",
+    "sample_n": "28 students participated across 106 total 75-minute sessions (some participants missed a session or had equipment issues); per-analysis degrees of freedom vary accordingly (e.g., df around 163-179 reflect session-level, not participant-level, N)."
+  }
+}

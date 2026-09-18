@@ -1,0 +1,41 @@
+{
+  "paper_id": "PDF-0851",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Scheer, F. A. J. L., van Doornen, L. J. P., & Buijs, R. M. (1999). Light and diurnal cycle affect human heart rate: Possible role for the circadian pacemaker. Journal of Biological Rhythms, 14(3), 238-246.",
+    "article_type": "empirical_quantitative",
+    "main_conclusion": "Light exposure increases resting human heart rate, with the size of the increase depending on the phase of the diurnal cycle and the intensity of the light, indicating that the circadian pacemaker (suprachiasmatic nucleus) modulates human heart rate.",
+    "independent_variables": ["Time within the diurnal (day-night) cycle (zeitgeber time, ZT)", "Light exposure/illumination level (0 lux, indoor light, 100 lux, 800 lux)"],
+    "dependent_variables": ["Resting heart rate (HR)", "Motility (bodily movement, as a control measure)"],
+    "construct_pair": "Light exposure and diurnal phase -> Resting heart rate",
+    "direction": "positive",
+    "sample_n": 27,
+    "p_value": "p < .001",
+    "effect_size": null,
+    "stimulus_description": "Volunteers lay supine, awake and resting after fasting, first for 20 minutes in near-complete darkness (<1 lux, dark cap over eyes) and then were exposed to light periods of differing intensity: indoor room light (Experiment 1) or a controlled light visor set to 0, 100, and 800 lux (Experiment 2), at different times across the day-night cycle.",
+    "methods_surface_summary": "Two within-subject repeated-measures experiments measured ambulatory heart rate (via ECG/AMS) and motility at multiple zeitgeber times across the diurnal cycle, comparing dark (0 lux) periods to subsequent light-exposure periods of varying intensity; data were analyzed with repeated-measures ANOVA and two-way MANOVA with Duncan's post hoc tests.",
+    "measurement_inventory": ["Ambulatory measuring system (AMS) electrocardiography for heart rate", "AMS-integrated accelerometer for motility", "Arm-cuff blood pressure measurement (Spacelabs 90207 ABPM / Profilomat)", "Lux meter (Mavolux-digital) for light intensity calibration"]
+  },
+  "confidence": {
+    "apa_citation": 4,
+    "article_type": 5,
+    "main_conclusion": 5,
+    "independent_variables": 5,
+    "dependent_variables": 5,
+    "construct_pair": 5,
+    "direction": 5,
+    "sample_n": 4,
+    "p_value": 4,
+    "effect_size": 5,
+    "stimulus_description": 5,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 4
+  },
+  "notes": {
+    "apa_citation": "Volume/issue/page numbers not printed in the docling text (only 'Journal of Biological Rhythms / June 1999' header); volume 14(3):238-246 is the paper's well-known published citation but not verified from this text alone, so confidence is not 5.",
+    "sample_n": "Two separate experiments with different N (17 in Exp.1, 10 in Exp.2); reported total combined N=27 as an approximation since the paper does not treat them as one pooled study. Treated Experiment 1 (main, larger, first-described) N=17 could also be argued as 'main' -- flagged as ambiguous.",
+    "p_value": "Multiple p-values reported for many sub-effects (light effect, time effect, interaction); selected the light-effect main finding from Experiment 1 MANOVA (F(1,16)=39.33, p<.001) as representative of the paper's central claim that light increases HR.",
+    "effect_size": "No standardized effect size (d, r, eta2) is printed anywhere in the text; only F-statistics and p-values are given.",
+    "direction": "Light consistently increased HR (positive relation between light exposure and HR) across both experiments and most ZTs, with dose-dependence (800 lux > 100 lux)."
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "paper_id": "PDF-0676",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Thampanichwat, C., Wongvorachan, T., Bunyarittikit, S., Chunhajinda, P., Phaibulputhipong, P., & Wongmahasiri, R. (2024). The architectural design strategies that promote attention to foster mindfulness: A systematic review, content analysis and meta-analysis. Buildings, 14(8), 2508. https://doi.org/10.3390/buildings14082508",
+    "article_type": "systematic_review",
+    "main_conclusion": "Architectural design strategies that promote attention -- and thereby indirectly foster mindfulness -- center on the architectural atmosphere (form, space, light, color, material, object, view, sound, weather), and the material, view, and color characteristics identified are most closely aligned with the biophilic design concept.",
+    "independent_variables": [],
+    "dependent_variables": ["Frequency of coded architectural-atmosphere characteristics (form, space, movement, light, color, material, object, view, sound, weather, concept) across 32 articles", "Semantic distance/association between biophilic-design keywords and the article corpus (document-to-keyword and document-to-document GloVe embedding distances)"],
+    "construct_pair": "Architectural design/atmosphere characteristics (biophilic design features) -> promotion of attention (as an indirect route to fostering mindfulness)",
+    "direction": "not_applicable",
+    "sample_n": null,
+    "p_value": null,
+    "effect_size": null,
+    "stimulus_description": "Not a human-subjects stimulus study: the 'corpus' consisted of 32 architecture-related journal articles, conference papers, and reviews (2011-2024) retrieved from Scopus that discussed architecture and attention, decoded by three independent coders (architecture faculty/practitioners) against a 12-category framework.",
+    "methods_surface_summary": "A three-stage design: (1) a PRISMA-guided systematic review of Scopus (Feb 2024) narrowing 4844 records to 32 included articles; (2) qualitative content analysis in which three independent coders decoded the 32 articles into a 12-column codebook (form, space, movement, light, color, material, object, view, sound, weather, concept, other); (3) a Python-based NLP meta-analysis using CountVectorizer/word-cloud word-frequency analysis (research question 1) and GloVe-embedding semantic/word-association distance analysis against biophilic-design keywords (research question 2).",
+    "measurement_inventory": ["PRISMA systematic review protocol (Scopus search, 4-phase identification/screening/eligibility/inclusion)", "12-category qualitative content-analysis codebook (form, space, movement, light, color, material, object, view, sound, weather, concept, other)", "Python Scikit-learn CountVectorizer word-frequency analysis and wordcloud visualization", "GloVe (400,000-word variant, via torchtext) word-embedding semantic distance/association analysis"]
+  },
+  "confidence": {
+    "apa_citation": 5,
+    "article_type": 3,
+    "main_conclusion": 5,
+    "independent_variables": 4,
+    "dependent_variables": 4,
+    "construct_pair": 4,
+    "direction": 4,
+    "sample_n": 4,
+    "p_value": 4,
+    "effect_size": 3,
+    "stimulus_description": 4,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "article_type": "The paper self-labels as 'Systematic Review, Content Analysis and Meta-Analysis', but its 'meta-analysis' is an NLP word-frequency/semantic-association analysis of text, not a quantitative synthesis of effect sizes across studies. Classified here as systematic_review since that is the closest offered category and the dominant methodological frame (PRISMA-based literature synthesis); mixed_methods (qual content analysis + quantitative NLP) is also defensible.",
+    "independent_variables": "No manipulated/predictor variable in the causal-experiment sense; left empty per instructions for reviews/non-experimental designs.",
+    "direction": "Marked not_applicable because the study does not test a directional IV->DV relationship; it reports descriptive word-frequency counts and semantic-distance/association values between architectural components and biophilic-design keywords across a text corpus, not a tested effect.",
+    "sample_n": "No human research participants in the conventional sense; the analyzed unit is 32 published articles, decoded independently by 3 expert coders. Left null rather than reporting 32 or 3, since neither corresponds to 'total human participants in the main study' as defined.",
+    "p_value": "No inferential significance test (p-value) was found in the extracted text; the study reports descriptive percentages of coded article characteristics and raw semantic-distance values, not hypothesis-test p-values.",
+    "effect_size": "The paper reports GloVe semantic-distance/association values (e.g., 'plant' = 6.385, 'concrete' = 5.963) as its main quantitative outputs, but these are not a standard effect-size metric (d/r/eta2) as specified by the field definition, so left null; see measurement_inventory and methods_surface_summary for these values' role.",
+    "methods_surface_summary": "This paper's ~2.7MB docling export contained several extremely long lines (up to ~183,000 characters each, apparently duplicated/garbled OCR text and embedded figure data) that were mechanically stripped before reading to stay within tool limits; the surrounding prose (which was largely duplicated verbatim around each stripped block) was read in full, covering title/abstract, introduction, methodology, results (systematic review, content analysis, word-frequency and word-association meta-analysis), discussion, and conclusions."
+  }
+}

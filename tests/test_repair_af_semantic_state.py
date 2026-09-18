@@ -38,6 +38,7 @@ def _init_db(db_path: Path) -> None:
 def test_repair_normalizes_semantic_state(tmp_path: Path) -> None:
     (tmp_path / "data").mkdir()
     (tmp_path / "data" / "ae_outputs" / "out1").mkdir(parents=True)
+    (tmp_path / "data" / "ae_jobs" / "job2").mkdir(parents=True)
     ((tmp_path / "data" / "ae_outputs" / "out1") / "result.json").write_text(
         json.dumps(
             {

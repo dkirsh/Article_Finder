@@ -1,0 +1,64 @@
+{
+  "paper_id": "PDF-0708",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": null,
+    "article_type": "empirical_quantitative",
+    "main_conclusion": "Thirteen tests of configurational (cognitive-map) spatial knowledge produce systematically different results because of their task demands, especially spatial cueing (how much spatial information is supplied) and location cueing (whether respondents choose or are told which places to locate), so researchers should use multiple, mutually supportive tests rather than relying on any single technique.",
+    "independent_variables": [
+      "Test/technique used (13 tests drawn from 4 groupings: graphic/sketch-map, partially-graphic/reconstruction, uni-to-multidimensional, recognition)",
+      "Spatial cueing (amount of spatial information supplied, e.g. presence of a base map/coastline)",
+      "Location cueing (open choice of places vs. designated places to locate)",
+      "Analysis/filtering framework applied to location-cued data (systematic frameworks 25/15/6; data-defined frameworks guess/fam<2/fam<4)"
+    ],
+    "dependent_variables": [
+      "Bidimensional regression goodness-of-fit (r2), scale, angle and translation parameters",
+      "Distortion index and absolute/relative/total distortion (Waterman & Gordon)",
+      "Individual and place/box accuracy scores (cloze procedure tests)",
+      "Individual and configuration accuracy scores (orientation-recognition test)",
+      "Sketch-map content classification (Lynch categories) and style classification (Pocock categories)",
+      "Rank-order (Spearman correlation) consistency of respondents across tests"
+    ],
+    "construct_pair": "Test task demands (spatial cueing / location cueing / analysis filtering) -> Measured configurational (cognitive-map) spatial knowledge accuracy",
+    "direction": "mixed",
+    "sample_n": 279,
+    "p_value": null,
+    "effect_size": null,
+    "stimulus_description": "Respondents completed paper-and-pencil or verbal-response configurational-knowledge tasks about the city of Swansea, Wales (sketch mapping, placing locations relative to cued points, cloze-style place-in-grid completion, distance/direction estimation for multidimensional scaling or projective convergence, and a multiple-choice orientation/configuration recognition test), varying in how much spatial information (e.g. a base map or coastline) and which specific places were supplied.",
+    "methods_surface_summary": "A repeated-measures, multi-test, multi-analysis design: 279 first-year geography undergraduates (plus 102 more a year later for reliability) were split into six groups, each completing four of thirteen configurational-knowledge tests (one per grouping) a week apart; outcomes were analyzed with bidimensional regression, Waterman & Gordon distortion indices, subjective content/style classification (for sketch maps), accuracy scoring, paired/two-sample t-tests, chi-square tests, and Spearman rank correlations across systematic and data-defined analysis-filtering frameworks.",
+    "measurement_inventory": [
+      "Bidimensional regression (r2, scale, angle, a1/a2 translation)",
+      "Waterman & Gordon (1984) distortion index",
+      "Lynch (1960) sketch-map content classification",
+      "Pocock (1976) sketch-map style classification (5 independent raters)",
+      "Cloze-procedure individual and box accuracy scores",
+      "Orientation-specification individual and configuration accuracy scores",
+      "Familiarity rating scale (0-5)"
+    ]
+  },
+  "confidence": {
+    "apa_citation": 1,
+    "article_type": 4,
+    "main_conclusion": 5,
+    "independent_variables": 4,
+    "dependent_variables": 4,
+    "construct_pair": 4,
+    "direction": 3,
+    "sample_n": 4,
+    "p_value": 1,
+    "effect_size": 1,
+    "stimulus_description": 4,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 4
+  },
+  "notes": {
+    "apa_citation": "Author (Kitchin) and year (1996, from 'copy; 1996 Academic Press Limited' in the abstract) are legible, but no journal/venue name is printed anywhere in this docling extraction (only the publisher line 'Academic Press Limited'). Per instructions, set to null rather than supplying the venue from outside knowledge.",
+    "article_type": "Predominantly quantitative (bidimensional regression, t-tests, correlations) but includes a qualitative/subjective content and style classification component for two of the sketch-map tests; classified as empirical_quantitative because that dominates the design and analysis.",
+    "direction": "No single IV->DV direction applies because the paper is a methods-comparison study with many pairwise test contrasts. Spatial cueing raised r2 (paper judged this a 'positive' effect on accuracy) while location cueing lowered r2 by 30-40% (a 'negative' effect) on spatial-cued-response tests, but the reverse pattern held for the cloze-procedure tests (location cueing reduced error). Hence 'mixed' rather than a single sign.",
+    "sample_n": "279 is the total first-year cohort reported in the Abstract/Respondents section for the main (first) data collection; a second, independent sample of 102 more undergraduates was collected one year later for reliability checks on the partially-graphic tests only (see Table 2 for per-test sub-sample sizes).",
+    "p_value": "Dozens of test-specific p-values are reported (e.g. paired t-tests 'all <0.0078' for r2 across analysis frameworks; scr1 vs scr2 t=5.47, p=0.00; scr2 vs scr4 t=-1.23, p=0.23, etc.) but there is no single 'main finding' p-value because the paper's central claim (task demands cause divergent results) is supported by a large set of separate comparisons rather than one test.",
+    "effect_size": "No single canonical effect size (d/r/eta2) is reported for 'the main finding'; r2 (bidimensional regression) itself functions as the paper's primary outcome metric and varies test-by-test (see dependent_variables), so no single value can be extracted.",
+    "stimulus_description": "Thirteen distinct instruments were used (see measurement_inventory); this is a summary across all of them.",
+    "measurement_inventory": "This paper uses assessment instruments/analysis techniques rather than a single 'scale' per se; listed items are the primary measurement/analysis frameworks named in the Methodology section."
+  }
+}

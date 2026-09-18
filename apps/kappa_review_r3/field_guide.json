@@ -1,0 +1,70 @@
+{
+  "schema": "kappa_r3_field_guide.v1",
+  "note": "Definitions shown behind the i button on every field. Sources: David Kirsh's ratified criteria (gold-20 adjudication, AF-first spec, HITL onboarding). Multiple labels may genuinely apply to one paper: record the best single label in the verdict/correction, and put any additional true labels in 'Also applies'.",
+  "strata": {
+    "article_type": {
+      "definition": "What kind of paper this is, judged by how its knowledge was produced — not by its topic.",
+      "values": {
+        "empirical_quantitative": "Collects data and reports numbers or statistical tests.",
+        "empirical_qualitative": "Collects data through interviews, observation, or thematic analysis; no statistical testing at its core.",
+        "mixed_methods": "Substantial quantitative AND qualitative components in one study.",
+        "narrative_review": "Synthesizes other papers' findings without a systematic search. David's criterion: a paper offering pointers and associations but no theory is a review.",
+        "systematic_review": "A review that describes its database search and inclusion criteria.",
+        "meta_analysis": "Statistically combines results from prior studies.",
+        "theoretical": "Builds or defends a theory. Required: an actual theory, not pointers and associations.",
+        "methodology": "The paper's primary contribution is a method, instrument, protocol, or analysis approach that others could use.",
+        "qualitative": "Machine's label — read as empirical_qualitative.",
+        "quantitative": "Machine's label — read as empirical_quantitative.",
+        "empirical_research": "Machine's label — an empirical study; decide yourself whether quantitative, qualitative, or mixed, and correct to the specific one.",
+        "methods": "Machine's label — read as methodology: the paper's primary contribution is a method, instrument, or protocol.",
+        "commentary": "A response or commentary on another publication."
+      },
+      "multi": "A paper can honestly be two of these (e.g. methodology + empirical_quantitative: it develops a method AND runs an ordinary experiment). Judge the machine's single label on its merits; add other true labels under 'Also applies'."
+    },
+    "apa_citation": {
+      "definition": "The full APA-style reference for THIS paper itself: authors, year, title, journal or venue, volume/pages, DOI where printed. Judge against the paper's own front matter — the title page and its printed citation block — never from memory."
+    },
+    "main_conclusion": {
+      "definition": "The paper's central finding or claim, as its authors would state it — one sentence. Not a side result, not a limitation, not the aim."
+    },
+    "independent_variables": {
+      "definition": "What the MAIN study manipulated or used as predictors (e.g. lighting level, ceiling height, sound condition). Empty is correct for reviews and theory papers."
+    },
+    "dependent_variables": {
+      "definition": "The outcomes the MAIN study measured (e.g. comfort rating, task accuracy, heart rate)."
+    },
+    "construct_pair": {
+      "definition": "The central exposure-to-outcome pairing at the construct level, as X → Y (e.g. 'daylight exposure → mood'). One pair — the paper's main axis, not every relation it touches."
+    },
+    "direction": {
+      "definition": "The sign of the main IV→DV relation as the paper reports it.",
+      "values": {
+        "positive": "More of the IV goes with more of the DV.",
+        "negative": "More of the IV goes with less of the DV.",
+        "mixed": "The paper's own results point both ways across conditions or outcomes.",
+        "no_effect": "The paper reports no reliable effect.",
+        "differential": "Machine's label — the effect differs by subgroup or condition; usually better expressed as mixed, with the split named.",
+        "unclear": "Machine's label — it could not determine a direction. Judge whether the paper itself is genuinely unclear or the machine simply missed it.",
+        "not_applicable": "The paper makes no directional claim (reviews, theory, methods papers)."
+      }
+    },
+    "sample_n": {
+      "definition": "Total human participants in the MAIN study. If several studies are reported, the primary one. Null is correct when no human sample exists."
+    },
+    "p_value": {
+      "definition": "The p value attached to the MAIN finding, exactly as printed (e.g. 'p < .001'). Null is correct if the paper reports none."
+    },
+    "effect_size": {
+      "definition": "The main finding's effect size as printed (d, r, η², odds ratio...). Null is correct if none is reported. A number that could not be an effect size (d = 57462037) is wrong on its face."
+    },
+    "stimulus_description": {
+      "definition": "What participants were actually exposed to — rooms, images, sounds, VR scenes, light settings — in a sentence or two."
+    },
+    "methods_surface_summary": {
+      "definition": "Design, procedure, and analysis in brief: what kind of experiment or study this was and how it was run."
+    },
+    "measurement_inventory": {
+      "definition": "The named instruments and measures used (e.g. PANAS, EEG alpha power, a 7-point comfort rating). Judge whether the list matches what the methods section actually names — missing instruments count against it."
+    }
+  }
+}

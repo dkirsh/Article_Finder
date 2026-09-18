@@ -53,3 +53,50 @@ def test_add_paper_materializes_ae_corpus_dedupe(monkeypatch, tmp_path: Path) ->
     assert row["ae_corpus_match_confidence"] == 0.95
     assert row["ae_corpus_match_candidates_json"] == '["PDF-0009"]'
     assert row["ae_corpus_deduped_at"]
+
+
+def test_sparse_readd_preserves_unspecified_paper_fields(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(
+        database_module,
+        "build_paper_dedupe_fields",
+        lambda _paper, *, deduped_at: {
+            "ae_corpus_match_status": "unmatched",
+            "ae_corpus_match_candidates_json": "[]",
+            "ae_corpus_deduped_at": deduped_at,
+        },
+    )
+    db = Database(tmp_path / "article_finder.db")
+    original = {
+        "paper_id": "paper-1",
+        "title": "Complete record",
+        "abstract": "Evidence-bearing abstract",
+        "venue": "Environment and Behavior",
+        "pdf_path": "/corpus/paper-1.pdf",
+        "status": "candidate",
+        "triage_decision": "review",
+    }
+    sparse_update = {
+        "paper_id": "paper-1",
+        "title": "Complete record",
+        "status": "rejected",
+        "triage_decision": "reject",
+    }
+
+    db.add_paper(dict(original))
+    db.add_paper(dict(sparse_update))
+    first = db.get_paper("paper-1")
+    db.add_paper(dict(sparse_update))
+    second = db.get_paper("paper-1")
+
+    assert first is not None
+    assert second is not None
+    assert first["abstract"] == original["abstract"]
+    assert first["venue"] == original["venue"]
+    assert first["pdf_path"] == original["pdf_path"]
+    assert first["status"] == "rejected"
+    assert first["triage_decision"] == "reject"
+    assert second["abstract"] == first["abstract"]
+    assert second["venue"] == first["venue"]
+    assert second["pdf_path"] == first["pdf_path"]
+    assert second["status"] == first["status"]
+    assert second["triage_decision"] == first["triage_decision"]

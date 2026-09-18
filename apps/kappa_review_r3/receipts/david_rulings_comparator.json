@@ -1,0 +1,43 @@
+{
+ "schema": "kappa_r3_david_comparator.v1",
+ "generated_at": "2026-09-13T12:54:45+00:00",
+ "purpose": "David Kirsh's existing human rulings on kappa-20 papers, applied as a third comparator at ANALYSIS time (Stephan vs machine vs David where available). Never merged into the frozen pack; human provenance outranks machine.",
+ "field_rulings": [
+  {
+   "paper_id": "PDF-0268",
+   "field": "out_of_field",
+   "ruled_by": "David Kirsh",
+   "ruled_at": "2026-09-09T17:56:23.075Z",
+   "provenance": "hitl_field_viewer exports through 2026-09-10 (human, outranks machine)"
+  },
+  {
+   "paper_id": "PDF-0485",
+   "field": "in_field",
+   "ruled_by": "David Kirsh",
+   "ruled_at": "2026-09-10T17:57:07.117Z",
+   "provenance": "hitl_field_viewer exports through 2026-09-10 (human, outranks machine)"
+  },
+  {
+   "paper_id": "PDF-0708",
+   "field": "borderline",
+   "ruled_by": "David Kirsh",
+   "ruled_at": "2026-09-10T09:34:52.886Z",
+   "provenance": "hitl_field_viewer exports through 2026-09-10 (human, outranks machine)"
+  },
+  {
+   "paper_id": "PDF-0851",
+   "field": "pure_neuroscience",
+   "ruled_by": "David Kirsh",
+   "ruled_at": "2026-09-10T17:59:11.798Z",
+   "provenance": "hitl_field_viewer exports through 2026-09-10 (human, outranks machine)"
+  },
+  {
+   "paper_id": "PDF-1306",
+   "field": "in_field",
+   "ruled_by": "David Kirsh",
+   "ruled_at": "2026-09-10T17:48:14.868Z",
+   "provenance": "hitl_field_viewer exports through 2026-09-10 (human, outranks machine)"
+  }
+ ],
+ "note": "Extend with David's blind-50 export and any later rulings before scoring."
+}

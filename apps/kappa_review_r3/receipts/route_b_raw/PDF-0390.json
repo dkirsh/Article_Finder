@@ -1,0 +1,42 @@
+{
+  "paper_id": "PDF-0390",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Jahncke, H. (2012). Cognitive performance and restoration in open-plan office noise [Doctoral dissertation, University of Gavle and Lulea University of Technology]. ISBN 978-91-7439-495-5.",
+    "article_type": "empirical_quantitative",
+    "main_conclusion": "Open-plan office noise degrades word-memory performance and increases fatigue and motivational deficits, with the size of the impairment depending on which cognitive processes a task requires (tasks needing episodic memory and rehearsal are most vulnerable, and speech intelligibility above an STI of about 0.50 is especially harmful) and on individual hearing status, while a subsequent break filled with pleasant nature sound and imagery restores energy and motivation better than continued office noise.",
+    "independent_variables": ["Office background sound level (39 vs. 51 dB LAeq in Paper I; 30 vs. 60 dB LAeq in Paper II)", "Hearing status (hearing-impaired vs. normal-hearing, Paper II)", "Background speech intelligibility / Speech Transmission Index level (Paper III)", "Presence vs. absence of irrelevant background speech (Paper IV)", "Type of cognitive task (executive-function, memory, and fundamental office-task batteries)", "Restoration/break condition (nature movie with sound, nature sound alone, silence, continued office noise)"],
+    "dependent_variables": ["Word memory / proactive-interference recall performance", "Response inhibition (SART, Flanker task) speed and accuracy", "Updating and shifting task performance", "Serial recall, reading comprehension, arithmetic, and information-search performance", "Self-rated fatigue and motivation (Swedish Occupational Fatigue Inventory)", "Salivary cortisol", "Urinary catecholamines (norepinephrine, dopamine)"],
+    "construct_pair": "Open-plan office noise (sound level / speech intelligibility) -> Cognitive (working-memory) performance, self-rated fatigue, and restoration",
+    "direction": "negative",
+    "sample_n": 47,
+    "p_value": "p < .05",
+    "effect_size": "partial eta-squared = 0.13",
+    "stimulus_description": "In Paper I (the dissertation's first and most detailed study), 47 students worked for two hours in a simulated open-plan office exposed to recorded real office background noise (including phone rings and overheard telephone-style speech) played at either 39 or 51 dB(A) LAeq, then took a 7-minute break exposed to one of four conditions: a nature movie of a flowing river with matching sound, river sound alone, silence, or continued office noise.",
+    "methods_surface_summary": "A doctoral dissertation ('kappa') synthesizing four separate laboratory experiments: Paper I (n=47, mixed within/between-subjects design comparing 39 vs 51 dB LAeq office noise, analyzed with repeated-measures GLM/ANOVA) and Paper II (hearing-impaired vs. normal-hearing groups, 30 vs 60 dB LAeq) tested working-memory tasks, self-reported fatigue/motivation (SOFI), and salivary cortisol/urinary catecholamines, each followed by a restorative break; Paper III (n=42) tested cognitive performance across six graded levels of background-speech intelligibility (STI); Paper IV (n=24) tested performance with vs. without irrelevant background speech across tasks varying in semantic-processing demand.",
+    "measurement_inventory": ["Proactive-interference / word-memory task", "Sustained Attention to Response Test (SART)", "Flanker task", "Updating task (Carretti et al. adaptation)", "Shifting task (Rogers & Monsell number-letter task)", "Operation span and reading span tasks", "Reading comprehension task", "Serial recall task (digits and letters)", "Logical problems task", "Swedish Occupational Fatigue Inventory (SOFI)", "Salivary cortisol assay (radioimmunoassay)", "Urinary catecholamines (HPLC assay)", "Speech Transmission Index (STI) instrumentation", "Information search task", "Word generation (semantic and phonemic fluency) tasks"]
+  },
+  "confidence": {
+    "apa_citation": 5,
+    "article_type": 5,
+    "main_conclusion": 5,
+    "independent_variables": 5,
+    "dependent_variables": 5,
+    "construct_pair": 4,
+    "direction": 3,
+    "sample_n": 4,
+    "p_value": 4,
+    "effect_size": 4,
+    "stimulus_description": 4,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "main_conclusion": "This dissertation reports four distinct studies (Papers I-IV). Per instructions to extract the paper's main/primary result, I treated Paper I -- the first-listed study, most fully detailed in the kappa, and foundational to the others -- as primary for sample_n, p_value, and effect_size, while main_conclusion synthesizes across all four papers as the dissertation's overall thesis.",
+    "direction": "Rated negative for the dissertation's dominant pattern (more/more-intelligible noise -> worse performance, more fatigue, less motivation), but this is not uniform: Paper II found normal-hearing participants unexpectedly performed BETTER in high vs. low noise on math and reading tasks (a positive/reversed direction for that subgroup), and several tasks in Papers I and IV showed no effect at all. The thesis authors themselves frame the overall pattern as negative but task- and person-dependent.",
+    "sample_n": "47 students were recruited for Paper I; 9 were excluded for instruction non-compliance or equipment failure, leaving 38 for most analyses, and the key between-subjects noise-effect analysis on word memory used only the first-session data (n=18 low noise, n=20 high noise, total 38). Paper II used n=38 (20 hearing-impaired, 18 normal-hearing); Paper III used n=42; Paper IV used n=24.",
+    "p_value": "This is Paper I's principal reported result: the between-subjects main effect of noise condition on word-memory (proactive-interference) recall, F(1,30)=4.27, p<.05, partial eta-squared=0.13, reported as confirming the dissertation's Hypothesis 1.",
+    "effect_size": "Same result as p_value above (partial eta-squared=0.13). Other papers report their own effect estimates (e.g., a significant serial-recall difference between Paper I and Paper II normal-hearing groups, t(53)=2.27, p<.05) but no single common effect-size metric is used across all four papers.",
+    "apa_citation": "Front matter explicitly states author, title, degree, universities, and ISBN; no separate DOI or publisher name beyond 'Universitetstryckeriet, Lulea' (printer) is given."
+  }
+}

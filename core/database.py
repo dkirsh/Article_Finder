@@ -12,14 +12,29 @@ from typing import Optional, List, Dict, Any
 from contextlib import contextmanager
 
 from core.ae_corpus_dedupe import build_paper_dedupe_fields
+from core.contract_fsm_runtime import (
+    ContractFSMViolation,
+    enforce_transition,
+    transition_targets,
+)
 from core.schema_registry import apply_pending_schema_migrations
 
 # Default database path
 DEFAULT_DB_PATH = Path(__file__).parent.parent / "data" / "article_finder.db"
+ALLOWED_TRIAGE_DECISIONS = frozenset({"pending", "send_to_eater", "review", "reject"})
 
 
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _repo_path(value: object) -> Path | None:
+    if not isinstance(value, (str, Path)) or not str(value).strip():
+        return None
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = Path(__file__).resolve().parents[1] / path
+    return path.resolve()
 
 
 def get_schema_sql() -> str:
@@ -341,19 +356,7 @@ def get_schema_sql() -> str:
 
 
 # Status state machine
-STATUS_TRANSITIONS = {
-    'candidate': ['pending_scorer', 'rejected', 'downloaded', 'queued_for_eater'],
-    'pending_scorer': ['candidate', 'rejected', 'downloaded', 'queued_for_eater'],
-    'rejected': [],  # Terminal
-    'downloaded': ['queued_for_eater', 'rejected'],
-    'queued_for_eater': ['sent_to_eater', 'rejected'],
-    'sent_to_eater': ['eater_running'],
-    'eater_running': ['processed_success', 'processed_partial', 'processed_fail'],
-    'processed_success': ['needs_human_review'],
-    'processed_partial': ['needs_human_review', 'queued_for_eater'],
-    'processed_fail': ['queued_for_eater', 'rejected'],
-    'needs_human_review': ['processed_success', 'rejected', 'queued_for_eater'],
-}
+STATUS_TRANSITIONS = transition_targets("paper_status")
 
 
 class Database:
@@ -398,6 +401,7 @@ class Database:
     def add_paper(self, paper: Dict[str, Any]) -> str:
         """Add a paper to the database."""
         with self.connection() as conn:
+            conn.execute("BEGIN IMMEDIATE")
             # Generate paper_id if not provided
             if 'paper_id' not in paper:
                 if paper.get('doi'):
@@ -406,6 +410,71 @@ class Database:
                     import hashlib
                     title_hash = hashlib.sha256(paper['title'].encode()).hexdigest()[:12]
                     paper['paper_id'] = f"sha256:{title_hash}"
+
+            existing = conn.execute(
+                """SELECT status, triage_decision, ae_status, ae_job_path, ae_output_path
+                   FROM papers WHERE paper_id = ?""",
+                (paper['paper_id'],),
+            ).fetchone()
+            requested_status = str(paper.get('status') or 'candidate')
+            if existing is None:
+                paper['status'] = enforce_transition(
+                    "paper_status",
+                    "unregistered",
+                    f"register:{requested_status}",
+                )
+            elif 'status' in paper:
+                current_status = str(existing['status'] or 'candidate')
+                if requested_status != current_status:
+                    paper['status'] = enforce_transition(
+                        "paper_status",
+                        current_status,
+                        f"set:{requested_status}",
+                    )
+
+            if paper.get('triage_decision') is not None:
+                requested_triage = str(paper['triage_decision'])
+                if requested_triage not in ALLOWED_TRIAGE_DECISIONS:
+                    raise ContractFSMViolation(
+                        f"undeclared triage_decision: {requested_triage}"
+                    )
+                effective_status = str(
+                    paper.get('status')
+                    or (existing['status'] if existing is not None else 'candidate')
+                )
+                if effective_status == 'rejected' and requested_triage != 'reject':
+                    raise ContractFSMViolation(
+                        "rejected paper cannot re-enter triage admission"
+                    )
+
+            if paper.get('ae_status') is not None:
+                current_ae_status = str(
+                    existing['ae_status'] if existing is not None and existing['ae_status'] else 'unbuilt'
+                )
+                requested_ae_status = str(paper['ae_status'])
+                if requested_ae_status != current_ae_status:
+                    if requested_ae_status == 'pending':
+                        job_path = _repo_path(
+                            paper.get('ae_job_path')
+                            or (existing['ae_job_path'] if existing is not None else None)
+                        )
+                        paper['ae_status'] = enforce_transition(
+                            "ae_handoff",
+                            current_ae_status,
+                            "record_job",
+                            guards={"job_path_exists": bool(job_path and job_path.is_dir())},
+                        )
+                    else:
+                        output_path = _repo_path(
+                            paper.get('ae_output_path')
+                            or (existing['ae_output_path'] if existing is not None else None)
+                        )
+                        paper['ae_status'] = enforce_transition(
+                            "ae_handoff",
+                            current_ae_status,
+                            f"record:{requested_ae_status}",
+                            guards={"output_path_exists": bool(output_path and output_path.is_dir())},
+                        )
             
             # Serialize JSON fields
             for field in ['authors', 'triage_reasons', 'ae_warnings', 'tags']:
@@ -420,13 +489,21 @@ class Database:
                 )
             )
             
-            columns = ', '.join(paper.keys())
-            placeholders = ', '.join(['?' for _ in paper])
-            
-            conn.execute(
-                f"INSERT OR REPLACE INTO papers ({columns}) VALUES ({placeholders})",
-                list(paper.values())
-            )
+            cols = list(paper.keys())
+            columns = ', '.join(cols)
+            placeholders = ', '.join(['?' for _ in cols])
+            # Sparse merge-upsert (AF-F6): on an existing paper_id, update ONLY the
+            # columns present in `paper` -- never NULL out unspecified columns the way
+            # the old `INSERT OR REPLACE` did (it clobbered abstract/pdf_path/venue on a
+            # sparse re-add). A new paper_id is a plain INSERT.
+            update_cols = [c for c in cols if c != 'paper_id']
+            if update_cols:
+                set_clause = ', '.join(f"{c}=excluded.{c}" for c in update_cols)
+                sql = (f"INSERT INTO papers ({columns}) VALUES ({placeholders}) "
+                       f"ON CONFLICT(paper_id) DO UPDATE SET {set_clause}")
+            else:
+                sql = f"INSERT OR IGNORE INTO papers ({columns}) VALUES ({placeholders})"
+            conn.execute(sql, list(paper.values()))
             
             return paper['paper_id']
     
@@ -452,43 +529,80 @@ class Database:
                 return self._row_to_dict(row)
             return None
     
+    def set_ae_job(self, paper_id: str, ae_job_path: str, ae_status: str = 'pending') -> bool:
+        """Record the AE handoff bundle path + status after build-jobs.
+
+        Sets ae_job_path AND ae_status together so 'pending' is truthful only with a
+        resolvable job path (AF_AE_HANDOFF_AUTHORITY), letting AF later verify/repair AE state.
+        """
+        if ae_status != 'pending':
+            raise ContractFSMViolation(
+                "set_ae_job may only record the pending handoff state"
+            )
+        job_path = _repo_path(ae_job_path)
+        with self.connection() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            paper = conn.execute(
+                "SELECT ae_status FROM papers WHERE paper_id = ?", (paper_id,)
+            ).fetchone()
+            if not paper:
+                return False
+            current_state = paper['ae_status'] or 'unbuilt'
+            next_state = enforce_transition(
+                "ae_handoff",
+                current_state,
+                "record_job",
+                guards={"job_path_exists": bool(job_path and job_path.is_dir())},
+            )
+            cur = conn.execute(
+                "UPDATE papers SET ae_job_path = ?, ae_status = ?, updated_at = ? WHERE paper_id = ?",
+                (str(job_path), next_state, utc_now_iso(), paper_id),
+            )
+            return cur.rowcount > 0
+
     def update_paper_status(self, paper_id: str, new_status: str) -> bool:
         """Update paper status with state machine validation."""
-        paper = self.get_paper(paper_id)
-        if not paper:
-            return False
-        
-        current_status = paper.get('status', 'candidate')
-        
-        # Validate transition
-        if new_status not in STATUS_TRANSITIONS.get(current_status, []):
-            raise ValueError(
-                f"Invalid status transition: {current_status} -> {new_status}. "
-                f"Valid transitions: {STATUS_TRANSITIONS.get(current_status, [])}"
-            )
-        
         with self.connection() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            paper = conn.execute(
+                "SELECT status FROM papers WHERE paper_id = ?", (paper_id,)
+            ).fetchone()
+            if not paper:
+                return False
+            current_status = paper['status'] or 'candidate'
+            next_status = enforce_transition(
+                "paper_status", current_status, f"set:{new_status}"
+            )
             conn.execute(
                 "UPDATE papers SET status = ?, updated_at = ? WHERE paper_id = ?",
-                (new_status, utc_now_iso(), paper_id)
+                (next_status, utc_now_iso(), paper_id)
             )
         
         return True
     
     def get_papers_by_status(self, status: str, limit: int = 1000) -> List[Dict]:
-        """Get papers by status OR triage_decision field.
-        
-        This method checks both the 'status' field and 'triage_decision' field
-        for backwards compatibility with code that uses either convention.
+        """Get rows from exactly one state domain.
+
+        Triage decisions and lifecycle states are deliberately not aliases. A
+        rejected lifecycle row is never returned as triage work.
         """
         with self.connection() as conn:
-            rows = conn.execute(
-                """SELECT * FROM papers 
-                   WHERE status = ? OR triage_decision = ?
-                   ORDER BY updated_at DESC
-                   LIMIT ?""",
-                (status, status, limit)
-            ).fetchall()
+            if status in ALLOWED_TRIAGE_DECISIONS:
+                rows = conn.execute(
+                    """SELECT * FROM papers
+                       WHERE triage_decision = ? AND status != 'rejected'
+                       ORDER BY updated_at DESC
+                       LIMIT ?""",
+                    (status, limit),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    """SELECT * FROM papers
+                       WHERE status = ?
+                       ORDER BY updated_at DESC
+                       LIMIT ?""",
+                    (status, limit),
+                ).fetchall()
             
             return [self._row_to_dict(row) for row in rows]
     
@@ -840,10 +954,12 @@ class Database:
     
     def get_papers_by_triage_status(self, status: str, limit: int = 100) -> List[Dict]:
         """Get papers with a specific triage decision status."""
+        if status not in ALLOWED_TRIAGE_DECISIONS:
+            raise ContractFSMViolation(f"undeclared triage_decision: {status}")
         with self.connection() as conn:
             rows = conn.execute(
                 """SELECT * FROM papers 
-                   WHERE triage_decision = ?
+                   WHERE triage_decision = ? AND status != 'rejected'
                    ORDER BY updated_at DESC
                    LIMIT ?""",
                 (status, limit)

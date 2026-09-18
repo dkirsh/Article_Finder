@@ -22,6 +22,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from ingest.pdf_cataloger import extract_pdf_text  # type: ignore  # noqa: E402
+from core.contract_fsm_runtime import enforce_transition  # noqa: E402
 
 
 def _resolve_path(stored_path: str | None) -> Path | None:
@@ -67,7 +68,8 @@ def _repair_missing_paths(con: sqlite3.Connection, apply: bool) -> dict[str, int
     cleared_missing_pdf = 0
 
     rows = con.execute(
-        "SELECT paper_id, pdf_path, ae_output_path, human_notes FROM papers"
+        """SELECT paper_id, pdf_path, ae_job_path, ae_output_path, ae_status,
+                  human_notes FROM papers"""
     ).fetchall()
     for row in rows:
         paper_id = row["paper_id"]
@@ -116,15 +118,35 @@ def _repair_missing_paths(con: sqlite3.Connection, apply: bool) -> dict[str, int
                 remapped_output += 1
             else:
                 if apply:
+                    current_state = row["ae_status"] or "unbuilt"
+                    repaired_status = row["ae_status"]
+                    if current_state != "unbuilt":
+                        job_path = _resolve_path(row["ae_job_path"])
+                        if job_path is not None and job_path.is_dir():
+                            repaired_state = enforce_transition(
+                                "ae_handoff",
+                                current_state,
+                                "record_job",
+                                guards={"job_path_exists": True},
+                            )
+                        else:
+                            repaired_state = enforce_transition(
+                                "ae_handoff", current_state, "invalidate_evidence"
+                            )
+                        repaired_status = (
+                            None if repaired_state == "unbuilt" else repaired_state
+                        )
                     con.execute(
                         """
                         UPDATE papers
                         SET ae_output_path=NULL,
+                            ae_status=?,
                             human_notes=?,
                             updated_at=?
                         WHERE paper_id=?
                         """,
                         (
+                            repaired_status,
                             _append_note(note, "Cleared stale ae_output_path during AF integrity repair 2026-05-10."),
                             datetime.now(timezone.utc).isoformat(),
                             paper_id,
@@ -155,7 +177,8 @@ def _repair_duplicate_attachments(con: sqlite3.Connection, apply: bool) -> dict[
     for group in groups:
         sha = group["pdf_sha256"]
         rows = con.execute(
-            "SELECT paper_id, title, pdf_path, human_notes FROM papers WHERE pdf_sha256=? ORDER BY paper_id",
+            """SELECT paper_id, title, pdf_path, ae_status, human_notes
+               FROM papers WHERE pdf_sha256=? ORDER BY paper_id""",
             (sha,),
         ).fetchall()
         if len(rows) < 2:
@@ -183,6 +206,15 @@ def _repair_duplicate_attachments(con: sqlite3.Connection, apply: bool) -> dict[
             if row["paper_id"] == keep_id:
                 continue
             if apply:
+                current_state = row["ae_status"] or "unbuilt"
+                repaired_status = row["ae_status"]
+                if current_state != "unbuilt":
+                    repaired_state = enforce_transition(
+                        "ae_handoff", current_state, "invalidate_evidence"
+                    )
+                    repaired_status = (
+                        None if repaired_state == "unbuilt" else repaired_state
+                    )
                 note = _append_note(
                     row["human_notes"],
                     f"Detached conflicting PDF attachment during AF integrity repair 2026-05-10; shared sha256 with group canonical {keep_id or 'none'}.",
@@ -197,7 +229,7 @@ def _repair_duplicate_attachments(con: sqlite3.Connection, apply: bool) -> dict[
                         ae_output_path=NULL,
                         ae_run_id=NULL,
                         ae_profile=NULL,
-                        ae_status=NULL,
+                        ae_status=?,
                         ae_n_claims=NULL,
                         ae_n_rules=NULL,
                         ae_confidence=NULL,
@@ -206,7 +238,12 @@ def _repair_duplicate_attachments(con: sqlite3.Connection, apply: bool) -> dict[
                         updated_at=?
                     WHERE paper_id=?
                     """,
-                    (note, datetime.now(timezone.utc).isoformat(), row["paper_id"]),
+                    (
+                        repaired_status,
+                        note,
+                        datetime.now(timezone.utc).isoformat(),
+                        row["paper_id"],
+                    ),
                 )
             detached_rows += 1
     return {"duplicate_groups_processed": processed_groups, "detached_duplicate_rows": detached_rows}

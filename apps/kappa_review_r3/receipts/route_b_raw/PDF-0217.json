@@ -1,0 +1,40 @@
+{
+  "paper_id": "PDF-0217",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Jennings, P., & Cain, R. (2012). A framework for improving urban soundscapes. Applied Acoustics. Advance online publication (available online 15 January 2012). [Volume, issue, and page numbers are not printed in the extracted docling text.]",
+    "article_type": "theoretical",
+    "main_conclusion": "The authors propose a three-part conceptual framework — describing a soundscape's objective composition, the (mostly non-acoustic) factors that make it feel positive, and, via an adapted Kano model, how design interventions map onto basic/performance/excitement levels of listener engagement — arguing that whether an urban soundscape feels positive depends chiefly on what activity the user is doing rather than on sound level alone.",
+    "independent_variables": [],
+    "dependent_variables": [],
+    "construct_pair": "Urban-space design interventions (soundscape composition and context) -> perceived positivity of the space",
+    "direction": "not_applicable",
+    "sample_n": null,
+    "p_value": null,
+    "effect_size": null,
+    "stimulus_description": null,
+    "methods_surface_summary": "Conceptual/framework paper with no original data collection: it synthesizes prior soundscape-perception literature and adapts the Kano model (from product-development/automotive sound-quality research) into a three-part planning framework, illustrated with references to a companion listening study (not itself reported here) on the emotional dimensions of 'calmness' and 'vibrancy'.",
+    "measurement_inventory": []
+  },
+  "confidence": {
+    "apa_citation": 3,
+    "article_type": 5,
+    "main_conclusion": 5,
+    "independent_variables": 5,
+    "dependent_variables": 5,
+    "construct_pair": 4,
+    "direction": 5,
+    "sample_n": 5,
+    "p_value": 5,
+    "effect_size": 5,
+    "stimulus_description": 5,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "apa_citation": "Authors, title, journal, and an 'Available online 15 January 2012' date are printed in the docling text, giving reasonable confidence in a 2012 year, but no volume/issue/page range appears anywhere in the extracted file, so the citation is left incomplete rather than fabricated.",
+    "article_type": "This is a position/framework paper (no participants, no original measurements), so it is coded theoretical rather than any empirical category; it is closer to a 'commentary/framework' piece but does propose a structured conceptual model with sections, so 'theoretical' was judged the best fit of the offered categories.",
+    "sample_n / p_value / effect_size / stimulus_description": "All null because the paper reports no original empirical study — it references a separate companion paper (Cain, Jennings & Poxon, cited in the reference list) that contains the actual listening-test data, but that study's numbers are not reproduced in this text.",
+    "direction": "'not_applicable' because there is no IV->DV empirical test in this document."
+  }
+}

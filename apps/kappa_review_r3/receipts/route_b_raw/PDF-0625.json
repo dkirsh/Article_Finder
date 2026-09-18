@@ -1,0 +1,40 @@
+{
+  "paper_id": "PDF-0625",
+  "route": "B_sonnet_blind",
+  "fields": {
+    "apa_citation": "Kompier, M. E., Smolders, K. C. H. J., & de Kort, Y. A. W. (2021). Abrupt light transitions in illuminance and correlated colour temperature result in different temporal dynamics and interindividual variability for sensation, comfort and alertness. PLoS ONE, 16(3), e0243259. https://doi.org/10.1371/journal.pone.0243259",
+    "article_type": "empirical_quantitative",
+    "main_conclusion": "Abrupt transitions in illuminance and correlated colour temperature (CCT) independently (without interaction) produce immediate but differently-persisting changes in subjective sensation, comfort, mood and alertness, with no measurable effect on task performance, physiological arousal or thermoregulation within 45 minutes, and only visual comfort shows significant interindividual variability in response to illuminance.",
+    "independent_variables": ["Illuminance (bright vs. dim)", "Correlated colour temperature/CCT (cool vs. warm)", "Measurement block (time since transition: 1/2/3)"],
+    "dependent_variables": ["Visual sensation (brightness, color)", "Visual acceptance and comfort", "Vitality", "Subjective sleepiness (KSS)", "Mood (Calm, Happy)", "Psychomotor vigilance (PVT reaction time)", "Executive functioning (Backward Digit Span Task correct responses)", "Physiological arousal (skin conductance level, heart rate, heart rate variability)", "Thermal sensation, acceptance, comfort, self-assessed shivering", "Thermoregulation (mean skin temperature, distal-proximal gradient)"],
+    "construct_pair": "Illuminance/CCT transition -> subjective alertness, comfort, and mood (with performance/physiology as null-result outcomes)",
+    "direction": "mixed",
+    "sample_n": 23,
+    "p_value": "p < 0.001",
+    "effect_size": null,
+    "stimulus_description": "Participants sat in a climate-chamber office setting under four experimental light conditions (cool-bright, cool-dim, warm-bright, warm-dim LED lighting) following a 45-minute warm-dim baseline, in a mild cold thermal environment, across four separate sessions.",
+    "methods_surface_summary": "Laboratory within-subjects 2 (illuminance: bright/dim) x 2 (CCT: cool/warm) design with 23 participants completing four 90-minute sessions; self-report, performance (PVT, BDST) and physiological (ECG, EDA, skin temperature) measures were sampled every 15 minutes after an abrupt light transition and analyzed with linear mixed models including random slopes to test interindividual variability.",
+    "measurement_inventory": ["Visual sensation/acceptance/comfort items (7-point and 6-point scales, from Kompier et al. prior study)", "Thermal sensation/acceptance/comfort items (ASHRAE Standard 55-based)", "Self-assessed shivering VAS", "Karolinska Sleepiness Scale (KSS)", "Activation-deactivation adjective checklist (Vitality, Calm, Happy, mood items)", "Backward Digit Span Task (BDST)", "Psychomotor Vigilance Task (PVT)", "ECG (heart rate, HRV)", "Electrodermal activity/skin conductance level (SCL)", "iButton skin temperature dataloggers (mean skin temp, DPG)", "Munich Chronotype Questionnaire (screening)"]
+  },
+  "confidence": {
+    "apa_citation": 5,
+    "article_type": 5,
+    "main_conclusion": 5,
+    "independent_variables": 5,
+    "dependent_variables": 5,
+    "construct_pair": 4,
+    "direction": 4,
+    "sample_n": 5,
+    "p_value": 2,
+    "effect_size": 1,
+    "stimulus_description": 5,
+    "methods_surface_summary": 5,
+    "measurement_inventory": 5
+  },
+  "notes": {
+    "direction": "Mixed because illuminance and CCT each drive different, sometimes opposite-signed effects across the many DVs (e.g., bright light -> higher vitality/lower sleepiness; cool CCT -> lower visual comfort/happiness), and several DVs show no effect at all.",
+    "p_value": "No single 'main finding' p-value is designated; paper uses alpha=0.01 throughout with a large table of F/p values per DV. p<0.001 is illustrative (e.g., CCT effect on Sensation VC, and Block effects on several DVs), not a single headline statistic.",
+    "effect_size": "Paper reports estimated marginal means and unstandardized beta coefficients throughout, but does not report a standard effect-size metric (d, r, eta2) for the main effects in the visible text; hence null. Field data go into supplementary tables (S1-S4) not present in this docling extraction.",
+    "sample_n": "N=23 for the main analyses; some dependent variables (e.g., physiological measures) have slightly reduced sample sizes due to missing data/outlier removal (df vary in Table 3)."
+  }
+}
